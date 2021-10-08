@@ -1,0 +1,581 @@
+{% extends 'Shared/mainLayout.html' %}
+{% load static from staticfiles %}
+{% block title %}Outstanding Summary{% endblock %}
+{% block content %}
+{% csrf_token %}
+{% verbatim %}
+<div class="maincontent">
+    <div class="container container1" ng-app="out_sum" ng-controller="outstanding_summary" ng-cloak>
+        <div class="row">
+            <div class="row-header col-lg-12 col-sm-12">
+                <h4>Outstanding Summary </h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+<!--        <form name="myform">-->
+        <div class="col-md-2">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Outstanding Date</label>
+                            <md-datepicker md-hide-icons="calendar" md-open-on-focus
+                                           ng-model="from_date" ng-change="change_from_date(from_date)" ng-required="true"></md-datepicker>
+                        </md-input-container>
+                    </div>
+
+             <div class="col-md-3 ">
+                <md-autocomplete flex
+                                 md-clear-button="true"
+                                 md-floating-label="Customer Group Name"
+                                 md-input-maxlength=126
+                                 md-item-text="item.customergroup_name"
+                                 md-items="item in CustomerGroupget(customergroupname)"
+                                 md-min-length=0
+                                 md-search-text="customergroupname"
+                                 md-selected-item="customergroup_gid"
+                                 md-selected-item-change="CustomerGroupChange(item.customergroup_gid)"
+                                 placeholder="Customer Group Name">
+                    <md-item-template>
+                        <span md-highlight-text="customergroupname"> {{item.customergroup_name}}</span>
+                    </md-item-template>
+                    <md-not-found>
+                        No Customer Group Name matching "{{customergroupname}}" were found.
+                    </md-not-found>
+                </md-autocomplete>
+            </div>
+
+<!--            <div class="row">-->
+            <div class="col-md-3">
+                <md-autocomplete
+                        md-clear-button="true"
+                        md-input-maxlength=126
+                        md-item-text="item.customer_name"
+                        md-items="item in customerget(customername)"
+                        md-min-length=0
+                        md-no-cache="true"
+                        md-search-text="customername"
+                        md-selected-item="customergid"
+                        md-selected-item-change="Customer_get(item.customer_gid)"
+                        ng-disabled="Customer_disable"
+                        md-floating-label="Customer Name">
+                    <md-item-template>
+                        <span md-highlight-text="customername"> {{item.customer_name}} </span>
+                    </md-item-template>
+                    <md-not-found>
+                        No customer matching "{{customername}}" were found.
+                    </md-not-found>
+                </md-autocomplete>
+            </div>
+
+
+
+                 <div class="col-md-2">
+                <md-autocomplete
+                        md-clear-button="true"
+                        md-input-maxlength=126
+                        md-item-text="item.employee_name"
+                        md-items="item in Employeeget(employeename)"
+                        md-min-length=0
+                        md-no-cache="true"
+                        md-search-text="employee_name"
+                        md-selected-item="employee_gid"
+                        md-selected-item-change="Employee_get(item.employee_gid)"
+                        ng-disabled="Customer_disable"
+                        md-floating-label="Executive Name">
+                    <md-item-template>
+                        <span md-highlight-text="employeename"> {{item.employee_name}} </span>
+                    </md-item-template>
+                    <md-not-found>
+                        No  matching "{{employeename}}" were found.
+                    </md-not-found>
+                </md-autocomplete>
+            </div>
+
+
+            <div class="col-md-2">
+                        <md-button class="md-fab md-mini md-primary custbutton" ng-click="loaddetails()">
+                            <md-icon>search</md-icon>
+                            <md-tooltip>Search</md-tooltip>
+                        </md-button>
+                    </div>
+
+<!--</div>-->
+            </div>
+<!--            <div class="row">-->
+            <div class="col-md-9" >
+                    <md-input-container class="md-block inputcontainer">
+                        <md-radio-group layout="row" ng-change="check_radio()" ng-model="dataType">
+                            <md-radio-button value="header">Invoice Wise</md-radio-button>
+                            <md-radio-button value="brnchdetails">Branch Wise</md-radio-button>
+                        </md-radio-group>
+                    </md-input-container>
+                </div>
+            <div class="col-md-1" >
+                    <md-button href="invoicesmryy_get?Type={{OUTSTANDING_REPORT}}&SubType={{SUMMARY}}&from_date={{from_date}}">
+
+                            OutstandingExcel
+                      </md-button></div>
+        </div>
+<!--        </div>-->
+
+<!--        <div class="row">-->
+            <div class="row table-responsive" ng-show="invoicewise">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <table class="table table-striped table-bordered table-condensed table-hover md-primary">
+                    <thead class="header">
+                    <tr>
+                        <th>S.No</th>
+                        <th>Customer Name</th>
+                        <th>Executive Name</th>
+                        <th>Invoice No</th>
+                        <th>Bill Amount</th>
+                        <th>Payment Amount </th>
+                        <th>Due Amount</th>
+                        <th>Due_Days</th>
+                        <th>0-30</th>
+                        <th>30-60</th>
+                        <th>60-90</th>
+                        <th>90-120</th>
+                        <th>>120</th>
+                     </tr>
+                    </thead>
+                    <tbody>
+                    <tr
+                        ng-repeat="inv in outsmry
+                        .slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage))">
+                        <td>
+                            <center>{{((currentPage-1)*itemsPerPage)+$index+1}}</center>
+                        </td>
+                        <td class="text-center">{{inv.customer_name }}</td>
+                        <td class="text-center">{{inv.employee_name}}</td>
+                        <td class="text-center">{{inv.fetsoutstanding_invoiceno}}</td>
+                        <td class="text-center">{{inv.fetsoutstanding_netamount}}</td>
+                        <td class="text-center">{{inv.paid}}</td>
+                        <td class="text-center">{{inv.balance_amount}}</td>
+                        <td class="text-center">{{inv.Due_Days}}</td>
+                        <td class="text-center">{{inv.Due_30}}</td>
+                        <td class="text-center">{{inv.Due_60}}</td>
+                        <td class="text-center">{{inv.Due_90}}</td>
+                        <td class="text-center">{{inv.Due_120}}</td>
+                        <td class="text-center">{{inv.Due120}}</td>
+                    </tr>
+                     <tr ng-show="outsmry_len ==  0">
+                        <td class="warning" colspan="13">
+                            No Records Found.
+                        </td>
+                    </tr>
+                    </tbody>
+
+                    <tfoot>
+                    <tr>
+                        <td colspan="6">
+                            <ul boundary-links="true" class="pagination-sm cust_pagination"
+                                items-per-page="itemsPerPage"
+                                max-size="maxSize"
+                                ng-model="currentPage" total-items="outsmry.length"
+                                uib-pagination></ul>
+                        </td>
+                        <td colspan="7">
+                            Total Count:{{outsmry.length}}
+                        </td>
+                    </tr>
+                    </tfoot>
+
+                </table>
+            </div>
+            </div>
+            <div class="row table-responsive" ng-if="!invoicewise">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <table class="table table-striped table-bordered table-condensed table-hover md-primary">
+                    <thead class="header">
+                    <tr>
+                        <th>S.No</th>
+                        <th>Customer Name</th>
+                        <th>Executive Name</th>
+                        <th>Bill Amount</th>
+                        <th>Payment Amount </th>
+                        <th>Due Amount</th>
+                        <th>Due Days</th>
+                        <th>0-30</th>
+                        <th>30-60</th>
+                        <th>60-90</th>
+                        <th>90-120</th>
+                        <th>>120</th>
+                     </tr>
+                    </thead>
+                    <tbody>
+
+                    <tr class="text-center"
+                        ng-repeat="brnch in outsmry1
+                        .slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage))">
+                        <td>
+<!--                            ((currentPage-1)*itemsPerPage)-->
+                            <center>{{((currentPage-1)*itemsPerPage)+$index+1}}</center>
+                            <td class="text-center">{{brnch.customer_name }}</td>
+                            <td class="text-center">{{brnch.employee_name}}</td>
+                            <td class="text-center">{{brnch.netamt}}</td>
+                            <td class="text-center">{{brnch.paid}}</td>
+                            <td class="text-center">{{brnch.balance_amount}}</td>
+                            <td class="text-center">{{brnch.Due_Days}}</td>
+                            <td class="text-center">{{brnch.Due_30}}</td>
+                            <td class="text-center">{{brnch.Due_60}}</td>
+                            <td class="text-center">{{brnch.Due_90}}</td>
+                            <td class="text-center">{{brnch.Due_120}}</td>
+                            <td class="text-center">{{brnch.Due120}}</td>
+
+
+                    </tr>
+                    <tr ng-show="outsmry1 ==  0">
+                        <td class="warning" colspan="13">
+                            No Records Found.
+                        </td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colspan="6">
+                            <ul boundary-links="true" class="pagination-sm cust_pagination"
+                                items-per-page="itemsPerPage"
+                                max-size="maxSize"
+                                ng-model="currentPage" total-items="outsmry1.length"
+                                uib-pagination></ul>
+                        </td>
+                        <td colspan="6">
+                            Total Count:{{outsmry1.length}}
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+            </div>
+
+        </div>
+
+</form>
+
+        </div>
+
+
+<!--        </form>-->
+</div>
+</div>
+{% endverbatim %}
+<script>
+    var app = angular.module('out_sum', ['ngMaterial', 'ui.bootstrap', 'AppCommon']).config(function(
+        $httpProvider) {
+        $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+        $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+    });
+    app.run(function($mdDateLocale, $filter) {
+    $mdDateLocale.formatDate = function(date) {
+        return $filter('date')(date, "yyyy-MM-dd");
+    };
+})
+
+    app.controller('outstanding_summary',  ['$scope','$http', '$filter', 'outstanding_summary', '$mdDialog', '$window', function($scope,$http,
+    $filter, outstanding_summary, $mdDialog, $window) {
+    var detail = JSON.parse(sessionStorage.getItem('today'));
+    $scope.emp_gid = detail.employee_gid;
+    $scope.entity = detail.entity_gid;
+    $scope.currentPage = 1;
+    $scope.maxSize = 3;
+    $scope.itemsPerPage = 10;
+    $scope.dates = new Date();
+    $scope.outsmry = [];
+    $scope.outsmry1 = [];
+    $scope.pagelength = [];
+<!--    $scope.from_date = new Date(new Date().setDate(new Date().getDate()));-->
+
+
+
+    $scope.maxDate = new Date(
+            $scope.dates.getFullYear(),
+            $scope.dates.getMonth() -6,
+            $scope.dates.getDate()
+        );
+
+        $scope.loading = function() {
+            $mdDialog.show({
+                templateUrl: 'loaderSpinner',
+                parent: angular.element(document.body),
+                clickOutsideToClose: false
+            });
+        };
+
+        $scope.endloading = function() {
+            $mdDialog.hide();
+        };
+        $scope.change_from_date=function(from_date){
+            var dt = new Date(from_date);
+            dt.setMonth( dt.getMonth() +1);
+            $scope.maxDate=from_date;
+            $scope.minDate=dt;
+            $scope.from_date=$filter('date')(from_date,"yyyy-MM-dd");
+        }
+
+        $scope.Customer_get = function(customer_gid){
+        $scope.customerid = customer_gid;
+
+        }
+        $scope.ACselectchange=function(employee_gid){
+        $scope.empid = employee_gid;
+        }
+         $scope.Employee_get=function(employee_gid){
+        $scope.empid = employee_gid;
+        }
+
+         $scope.CustomerGroupChange = function(customergroup_gid){
+        $scope.customergroupid = customergroup_gid;
+}
+
+        $scope.getcustmer1 = gotocust1;
+
+         function gotocust1(query) {
+
+            var result = $filter('filter')($scope.employee_assign, {
+                'employee_name': query
+            });
+            return result;
+        }
+
+$scope.CustomerGroupget=function(search){
+        var data={
+        "Params":{
+        "customergroup_name":search,
+        }
+        }
+         var data_int = {
+         "action": "dropdown",
+         "type": "cust_groupnames",
+         data:data
+     }
+     return $http.post(Appname + "/custgrpname_get/", data_int)
+          .then(function (result) {
+            $scope.custgroup = result.data;
+            console.log($scope.custgroup);
+             return $scope.custgroup;
+         });
+ }
+
+   $scope.customerget = function (query) {
+
+   var data={
+   "Params":{
+    "FILTER": {
+
+             "custgroup_gid":$scope.customergroupid,
+             "customer_name":query
+             }
+
+             }
+           }
+        var data_int = {
+         "action": "customer",
+         "type": "cust_group",
+         data:data
+
+
+
+     }
+     return $http.post(Appname + "/custname_get/", data_int)
+          .then(function (cust) {
+            $scope.all= cust.data;
+
+             return $scope.all;
+         });
+ }
+
+ $scope.Employeeget=function(){
+
+        var data={
+        "Params":{
+        "custgroup_gid":$scope.customergroupid
+        }
+        }
+         var data_int = {
+         "action": "cust_emp_mapping",
+         "type": "cust_group",
+         data:data
+     }
+     return $http.post(Appname + "/employeename_get/", data_int)
+          .then(function (result) {
+            $scope.empname = result.data;
+<!--            console.log($scope.custgroup);-->
+             return $scope.empname;
+         });
+ }
+
+
+
+$scope.check_radio = function() {
+
+            if ($scope.dataType == "header") {
+
+                $scope.invoicewise = true;
+<!--                 if ($scope.outsmry.length == 0) {-->
+<!--                   loadinvoicedetails();-->
+<!--                }-->
+
+                 }else {
+                $scope.invoicewise = false;
+                if ($scope.outsmry1.length == 0) {
+                   loadbrnchdetails();
+                }
+            }
+        }
+
+
+        function loadinvoicedetails(){
+
+        $scope.loading();
+        var data={
+        "params":{
+        "Filter":{
+        "Invoice_wise":"Y",
+        "Outstanding_date":$filter('date')(new Date(), "yyyy-MM-dd"),
+        "Employee_Gid":"16",
+        "Customer_Gid":$scope.customerid,
+        "customergroup_gid":""
+        },
+        }
+        }
+        var data_int={
+        "Type":"OUTSTANDING_REPORT",
+        "SubType":"SUMMARY",
+        data:data
+        };
+        var inv=outstanding_summary.getinv(data_int);
+        inv.then(function(result){
+         $scope.outsmry=result.data;
+         },
+         function() {
+        alert('no data');
+        }).finally();
+        $scope.endloading();
+      }
+
+
+
+    $scope.loaddetails=function(){
+
+
+        $scope.loading();
+        var data={
+        "params":{
+        "Filter":{
+        "Invoice_wise":"Y",
+        "Outstanding_date":$filter('date')($scope.from_date, "yyyy-MM-dd"),
+        "Employee_Gid": $scope.empid,
+        "Customer_Gid":$scope.customerid,
+        "customergroup_gid":$scope.customergroupid
+        },
+        }
+        }
+        var data_int={
+        "Type":"OUTSTANDING_REPORT",
+        "SubType":"SUMMARY",
+        data:data
+        };
+        var inv=outstanding_summary.getinv(data_int);
+        inv.then(function(result){
+        if(result.data.length==0){
+        alert("no data");
+
+        }
+        else{
+         $scope.outsmry=result.data;
+
+         }
+
+         },
+
+         function() {
+        alert('no data');
+        }).finally();
+
+        loadbranchdetails();
+        $scope.endloading();
+
+      }
+
+function loadbrnchdetails(){
+$scope.loading();
+
+        var data={
+        "params":{
+        "Filter":{
+        "Invoice_wise":" ",
+        "Outstanding_date":$filter('date')(new Date(), "yyyy-MM-dd"),
+        "Employee_Gid": $scope.empid,
+        "Customer_Gid":$scope.customerid,
+        "customergroup_gid":$scope.customergroupid
+        },
+        }
+        }
+        var data_int={
+        "Type":"OUTSTANDING_REPORT",
+        "SubType":"SUMMARY",
+        data:data
+        };
+        var brnch=outstanding_summary.getbrnch(data_int);
+        brnch.then(function(result){
+         $scope.outsmry1=result.data;
+
+         },
+         function() {
+        alert('no data');
+        }).finally();
+        $scope.endloading();
+      }
+
+function loadbranchdetails(){
+
+        var data={
+        "params":{
+        "Filter":{
+        "Invoice_wise":" ",
+        "Outstanding_date":$filter('date')($scope.from_date, "yyyy-MM-dd"),
+        "Employee_Gid": $scope.empid,
+        "Customer_Gid":$scope.customerid,
+        "customergroup_gid":$scope.customergroupid
+        },
+        }
+        }
+        var data_int={
+        "Type":"OUTSTANDING_REPORT",
+        "SubType":"SUMMARY",
+        data:data
+        };
+        var brnch=outstanding_summary.getbrnch(data_int);
+        brnch.then(function(result){
+         $scope.outsmry1=result.data;
+
+         },
+         function() {
+        alert('no data');
+        }).finally();
+
+      }
+
+
+
+
+
+
+
+    }]);
+ app.service("outstanding_summary", function($http) {
+
+
+     this.getinv =function(data_int) {
+        var response =$http.post(Appname +"/invoicesmry_get/",data_int);
+        return response;
+      }
+
+      this.getbrnch =function(data_int) {
+        var response =$http.post(Appname +"/branchsmry_get/",data_int);
+        return response;
+      }
+        });
+
+ </script>
+{% endblock %}

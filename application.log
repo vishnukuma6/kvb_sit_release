@@ -1,0 +1,25 @@
+s12020-03-14 04:31:38,789 WARNING django.request Not Found: /{{prheader_imagepath}}
+2020-03-14 04:32:29,000 WARNING django.request Not Found: /favicon.ico
+2020-03-14 04:32:37,483 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 05:07:10,337 ERROR Bigflow.Core.models Forbidden for 2 - Employee Name = M. SANTHOSH
+2020-03-14 05:10:33,737 ERROR Bigflow.Core.models fa_summaryis Forbidden for 2 - Employee Name = M. SANTHOSH
+2020-03-14 08:41:06,610 ERROR Bigflow.Core.models Invalid Input Has Given
+2020-03-14 08:41:39,960 ERROR Bigflow.Core.models Invalid Input Has Given
+2020-03-14 09:17:06,424 ERROR Bigflow.Core.models Invalid Input Has Given
+2020-03-14 09:24:27,135 WARNING django.request Not Found: /favicon.ico
+2020-03-14 09:25:21,305 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 09:25:34,205 ERROR Bigflow.Core.models fa_capdate_changeplus is Forbidden for Emp Id 2 - Employee Name = M. SANTHOSH
+2020-03-14 09:28:59,761 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 09:29:01,260 ERROR Bigflow.Core.models fa_capdate_changeplus is Forbidden for Emp Id 2 - Employee Name = M. SANTHOSH
+2020-03-14 09:29:21,263 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 09:29:23,644 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 09:29:32,441 ERROR Bigflow.Core.models Invalid Input Has Given
+2020-03-14 09:29:35,389 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 09:32:48,295 ERROR Bigflow.Core.models Invalid Input Has Given
+2020-03-14 09:32:58,497 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 09:44:26,074 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 09:44:28,359 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 09:47:24,553 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 09:47:27,246 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 09:47:56,658 WARNING django.request Not Found: /{{ asset_img }}
+2020-03-14 09:48:04,945 WARNING django.request Not Found: /{{ asset_img }}

@@ -1,0 +1,32 @@
+{% extends 'Shared/mainLayout.html' %}
+{% load static from staticfiles %}
+{% block title %} Inward Summary {% endblock %}
+{% block content %}
+{% csrf_token %}
+{% verbatim %}
+<div ng-app="Appinwsummary" ng-controller="Cntlinwsummary" class="container container1">
+    <div class="row">
+        <div class="col-md-4">
+
+        </div>
+        <div class="col-md-2" align="left">
+            <md-button class="md-fab md-mini md-primary custbutton" ng-href="../">
+                <md-icon>add</md-icon>
+                <md-tooltip>Create New</md-tooltip>
+            </md-button>
+        </div>
+    </div>
+
+</div>
+{% endverbatim %}
+<script>
+     var app=angular.module('Appinwsummary',['ngMaterial','ui.bootstrap']).config(function($httpProvider) {
+    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+
+
+});
+app.controller('Cntlinwsummary',['$scope','$filter','$mdDateLocale','$window',function($scope,$filter,$mdDateLocale,$window){
+});
+</script>
+{% endblock %}

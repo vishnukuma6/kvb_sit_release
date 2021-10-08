@@ -1,0 +1,1059 @@
+{% extends 'Shared/mainLayout.html' %}
+{% load static from staticfiles %}
+{% block title %} PO Creation{% endblock %}
+{% block content %}
+{% verbatim %}
+
+﻿
+<div ng-app="Appprocrt" ng-controller="proRowCtrl" class="container container1">
+    <div class="row  ">
+
+        <div class="row-header col-lg-12 col-sm-12">
+            <h4>PO Creation</h4>
+        </div>
+
+    </div>
+    <div class="row row-search" ng-form="searchfrom">
+
+        <form role="form" name="valid_po">
+
+            <div class="col-lg-2 col-sm-2 text-left ">
+                <md-input-container class="md-block inputcontainer">
+                    <label>PO NO</label>
+                    <input class="textboxgeneral" ng-model="poheader_no" ng-disabled="true"/>
+                </md-input-container>
+            </div>
+
+            <div class="col-lg-2 col-sm-2">
+                <md-input-container class="md-block inputcontainer">
+                    <label>Supplier Name</label>
+                    <md-select ng-model="supplier_gid" ng-disabled="disable">
+                        <md-option><em>None</em></md-option>
+                        <md-option ng-repeat="posupplier in POsupplier_list"
+                                   ng-click="supplier_click(posupplier.supplier_gid)"
+                                   ng-selected="supplier_gid == posupplier.supplier_gid"
+                                   ng-value="posupplier.supplier_gid">
+                            {{posupplier.supplier_name}}
+                        </md-option>
+                    </md-select>
+                </md-input-container>
+
+            </div>
+            <div class="col-lg-2 col-sm-2">
+                <md-input-container class="md-block inputcontainer">
+                    <label>Team And Cond.</label>
+                    <md-select ng-model="teamandcond_gid" ng-disabled="disable_draft" required>
+                        <md-option><em>None</em></md-option>
+                        <md-option ng-repeat="terms_cond in POTerms_Condt" ng-value="terms_cond.poterms_gid">
+                            {{terms_cond.poterms_name}}
+                        </md-option>
+                    </md-select>
+                </md-input-container>
+            </div>
+            <div class="col-lg-2 col-sm-2 col-md-2">
+
+                <md-input-container class="md-block inputcontainer">
+                    <label>From Date</label>
+                    <md-datepicker md-hide-icons="calendar" ng-disabled="disable_draft" ng-model="fr_date"
+                                   ng-change='checkdate(fr_date,to_date)' formatDate
+                                   required></md-datepicker>
+                </md-input-container>
+            </div>
+            <div class="col-lg-2 col-sm-2 col-md-2">
+                <md-input-container class="md-block inputcontainer">
+                    <label>To Date</label>
+                    <md-datepicker md-hide-icons="calendar" ng-disabled="disable_draft" ng-model="to_date"
+                                   ng-change='checkdate(fr_date,to_date)' formatDate
+                                   required></md-datepicker>
+                </md-input-container>
+            </div>
+
+        </form>
+    </div>
+    <div class="row">
+        <div class="col-lg-12" align="center">
+            <span class="labelerror"> {{errormessage}}</span>
+        </div>
+
+    </div>
+    <div class="row  table-responsive" ng-hide="polater_hide">
+        <div class="col-lg-12 col-sm-12">
+            <table class="table  table-striped table-bordered table-condensed table-hover">
+                <thead class="header">
+                <tr>
+
+                    <td rowspan=" " style="width:25px;">
+                        S.No
+                    </td>
+
+                    <td rowspan="2" style="width: 10%;">
+                        Product Name
+                    </td>
+
+                    <td rowspan="2" style="width: 5%;">
+                        UOM
+                    </td>
+                    <td rowspan="2" style="width: 5%;">
+                        Quantity
+                    </td>
+                    <td rowspan="2" style="width: 10%;">
+                        Unit Price
+                    </td>
+                    <td rowspan="2" style="width: 10%;">
+                        Amount
+                    </td>
+
+                    <td rowspan="2" style="width: 10%;">
+                        Total Amount
+                    </td>
+                    <td rowspan="2" style="width: 100px;" ng-hide="hide_show">
+                        Action
+                    </td>
+                    <td rowspan="2" style="width: 100px;">
+                        Delivery
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+
+                <tr ng-repeat="user in podetails">
+                    <td align="right">
+                        {{$index+1}}
+                    </td>
+                    <td>
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Product Name</label>
+                            <md-select ng-model="Product_details" required>
+                            <md-option><em>None</em></md-option>
+                            <md-option ng-repeat="Product in listproductnamepo" ng-click="product_click()"
+                                       ng-disabled="disabled" ng-selected="user.product_gid == Product.product_gid "
+                                       ng-value="Product" >
+                                {{Product.product_name}}
+                            </md-option>
+                            </md-select>
+                        </md-input-container>
+                        <span ng-model="user.product_name"></span>
+                        <span>{{user.podetails_productname}}</span>
+                    </td>
+                    <td>
+                        <span ng-class="{ error: !user.podetails_uom }">{{user.uom_name}}</span>
+                    </td>
+                    <td align="center">
+                        <span ng-class="{ error: !user.podetails_qty }">{{user.podetails_qty}}</span>
+                        <a title="Qty" style='cursor: pointer; text-decoration:none;' align="center" data-toggle="modal"
+                           data-target="#myModal"
+                           ng-hide="hide_show"
+                           ng-click="prapprovdetail(Product_details.product_gid,user.podetails_gid,user.product_gid,$index);"
+                        ><i class="material-icons">poll</i></a>
+                    </td>
+                    <td align="right">
+                        <span ng-class="{ error: !user.podetails_unitprice }">{{user.podetails_unitprice}}</span>
+                    </td>
+                    <td align="right">
+                        <span>{{user.podetails_amount }}</span>
+                    </td>
+                    <td align="right">
+                        <span>{{user.podetails_totalamount }}</span>
+                    </td>
+                    <td align="center" ng-hide="hide_show">
+                        <md-button title="Save" align="center"
+                                   style='cursor: pointer; text-decoration:none;' ng-click="savepodetails($index)"
+                                   ng-if="user.editing"><i class="material-icons">save</i></md-button>
+                        <md-button title="Cancel" align="center" style='cursor: pointer; text-decoration:none;'
+                                   ng-if="user.editing"><i class="material-icons">cancel</i></md-button>
+                        <span ng-if="!user.editing">
+                                <md-button title="Delete" align="center" ng-disabled="show_save" ng-hide="hide_show"
+                                           ng-click="removeUser($index,user.podetails_gid,poheader_gid)"
+                                           style='cursor: pointer; text-decoration:none;'><i class="material-icons">delete</i></md-button>
+                            </span>
+                    </td>
+                    <td align="center">
+                        <span>{{des.d_name}}</span>
+                        <a title="Edit" style='cursor: pointer; text-decoration:none;' data-toggle="modal"
+                           data-target="#myedit" align="center"
+                           ng-click="godowndata($index,user.podetails_qty,Product_details.product_gid,user.podetails_uom,Product_details.product_name,user.podetails_gid,poheader_gid)"><span
+                                ng-disabled="!user.Product_details||!user.uom_name|| !user.podetails_qty|| !user.podetails_unitprice"
+                                style="font-size:20px;"><i class="material-icons">send</i></span></a>
+                    </td>
+
+                </tr>
+
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td>
+                        Total
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+
+                    <td></td>
+                    <td>{{calculatePay | number:2}}</td>
+                    <td ng-hide="hide_show"></td>
+                    <td></td>
+                </tr>
+                </tfoot>
+            </table>
+            <div class="row ">
+                <div class="col-lg-3  col-sm-3 text-left" ng-show="reject">
+                    <md-input-container class="md-block inputcontainer">
+                        <label>Reject Remarks</label>
+                        <input id="premarks" maxlength="256" ng-model="purchremarks" disabled/>
+                    </md-input-container>
+                </div>
+                <div  class="col-lg-12 col-sm-12 text-right">
+
+                    <md-button type="button"  ng-hide="hide_show" class="btn btn-default" ng-click="vendorselection()">Vendor selection
+                        <md-tooltip>Vendor selection</md-tooltip>
+                    </md-button>
+
+                    <md-button ng-click="Close()" class="md-raised md-warn">Close
+                        <md-tooltip>Close</md-tooltip>
+                    </md-button>
+
+                    <md-button ng-click="save_podetails('draft',poheader_gid)" ng-hide="hide_show"
+                               ng-disabled="valid_po.$invalid" class="md-raised">Draft
+                        <md-tooltip>Draft</md-tooltip>
+                    </md-button>
+
+                    <md-button ng-click="save_podetails('submit',poheader_gid)" ng-hide="hide_show"
+                               ng-disabled="valid_po.$invalid" class="btn btn-info custbutton">Submit
+                        <md-tooltip>Submit</md-tooltip>
+                    </md-button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false"
+         style="height:auto;width:auto"
+         aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <form name="Quantity" novalidate>
+            <div class="modal-dialog modal-style" style="width:auto;" role="document">
+                <div class="modal-content">
+                    <div class="modal-header popup-header">
+                        <h5 class="modal-title" id="exampleModalLabel">
+                            Quantity
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </h5>
+                    </div>
+                    <div>
+                        <div angucomplete-alst id="ex1"
+                             placeholder="Product Name"
+                             maxlength="50"
+                             pause="100"
+                             selected-object="selectedCountry"
+                             local-data="countries"
+                             search-fields="name"
+                             title-field="name"
+                             minlength="1"
+                             input-class="form-control form-control-small"
+                             match-class="highlight"></div>
+                    </div>
+
+                    <div class="modal-body scrollbar" style="height:250px;">
+                        <table class="table  table-striped table-bordered table-condensed table-hover">
+                            <thead class="header">
+                            <tr>
+                                <td rowspan="2" style="width:100px;">
+                                    PR No
+                                </td>
+
+                                <td rowspan="2" style="width: 100px;">
+                                    Product Name
+                                </td>
+
+                                <td rowspan="2" style="width: 100px;">
+                                    UOM
+                                </td>
+                                <td rowspan="2" style="width: 55px;">
+                                    Requested Qunatity
+                                </td>
+                                <td rowspan="2" style="width: 55px;">
+                                    Remaining Quantity
+                                </td>
+                                <td rowspan="2" style="width: 100px;">
+                                    Quantity Allocated
+                                </td>
+
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="qty in prapproveldetail">
+
+                                <td>
+                                    <span>{{qty.prheader_no}}</span>
+                                </td>
+
+
+                                <td>
+                                    <span>{{qty.product_name}}</span>
+                                </td>
+
+
+                                <td>
+                                    <span hidden="hidden">{{qty.posupplier_unitprize}}</span>
+                                    <span>{{qty.uom_name}}</span>
+                                </td>
+                                <td align="right">
+                                    <span>{{qty.prdetails_qty}}</span>
+                                </td>
+                                <td align="right">
+                                    <span>{{qty.req_qty-qty.all_qty}}</span>
+                                </td>
+                                <td align="right">
+                                    <span>{{qty.all_qty}}</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal fade" id="myedit" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false"
+         aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+        <div class="modal-dialog modal-style" role="document" style="width:75%;">
+            <div class="modal-content">
+                <div class="modal-header popup-header">
+                    <h5 class="modal-title" id="exampleModalLabel">
+                        Delivery Details
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row" ng-if="erroemessagedelivery">
+                        <div class="col-lg-12 col-sm-12">
+                            {{erroemessagedelivery}}
+                        </div>
+                    </div>
+
+                    <div class="row  popup-content">
+
+                        <div class="col-lg-6 col-sm-6">
+                            <label> Product Name :</label><span class="lablegeneral"> {{product_name}}</span>
+                        </div>
+                        <div class="col-lg-6 col-sm-6">
+                            <label> Product Qty:</label><span class="lablegeneral">{{product_qty}}</span>
+                        </div>
+
+                    </div>
+                    <div class="row popup-content">
+                        <div class="col-lg-12 col-sm-12 table-responsive">
+                            <table class="table  table-striped table-bordered table-condensed table-hover">
+                                <thead class="header">
+                                <tr>
+                                    <td rowspan="2" style="width:100px;">
+                                        Godown Name
+                                    </td>
+                                    <td rowspan="2" style="width: 100px;">
+                                        Incharge Name
+                                    </td>
+                                    <td rowspan="2" style="width: 100px;">
+                                        Address
+                                    </td>
+                                    <td rowspan="2" style="width: 100px;">
+                                        UOM
+                                    </td>
+                                    <td rowspan="2" style="width: 100px;">
+                                        Quantity
+                                    </td>
+                                    <td rowspan="2" style="width: 55px;" ng-hide="hide_show">
+                                        Action
+                                    </td>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr ng-repeat="des in desr" ng-hide="des.visible === 'visible'">
+                                    <td>
+                                        <select class="textboxgeneral" ng-model="des.godown_Gid"
+                                                ng-class="{ error: !des.godown_Gid }" ng-if="des.editing"
+                                                ng-disabled="des.disable"
+                                                ng-change="godowndetails(1,$index)">
+                                            <option ng-value="" label="--Select--"></option>
+                                            <option ng-repeat="items in lstgodown"
+                                                    ng-selected="{{des.godown_Gid == items.godown_Gid}}"
+                                                    ng-value="{{items.godown_Gid}}">
+                                                {{items.godown_name}}
+                                            </option>
+                                        </select>
+                                        <span ng-if="!des.editing">{{des.godown_name}} </span>
+                                        <span ng-if="!des.editing" ng-model="des.godown_deivery_gid"></span>
+                                    </td>
+                                    <td>
+
+                                        <span>{{des.godown_incharge}}{{des.employee_name}}</span>
+                                    </td>
+                                    <td>
+
+                                        <span>{{des.godown_address}}{{des.address_1}}</span>
+                                    </td>
+                                    <td>
+
+                                        <span>{{des.godown_uom}}{{des.uom_name}}</span>
+                                    </td>
+                                    <td width="55px;">
+                                        <input type="text" class="textboxgeneral" maxlength="5"
+                                               max-length="5" ng-model="des.godown_qty" ng-if="des.editing"
+                                               numbers-only/>
+                                        <span ng-if="!des.editing" ng-class="{ error: !des.godown_qty }">{{des.godown_qty}}{{des.podelivery_qty}}</span>
+
+                                    </td>
+                                    <td align="center" ng-hide="hide_show">
+                                        <md-button title="Delete" align="center" ng-disabled="show_save"
+                                                   ng-hide="hide_show"
+                                                   ng-click="podeliverydetil($index)"
+                                                   style='cursor: pointer; text-decoration:none;'><i
+                                                class="material-icons">delete</i></md-button>
+
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <div align="right">
+                        <button type="button" class="btn btn-default" ng-hide="hide_show"
+                                ng-click="adddesr()">Add row
+                        </button>
+                        <md-button title="Save"
+                                   align="center" style='cursor: pointer; text-decoration:none;' ng-hide="hide_show"
+                                   ng-click="savepodeliy(type)"><i class="material-icons">save</i>
+                        </md-button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+{% endverbatim %}
+
+<script>
+var app=angular.module('Appprocrt',['ngMaterial','ui.bootstrap','AppCommon']).config(function($httpProvider) {
+    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+
+
+});
+
+  app.run(function($mdDateLocale, $filter) {
+        $mdDateLocale.formatDate = function(date) {
+            return $filter('date')(date, "dd-MMM-yyyy");
+        };
+    })
+app.controller('proRowCtrl',['$scope','$filter','poService','$mdDateLocale','$mdDialog','$window',function($scope,$filter,poService,$mdDateLocale,$mdDialog,$window){
+
+ $scope.prpodetails = [];
+    $scope.podetails = [{
+        poheader_gid: "",
+        podetail_gid: "",
+        product: "",
+        product_name: "",
+        prname_gid: "",
+        product_gid: "",
+        podetails_uom: "",
+        podetails_qty: "",
+        podetails_unitprice: "",
+        podetails_amount: "",
+        podetails_taxamount: "",
+        podetails_totalamount: "",
+        editing: true,
+         godown:""
+    }];
+    $scope.polaterdetails=[{
+        poheader_gid: "",
+        podetail_gid: "",
+        product: "",
+        product_name: "",
+        prname_gid: "",
+        product_gid: "",
+        podetails_uom: "",
+        podetails_qty: "",
+        podetails_unitprice: "",
+        podetails_amount: "",
+        podetails_taxamount: "",
+        podetails_totalamount: "",
+        editing: true,
+        godown:"",
+        amement_gid:"N",
+        vesion_gid:0,
+    }];
+
+    var posupplier = poService.getdropdown("supplier");
+    posupplier.then(function (posupplier) {
+        var  posupplier = JSON.parse(posupplier.data)
+        $scope.POsupplier_list = posupplier;
+
+    }, function () {
+          alert("Record Not Found")
+    });
+
+
+      var poterms_cond = poService.getdropdown("poterms");
+    poterms_cond.then(function (poterms_cond) {
+        var  poterms_cond = JSON.parse(poterms_cond.data)
+        $scope.POTerms_Condt = poterms_cond;
+    }, function () {
+          alert("Record Not Found")
+    });
+
+        var po_gid=sessionStorage.getItem('poheaderament_gid');
+        if (po_gid !=undefined){
+                var get_podetails = poService.getpodetails(po_gid);
+        get_podetails.then(function(result) {
+        var details = JSON.parse(result.data)
+         $scope.podetails = details;
+           if (details.length > 0) {
+              var prodname = $scope.podetails;
+                if (prodname.length > 0) {
+
+                   var productname = poService.getproductname(prodname[0].poheader_supplier_gid);
+                     productname.then(function(productname){
+                     var result =  JSON.parse(productname.data)
+                     $scope.listproductnamepo = result;
+                    })
+                    $scope.poheader_gid = prodname[0].poheader_gid;
+                    $scope.supplier_name = prodname[0].supplier_name;
+                    $scope.supplier_gid = prodname[0].poheader_supplier_gid;
+                    $scope.poheader_no = prodname[0].poheader_no;
+                    $scope.teamandcond_gid = prodname[0].poterms_gid;
+                    $scope.teamandcond_name = prodname[0].poterms_name;
+                    $scope.status = prodname[0].poheader_status;
+                    $scope.fr_date=$filter('date')(prodname[0].poheader_validfrom, "yyyy-MM-dd");
+                    $scope.to_date=$filter('date')(prodname[0].poheader_validto, "yyyy-MM-dd");
+                    $scope.pocheck=prodname[0].poheader_approvallater;
+                    $scope.purchremarks=prodname[0].poheader_remarks;
+                    if($scope.pocheck=="Y"){
+                        $scope.po_later=true;
+                        $scope.polater();
+                        $scope.polaterdetails = details;
+                        $scope.disabled=true;
+
+                    }
+                    else{
+                        $scope.disabled=true;
+                    }
+                    if($scope.status  == "Pending for Approval" || $scope.status  == "Approved" || $scope.status=="REOPENED"){
+                            $scope.hide_show=true;
+                            $scope.disable=true;
+                            $scope.disable_draft=true;
+                              $scope.reject=false;
+                    }else if($scope.status=="Draft"){
+                        $scope.hide_show=false;
+                        $scope.disable=true;
+                        $scope.disable_draft=false;
+                          $scope.reject=false;
+                    }else if($scope.status=="Rejected"){
+                      $scope.hide_show=false;
+                        $scope.disable=true;
+                        $scope.disable_draft=false;
+                        $scope.reject=true;
+                    }
+                  }
+                  $scope.calculatePay = calucatesum();
+                }
+        }, function() {
+
+        });}
+        else{
+        $scope.check=true;
+    };
+    $scope.supplier_click = function(gid){
+       var productname = poService.getproductname(gid);
+       productname.then(function(productname){
+       var result =  JSON.parse(productname.data)
+       $scope.listproductnamepo = result;
+         console.log(result)
+       })
+    }
+
+     $scope.prapprovdetail = function ( prd_gid, podetail_gid,pastproduct_gid, index) {
+        $scope.index = index;
+        podetails = $scope.podetails;
+        if (prd_gid === undefined) {
+            prd_gid = pastproduct_gid;
+        }
+        if ($scope.supplier_gid !== undefined) {
+            $scope.errormessage = "";
+            var productname = poService.getprheader($scope.supplier_gid, prd_gid,podetail_gid);
+            productname.then(function (productname) {
+            var productname = JSON.parse(productname.data);
+                $scope.prapproveldetail = productname;
+                if ($scope.hide_show === false) {
+                    if (podetails[index].podetails_qty !== undefined || podetails[$scope.index].podetails_qty !== null) {
+                        if ($scope.prpodetails.length > 0) {
+                            for (var i = 0; i < $scope.prpodetails.length; i++) {
+                                for (var j = 0; j < $scope.prapproveldetail.length; j++) {
+                                    if ($scope.prpodetails[i].prdetail_gid === $scope.prapproveldetail[j].prdetail_gid) {
+                                        $scope.prapproveldetail[j].selected = true;
+                                        $scope.prapproveldetail[j].q_alo = $scope.prpodetails[i].pr_qty;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    $scope.selectedCounter = podetails[index].podetails_qty;
+                    if ($scope.prapproveldetail.length > 0) {
+                        for (var j = 0; j < $scope.prapproveldetail.length; j++) {
+                            if ($scope.prapproveldetail[j].q_alo !== 0) {
+                                $scope.prapproveldetail[j].selected = true
+                            }
+                        }
+                    }
+                }
+            }, function () {
+
+            });
+        }
+        else {
+            alert("Please Select Supplier");
+             $(myModal).modal('hide');
+        }
+
+    };
+
+     function chk(index) {
+        var qty = $scope.prapproveldetail;
+        var total_qty = 0;
+        angular.forEach(qty, function (item) {
+            if (item.selected) {
+                if (item.all_qty === null || item.all_qty === "" || item.all_qty === 0) {
+                    item.all_qty = parseInt(item.all_qty);
+                }
+                total_qty += parseInt(checknull(item.all_qty));
+            }
+            if (qty[index].selected === false) {
+                qty[index].all_qty = 0;
+            }
+
+        });
+        $scope.selectedCounter = total_qty;
+    };
+    function checknull(str) {
+        return str === null ? 0 : str;
+    }
+
+    $scope.changeqty = function (index) {
+        var chgqty = $scope.prapproveldetail;
+        if (chgqty[index].req_qty < chgqty[index].all_qty) {
+            alert("Quantity allocated is higher than requested quantity");
+            chgqty[index].all_qty = 0;
+        }
+        chk(index);
+    };
+
+
+     $scope.savequatity = function (ev) {
+        modalhide(ev);
+        var podetails = $scope.podetails;
+         var podetails_list = $scope.prapproveldetail;
+         for (var i = 0; i < podetails_list.length ; i++) {
+            if (podetails_list[i].all_qty != "0") {
+                var prheadergid = podetails_list[i].prheader_gid;
+                var prdetailsgid = podetails_list[i].prdetails_gid;
+                var prqty = podetails_list[i].all_qty;
+                var productname = podetails_list[i].product_name;
+                $scope.prpodetails.push({ "prheader_gid": prheadergid, "prdetail_gid": prdetailsgid, "pr_qty": prqty, "prname_name": productname ,"prpo_gid":0});
+            }
+        }
+        podetails[$scope.index].product_gid = podetails_list[0].product_gid;
+        podetails[$scope.index].podetails_qty = $scope.selectedCounter;
+        podetails[$scope.index].podetails_amount = parseInt($scope.selectedCounter) * parseFloat(podetails[$scope.index].podetails_unitprice, 2);
+        podetails[$scope.index].podetails_totalamount = podetails[$scope.index].podetails_amount;
+        $scope.calculatePay = calucatesum();
+     }
+
+      $scope.product_ratelater=function(index){
+        var podetails = $scope.polaterdetails;
+        podetails[index].podetails_amount = parseInt(podetails[index].podetails_qty) * parseFloat(podetails[index].podetails_unitprice, 2);
+        podetails[index].podetails_totalamount = podetails[index].podetails_amount;
+        $scope.calculatePay = calucatesumlater();
+      }
+
+      function calucatesum() {
+        var sum = 0;
+        var podetails = $scope.podetails;
+        for (var i = 0; i < podetails.length ; i++) {
+            if (podetails[i].podetails_totalamount !== undefined && podetails[i].podetails_totalamount !== "") {
+                sum += parseFloat(podetails[i].podetails_totalamount);
+            }
+        }
+        return sum;
+    };
+
+
+    $scope.fr_date = new Date();
+     $scope.to_date = new Date();
+    $scope.maxDatefrom = new Date($scope.fr_date.getFullYear(), $scope.fr_date.getMonth(), $scope.fr_date.getDate());
+    $scope.maxDateto = new Date($scope.to_date.getFullYear(), $scope.to_date.getMonth(), $scope.to_date.getDate());
+
+
+    function calucateqty(product_gid) {
+        var qty = 0;
+        var desr = $scope.desr;
+        for (var i = 0; i < desr.length ; i++) {
+            if (desr[i].godown_incharge !== undefined && desr[i].godown_incharge !== "") {
+                if (desr[i].godown_productgid === product_gid) {
+                    qty += parseInt(desr[i].godown_qty);
+                }
+            }
+        }
+        return qty;
+    };
+
+    function funproductuom(ev, index) {
+        $scope.errormessage = "";
+        var name = $scope.podetails;
+        var productlist = $filter('filter')($scope.podetails, { product_gid: ev }, 'exact');
+        if (productlist.length > 0) {
+            alert("Already Product Has Been Created")
+        }
+        else {
+                name[index].podetails_uom = $scope.listproductnamepo[index].uom_name;
+                name[index].podetails_unitprice = $filter('filter')($scope.listproductnamepo, { product_gid: ev }, 'exact')[0].supplierproduct_unitprice;
+            }
+        }
+
+
+
+    $scope.productuom = function (ev, index) {
+        if (ev > 0 && ev !== "") {
+            funproductuom(ev, index);
+
+        }
+    }
+ $scope.productuomlater = function (ev, index) {
+        if (ev > 0 && ev !== "") {
+
+            funproductuomlater(ev, index);
+        }
+    }
+      $scope.savepodetails = function (index) {
+        var podetails = $scope.podetails;
+      if (podetails[index].podetails_qty !== ""){
+        if (podetails.podetails_gid !== undefined) {
+
+        }
+        else {
+            var product_name = "";
+            angular.forEach(podetails, function (items, value) {
+                if (value !== index) {
+                    if (items.podetails_productgid !== undefined) {
+                        if (items.podetails_productgid.toString() === podetails[index].product.product_gid.toString()) {
+                            product_name = items.podetails_productgid;
+                        }
+                    }
+                }
+            });
+            if (product_name === "") {
+
+            $scope.prpoqty_filter=[];
+             $scope.prpoqty_filter=$filter('filter')($scope.prpodetails, {pr_qty:'!1'},true)
+                alert( JSON.stringify($scope.prpoqty_filter));
+                var rownew = "";
+                if (podetails[index].edit === true) { }
+                else {
+                    $scope.podetails.push({
+                        poheader_gid: "",
+                        podetail_gid: "",
+                        supplier_gid:$scope.supplier_gid,
+                        teamandcont_gid:$scope.teamandcond_gid,
+                        product: podetails[index].product,
+                        product_name: podetails[index].product.product_name,
+                        product_gid: podetails[index].product_gid,
+                        podetails_uom: podetails[index].podetails_uom,
+                        podetails_qty: podetails[index].podetails_qty,
+                        podetails_unitprice: podetails[index].podetails_unitprice,
+                        podetails_amount: podetails[index].podetails_amount,
+                        podetails_taxamount: podetails[index].podetails_taxamount,
+                        podetails_totalamount: podetails[index].podetails_totalamount,
+                        edit: false,
+                        action: "Request",
+                        status: "",
+                        editing: false,
+                        godown:"",
+                        prpopty: $scope.prpoqty_filter,
+                        amement_gid:"N",
+                        vesion_gid:0,
+                    });
+                     $scope.podetails.splice(index, 1);
+                    $scope.show_save = false;
+                    alert("Inserted Successfully");
+                }
+            }
+            else {
+                 alert("Already Product Created");
+            }
+        }
+      }
+      else{
+            alert("Please Select Qty");
+      }
+    }
+
+$scope.godowndata = function ($index,product_qty, product_gid, product_uom, product_name, podetails, productheader) {
+   $scope.type="PO"
+   if(($scope.podetails[$index].godown) !== "" && ($scope.podetails[$index].godown) !== undefined){
+        $scope.desr=$scope.podetails[$index].godown;
+   }else{
+    var getgodown = poService.getdropdown("godown");
+    getgodown.then(function (getgodown) {
+       var result = JSON.parse(getgodown.data)
+        $scope.lstgodown =result;
+
+        if($scope.desr == undefined){
+         $scope.desr = [{ godown_Gid: '', godown_incharge: '', disable: false, godown_incharge_gid: '', godown_address_gid: '', godown_address: '', godown_uom: '', godown_qty: '', editing: true, edit: '', visible: true }];
+        }
+
+    }, function () {
+        alert('Records not found');
+    });
+    var getgodowndetails=poService.getgodown(podetails);
+        getgodowndetails.then(function(result){
+            $scope.desr=JSON.parse(result.data);
+        },function(){
+
+        })
+    if (product_name !== "" && product_name !== undefined) {
+                $scope.erroemessagedelivery = "";
+                $scope.product_uom = product_uom;
+                $scope.product_qty = product_qty;
+                $scope.product_gid = product_gid;
+                $scope.product_name = product_name;
+                $scope.productdetails_gid = podetails;
+                $scope.productheader_gid = productheader;
+       }
+    else {
+            modalhide("myedit");
+            $scope.errormessage = "Save The PO details First";
+        }
+   }
+    if($scope.desr != undefined){
+
+          <!--$scope.desr.push({ godown_Gid: '', godown_incharge: '', disable: false, godown_incharge_gid: '', godown_address_gid: '', godown_address: '', godown_uom: '', godown_qty: '',godown_deivery_gid:0, editing: true, edit: '', visible: true });-->
+
+    }else{
+      $scope.product_qty = product_qty;
+        $scope.product_gid = product_gid;
+      $scope.product_name = product_name;
+      <!--$scope.desr=[{ godown_Gid: '', godown_incharge: '', disable: false, godown_incharge_gid: '', godown_address_gid: '', godown_address: '', godown_uom: '', godown_qty: '',godown_deivery_gid:0, editing: true, edit: '', visible: true }];-->
+
+
+    }
+  }
+
+$scope.adddesr=function(){
+      $scope.desr.push({ godown_Gid: '', godown_incharge: '', disable: false, godown_incharge_gid: '', godown_address_gid: '', godown_address: '', godown_uom: '', godown_qty: '',godown_deivery_gid:0, editing: true, edit: '', visible: true })
+}
+
+
+
+$scope.checkdate = function(startDate,endDate) {
+debugger;
+    var curDate = new Date();
+    if(new Date(startDate) > new Date(endDate)){
+        $scope.to_date=startDate;
+        alert('End Date should be greater than start date');
+        return false;
+    }
+};
+
+
+ $scope.addUser = function () {
+       $scope.podetails.push( {
+        poheader_gid: "",
+        podetail_gid: "",
+        product: "",
+        product_name: "",
+        prname_gid: "",
+        product_gid: "",
+        podetails_uom: "",
+        podetails_qty: "",
+        podetails_unitprice: "",
+        podetails_amount: "",
+        podetails_taxamount: "",
+        podetails_totalamount: "",
+        editing: true,
+        godown:"",
+         supplier_gid:"",
+        teamandcont_gid:"",
+        });
+    };
+
+$scope.godowndetails=function(ev,index){
+debugger;
+  var getgodowndetails = poService.getgodowndetails(ev);
+        getgodowndetails.then(function (getgodowndetails) {
+            var godownlst =getgodowndetails.data;
+            $scope.desr[index].godown_gid= godownlst[0].godown_gid;
+            $scope.desr[index].godown_incharge_gid = godownlst[0].godown_incharge_gid;
+            $scope.desr[index].godown_incharge = godownlst[0].employee_name;
+            $scope.desr[index].godown_address = godownlst[0].address_1;
+            $scope.desr[index].godown_address_gid = godownlst[0].address_gid;
+            $scope.desr[index].godown_uom = $scope.product_uom;
+        }, function () {
+            alert('Records not found');
+        });
+}
+
+$scope.savepodeliy=function(type){
+$scope.calcTotal=calcTotal()
+if($scope.calcTotal== $scope.product_qty){
+    if (type=="PO"){
+        var data_prod = $filter('filter')($scope.podetails, {product_gid:$scope.product_gid},true)[0];
+        var index=$scope.podetails.indexOf(data_prod);
+        $scope.podetails[index].godown=$scope.desr;
+        alert("Inserted Sucessfully");
+        modalhide("myedit");
+    }
+    else{
+        var data_prod = $filter('filter')($scope.polaterdetails, {product_gid:$scope.product_gid},true)[0];
+        var index=$scope.polaterdetails.indexOf(data_prod);
+        $scope.polaterdetails[index].godown=$scope.desr;
+        alert("Inserted Sucessfully");
+        modalhide("myedit");
+    }
+
+   }else{
+        alert("Selected po line item qty and po shipment qty should be identical.");
+    }
+
+}
+
+function calcTotal() {
+
+    var total = 0;
+    angular.forEach($scope.desr, function(user){
+      total = parseInt(user.godown_qty)+total
+    })
+    return total;
+  }
+    $scope.podelete=[];
+    $scope.removeUser=function($index,podetails_gid,poheader_gid){
+        if(podetails_gid == null || podetails_gid == ""){
+         $scope.podetails.splice($index, 1);
+          alert("Deleted Successfully");
+          }
+       else{
+            $scope.podelete.push(podetails_gid);
+            $scope.podetails.splice($index, 1);
+            alert("Deleted Successfully");
+            }
+
+    }
+$scope.loading = function() {
+      $mdDialog.show({
+         templateUrl: '../loaderSpinner',
+         parent: angular.element(document.body),
+         clickOutsideToClose: false
+      });
+   };
+
+  $scope.save_podetails=function(action,prheader_gid){
+  $scope.loading();
+ var status='';
+ var fromdate = formatDate(new Date($scope.fr_date));
+  var todate = formatDate(new Date($scope.to_date));
+    $scope.podetails[0].teamandcont_gid=$scope.teamandcond_gid;
+    if(action=='draft'){status='Draft'}else{status='Pending For Approval'}
+        var prdatas = poService.setposave(action,status,$scope.podetails,$scope.calculatePay,fromdate,todate,$scope.podelete)
+            prdatas.then(function(result) {
+                var result_data= result.data;
+                if(result_data=="SUCCESS"){
+                   alert("Inserted Successfully");
+                  sessionStorage.setItem('po_header', '');
+                  $window.location.href = "../po_maker";
+                }else{
+                    alert('Not Inserted');
+                }
+
+             }),function() {
+            alert('Not Inserted');
+        }.finally($scope.endloading);
+    }
+
+
+    $scope.Close=function(){
+      sessionStorage.setItem('poheader_gid', '');
+      $window.location.href = "../po_maker";
+    }
+
+    $scope.vendorselection=function(){
+      var povendor = {
+            poheader_gid: po_gid,
+            poheader_supplier_gid: $scope.supplier_gid,
+        };
+      sessionStorage.setItem('povendor_gid', JSON.stringify(povendor));
+      $window.location.href = "../vendorselection";
+
+    }
+
+    $scope.podeliverydetil=function(index){
+         $scope.desr.splice(index, 1);
+            alert("Deleted Successfully");
+    }
+
+}]);
+
+app.service("poService", function ($http,$filter) {
+    this.getdropdown = function (tablename) {
+        var responsee = $http.post(Appname+"/Dropdown_details/",{params:{"tablename":tablename,"gid":0,"name":''}});
+        return responsee;
+    }
+
+    this.getproductname = function(supplier_gid){
+         var response = $http.post(Appname+"/product_name/",{params:{"date":"","supplier_gid":supplier_gid,"product_gid":0,"char_active":'Y'}})
+          return response;
+    }
+
+    this.getpodetails = function (po_gid) {
+       var response = $http.post(Appname+"/Approval_PODetail/", { params:{'podetails_gid': po_gid ,'product_name': ''  } })
+        return response;
+    }
+
+   this.getprheader = function(supp_gid,product_gid,podetail_gid){
+       var response = $http.post(Appname+"/POQtyList/",{params:{'action':'PRODUCTWISE','supplier_gid':supp_gid,'product_gid':product_gid,'product_name':'','serial_no':podetail_gid}})
+       return response;
+   }
+
+   this.getgodown = function(detail_gid){
+      var response = $http.post(Appname+"/PODelivery_detail/", { params:{'podetails_gid': detail_gid   } })
+      return response;
+    }
+
+  this.getgodowndetails = function(detail_gid){
+      var response = $http.post(Appname+"/deliverydetail/", { params:{'serail_no': detail_gid   } })
+      return response;
+    }
+
+   this.setposave = function (action,status,podetails,calculatePay,fromdate,todate,podelete ) {
+      var response = $http.post(Appname + "/POheader_Set/", {params:{'action':action,'status':status,'podetails':podetails,'total_amount':calculatePay,'from_date':fromdate,'to_date':todate,'podelete': podelete}});
+      return response;
+    }
+
+      this.getpodetails = function (po_gid) {
+        var response = $http.post(Appname + "/Approval_PODetail/", { params:{'podetails_gid': po_gid ,'product_name': ''}});
+        return response;
+    }
+});
+</script>
+{% endblock %}

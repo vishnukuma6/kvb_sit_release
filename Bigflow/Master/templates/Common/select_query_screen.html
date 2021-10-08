@@ -1,0 +1,539 @@
+{% extends 'Shared/mainLayout.html' %}
+{% load static from staticfiles %}
+{% block title %} Customer {% endblock %}
+{% block content %}
+{% csrf_token %}
+{% verbatim %}
+<div class="maincontent">
+    <div ng-app="selectApp" ng-controller="Ctrlselectquery" class="container container1">
+        <div class="row">
+            <div class="row-header col-lg-12 col-sm-12">
+                <h4>Select Query Screen</h4>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <form id="form" name="myform" novalidate>
+                    <div class="col-md-3">
+                        <md-autocomplete id="sch" md-clear-button="true" md-floating-label="Schema"
+                            md-item-text="item.database_name" md-items="item in Schema(searchText1)" md-min-length=0
+                            md-no-cache="true" md-search-text="searchText1" md-selected-item="schema"
+                            md-selected-item-change="Tables_get(schema)" required>
+                            <md-item-template>
+                                <span md-highlight-text="searchText1"> {{item.database_name}} </span>
+                            </md-item-template>
+                            <md-not-found>
+                                Not found.
+                            </md-not-found>
+                        </md-autocomplete>
+                    </div>
+                </form>
+                <div class="col-md-3">
+                    <md-autocomplete id="tab" md-clear-button="true" md-floating-label="Tables"
+                        md-item-text="item.tabels_data" md-items="item in Tables(searchText2)" md-min-length=0
+                        md-no-cache="true" md-search-text="searchText2" md-selected-item="tables"
+                        md-selected-item-change="Column_get(tables)" required>
+                        <md-item-template>
+                            <span md-highlight-text="searchText2"> {{item.tabels_data}} </span>
+                        </md-item-template>
+                        <md-not-found>
+                            Not found.
+                        </md-not-found>
+                    </md-autocomplete>
+                </div>
+                <!--                <div class="col-md-3 col-lg-3 col-sm-3">-->
+                <!--                            <md-input-container class="md-block inputcontainer">-->
+                <!--                                <label>Columns</label>-->
+                <!--                                <md-select ng-model="columns" multiple="">-->
+                <!--                                    <md-optgroup label="Columns">-->
+                <!--                                        <md-option ng-value="item.Field"-->
+                <!--                                                   ng-repeat="item in columns">-->
+                <!--                                            {{item.Field}}-->
+                <!--                                        </md-option>-->
+                <!--                                    </md-optgroup>-->
+                <!--                                </md-select>-->
+                <!--                            </md-input-container>-->
+                <!--                        </div>-->
+
+                <!--                <div class="col-md-3">-->
+
+                <!--                    <md-autocomplete id="col" md-clear-button="true" md-floating-label="Columns"-->
+                <!--                                     md-item-text="item.Field" md-items="item in Columns(searchText3)"-->
+                <!--                                     md-min-length=0-->
+                <!--                                     md-no-cache="true" md-search-text="searchText3" md-selected-item="columns"-->
+                <!--                                     md-allowselection="true" multiple="" md-selectiontype="multiple" md-recordclick="recordClick"-->
+                <!--                                     md-selected-item-change="Condition_get(columns)"  required>-->
+                <!--                        <md-item-template>-->
+                <!--                            <md-checkbox class="example-margin" ng-model="isChecked" type="checkbox" ng-checked="all">-->
+
+                <!--                            </md-checkbox>-->
+                <!--                            <span md-highlight-text="searchText3"> {{item.Field}} </span>-->
+
+                <!--                        </md-item-template>-->
+                <!--                        <md-not-found>-->
+                <!--                            Not found.-->
+                <!--                        </md-not-found>-->
+                <!--                    </md-autocomplete>-->
+                <!--                </div>-->
+                <div class="col-md-3">
+                    <md-autocomplete id="colss" md-clear-button="true" md-floating-label="Where Column"
+                        md-item-text="item.Field" md-items="item in WhereColumns(searchText4)" md-min-length=0
+                        md-no-cache="true" md-search-text="searchText4" md-selected-item="Where_val"
+                        md-selected-item-change="WhereText(Where_val)" required>
+                        <md-item-template>
+
+                            <span md-highlight-text="searchText4"> {{item.Field}} </span>
+
+                        </md-item-template>
+                        <md-not-found>
+                            Not found.
+                        </md-not-found>
+                    </md-autocomplete>
+                </div>
+                <br><br>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="col-md-6">
+                    <md-input-container class="md-block inputcontainer">
+
+                        <input type="text" ng-model="wherecondition" placeholder="Where Value "
+                            ng-change="wheretype(wherecondition)">
+                    </md-input-container>
+                </div>
+                <br><br>
+                <div class="col-md-6">
+                    <textarea id="SelectQuery" rows="15" cols="80" ng-model="Query_build" ng-change="qs" Type="SELECT"
+                        size="50" style="resize:vertical" ng-disabled="myform.$invalid"></textarea>
+                    <!--                    <div id="output"></div>-->
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-6">
+                    <!--                    <md-form-field appearance="fill">-->
+                    <md-label><b>Select a Condition</b></md-label>
+                    <md-select class="md-block inputcontainer" ng-model="Condition" placeholder="None"
+                        ng-change="conditiontype(Condition)">
+                        <md-option value=""><em>None</em></md-option>
+
+                        <md-option value="AND">AND</md-option>
+                        <md-option value="OR">OR</md-option>
+
+                    </md-select>
+                    </md-form-field>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-6">
+                    <md-autocomplete id="colss" md-clear-button="true" md-floating-label="Choose Column"
+                        md-item-text="item.Field" md-items="item in ChooseColumns(searchText5)" md-min-length=0
+                        md-no-cache="true" md-search-text="searchText5" md-selected-item="Choose_val"
+                        md-selected-item-change="Choocolumn(Choose_val)" required>
+                        <md-item-template>
+
+                            <span md-highlight-text="searchText5"> {{item.Field}} </span>
+
+                        </md-item-template>
+                        <md-not-found>
+                            Not found.
+                        </md-not-found>
+                    </md-autocomplete>
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-6">
+                    <md-input-container class="md-block inputcontainer">
+                        <input type="text" ng-model="text_value" placeholder="Column Value "
+                            ng-change="AndText(text_value)">
+                    </md-input-container>
+                </div>
+            </div>
+        </div>
+        <br><br>
+        <div class="row">
+            <div class="col-md-12">
+                <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
+                    <md-button class="md-raised" ng-click="reset()">Clear</md-button>
+                    <md-button class="md-raised md-primary" ng-click="select_query()" ng-disabled="myform.$invalid">
+                        Execute
+                    </md-button>
+
+
+                    <md-button class="md-fab md-mini md-primary custbutton" ng-disabled="disable"
+                        ng-click="exportData()">
+                        <md-icon>get_app</md-icon>
+                        <md-tooltip>Download XL</md-tooltip>
+                    </md-button>
+
+                    <md-button class="md-fab md-mini md-primary custbutton" ng-click="exportTextFILE_data()">
+                        <md-icon>get_app</md-icon>
+                        <md-tooltip>Download JSON File</md-tooltip>
+                    </md-button>
+                </section>
+            </div>
+
+        </div>
+        <div class="row table-responsive">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <hr>
+                <div id="exportable">
+
+                    <table class="table table-striped table-bordered table-condensed table-hover md-primary"
+                        md-progress="deferred" rz-mode="resizeMode" rz-table="">
+                        <thead>
+                            <tr>
+                                <th ng-repeat="(key, val) in schprod[0]">{{ key }}</th>
+                            </tr>
+                        </thead>
+                        <tbody ng-init="total = 0">
+                            <tr ng-repeat="tables in schprod">
+                                <td ng-repeat="columns in tables">
+                                    {{ columns }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!--                <center>-->
+                <!--             <div  excel-export export-data="exporttData"-->
+                <!--                     file-name="{{fileNames}}"></div></center>-->
+                <!--                <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>-->
+                <!--                    <span class="material-icons">-->
+
+
+                <!--                    <md-button class="md-raised md-primary" ng-click="exportData()"-->
+                <!--                               ng-disabled="disable">Download xl</md-button>-->
+                <!--                    get_app </span>-->
+                <!--                </section>-->
+                <!--            </div>-->
+                <!--        </div>-->
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endverbatim %}
+<script>
+    var myApp = angular.module('selectApp', ['ngMaterial', 'ui.bootstrap', 'AppCommon'])
+        .config(function ($httpProvider)
+        {
+            $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+            $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+        });
+    myApp.controller('Ctrlselectquery', ['$scope', '$mdDialog', '$http', 'SelectServ', function ($scope, $mdDialog,
+        $http, SelectServ)
+    {
+
+
+        $scope.exportData = function ()
+        {
+            var blob = new Blob([document.getElementById('exportable').innerHTML], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
+            });
+            saveAs(blob, "select_query_Report.xls");
+        };
+
+        $scope.exportTextFILE_data = function ()
+        {
+            $scope.loading();
+
+
+            var data3 = {
+                "Type": "Query_Screen",
+                "Subtype": "Conditions_additional",
+                "Params": {
+                    "FILTER": {
+                        "schema": $scope.schemaname,
+                        "query": $scope.Query_build,
+
+                        // <!--                        "Select_Column":"*",-->
+                        // <!--                        "Table_names":$scope.tablename,-->
+                        // <!--                        "Where_Column":$scope.columnname,-->
+                        // <!--                        "Where_Values":$scope.WhereValue,-->
+                        // <!--                        "and_Column":$scope.choosedcolumnname,-->
+                        // <!--                        "and_Values":$scope.ColumnValueMentioned,-->
+                    },
+                    "classification": {
+                        "Entity_Gid": "1"
+                    }
+                }
+            }
+
+            return $http.post(Appname + "/select_query_screen/", data3)
+                .then(function (condition)
+                {
+
+
+                    if (condition.data.MESSAGE != "FOUND")
+                    {
+                        alert(JSON.stringify(condition.data.DATA));
+                    }
+                    $scope.endloading();
+                    jsonData = JSON.parse(condition.data.DATA);
+                    var blob = new Blob([JSON.stringify(jsonData)], { type: "application/json" });
+                    saveAs(blob, "select_query_Report.json");
+
+                });
+
+        }
+
+        $scope.loading = function ()
+        {
+            $mdDialog.show({
+                templateUrl: 'loaderSpinner',
+                parent: angular.element(document.body),
+                clickOutsideToClose: false
+            });
+        };
+
+        $scope.endloading = function ()
+        {
+            $mdDialog.hide();
+        };
+        $scope.Schema = function (find)
+        {
+
+            var data = {
+                "Type": "Query_Screen",
+                "Subtype": "Schema",
+                "Params": {
+                    "FILTER": {
+                        "like_DatabaseName": find
+                    },
+                    "classification": {}
+
+                }
+            }
+            return $http.post(Appname + "/select_query_screen/", data)
+                .then(function (result)
+                {
+
+                    $scope.sch = JSON.parse(result.data.DATA);
+
+
+
+                    return $scope.sch;
+                });
+        }
+        $scope.Query_build = "select";
+        $scope.Tables_get = function (S_details)
+        {
+            $scope.schemaname = S_details.database_name;
+
+        }
+
+        $scope.Tables = function (search)
+        {
+
+            var data1 = {
+                "Type": "Query_Screen",
+                "Subtype": "Table",
+                "Params": {
+                    "FILTER": {
+                        "Schemaname": $scope.schemaname,
+                        "like_table": search
+                    },
+                    "classification": {}
+
+                }
+            }
+
+            return $http.post(Appname + "/select_query_screen/", data1)
+                .then(function (result)
+                {
+
+                    $scope.Tab = JSON.parse(result.data)
+
+                    return $scope.Tab;
+                });
+        }
+        $scope.Column_get = function (T_details)
+        {
+            $scope.tablename = T_details.tabels_data;
+            $scope.Query_build = "select *  from " + $scope.tablename;
+
+        }
+        $scope.ChooseColumns = function (founder)
+        {
+
+            var Cdata = {
+                "Type": "Query_Screen",
+                "Subtype": "Columns",
+                "Params": {
+                    "FILTER": {
+                        "Tablename": $scope.tablename,
+                        "like_columns": founder
+                    },
+                    "classification": {}
+
+                }
+            }
+
+            return $http.post(Appname + "/select_query_screen/", Cdata)
+                .then(function (final)
+                {
+
+                    $scope.Coll = JSON.parse(final.data.DATA)
+
+                    return $scope.Coll;
+                });
+        }
+
+
+        $scope.WhereColumns = function (founder)
+        {
+
+            var wdata = {
+                "Type": "Query_Screen",
+                "Subtype": "Columns",
+                "Params": {
+                    "FILTER": {
+                        "Tablename": $scope.tablename,
+                        "like_columns": founder
+                    },
+                    "classification": {}
+
+                }
+            }
+
+            return $http.post(Appname + "/select_query_screen/", wdata)
+                .then(function (final)
+                {
+
+                    $scope.Colo = JSON.parse(final.data.DATA)
+
+                    return $scope.Colo;
+                });
+        }
+
+
+        $scope.WhereText = function (W_details)
+        {
+            $scope.Wherecolumnname = W_details.Field;
+            $scope.Query_build = "select *  from " + $scope.tablename + " where " + $scope
+                .Wherecolumnname + " = ";
+
+        }
+
+
+        $scope.wheretype = function (Where_value)
+        {
+            $scope.Query_build = "select *  from " + $scope.tablename + " where " + $scope
+                .Wherecolumnname + " = '" + Where_value + "';";
+            $scope.WhereValue = Where_value
+        }
+
+        $scope.conditiontype = function (ConditionS)
+        {
+            $scope.Query_build = "select *  from " + $scope.tablename + " where " + $scope
+                .Wherecolumnname + " = '" + $scope.WhereValue + "'  " + ConditionS + " ;";
+            $scope.Conditioned = ConditionS
+        }
+
+        $scope.Choocolumn = function (Choosen_column)
+        {
+            $scope.choosedcolumnname = Choosen_column.Field;
+            $scope.Query_build = "select *  from " + $scope.tablename + " where " + $scope
+                .Wherecolumnname + " = '" + $scope.WhereValue + "'  " + $scope.Conditioned + "  " +
+                $scope.choosedcolumnname + " = " + " ; ";
+            // <!--   $scope.ChoosenColumn= Choosen_column-->
+        }
+        $scope.AndText = function (Column_value)
+        {
+            $scope.Query_build = "select *  from " + $scope.tablename + " where " + $scope
+                .Wherecolumnname + " = '" + $scope.WhereValue + "'  " + $scope.Conditioned + "  " +
+                $scope.choosedcolumnname + " = '" + Column_value + "' ; ";
+            $scope.ColumnValueMentioned = Column_value
+        }
+
+        $scope.disable = true;
+
+        $scope.select_query = function ()
+        {
+            $scope.loading();
+
+
+            var data3 = {
+                "Type": "Query_Screen",
+                "Subtype": "Conditions_additional",
+                "Params": {
+                    "FILTER": {
+                        "schema": $scope.schemaname,
+                        "query": $scope.Query_build,
+
+                        // <!--                        "Select_Column":"*",-->
+                        // <!--                        "Table_names":$scope.tablename,-->
+                        // <!--                        "Where_Column":$scope.columnname,-->
+                        // <!--                        "Where_Values":$scope.WhereValue,-->
+                        // <!--                        "and_Column":$scope.choosedcolumnname,-->
+                        // <!--                        "and_Values":$scope.ColumnValueMentioned,-->
+                    },
+                    "classification": {
+                        "Entity_Gid": "1"
+                    }
+                }
+            }
+
+            return $http.post(Appname + "/select_query_screen/", data3)
+                .then(function (condition)
+                {
+
+
+                    if (condition.data.MESSAGE != "FOUND")
+                    {
+                        alert(JSON.stringify(condition.data.DATA));
+
+
+
+                    }
+                    $scope.endloading();
+                    $scope.schprod = JSON.parse(condition.data.DATA);
+
+                    $scope.disable = false;
+
+
+                });
+        }
+
+
+
+
+        $scope.reset = function ()
+        {
+
+            $scope.schema = null;
+            $scope.tables = null;
+            $scope.columns = null;
+            $scope.Query_build = "select";
+            $scope.wherecondition = "";
+            $scope.Condition = "";
+            $scope.Where_val = null;
+            $scope.text_value = "";
+        }
+
+
+    }]);
+
+    //getting the select details
+    myApp.service("SelectServ", function ($http)
+    {
+
+    });
+</script>
+{% endblock %}
