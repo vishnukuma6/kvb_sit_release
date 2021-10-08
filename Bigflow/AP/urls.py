@@ -10,6 +10,7 @@ urlpatterns = [
     path('Invoicesummary/', views.Invoicesummary , name='Invoicesummary'),
     path('AP_Report/', views.AP_Report , name='Invoicesummary'),
     path('GL_Report/', views.GL_Report , name='GL_Report'),
+    path('Expense_Claim_Report/', views.Expense_Claim_Report , name='Expense_Claim_Report'),
     path('gl_day_entry_generate/', views.gl_day_entry_generate , name='gl_day_entry_generate'),
     path('inwarddtl_get/', views.inwarddtl_get , name='inwarddtl_get'),
     path('Inward_entry/', views.Inward_entry , name='Inward_entry'),

@@ -50,6 +50,7 @@ ip = common.localip()
 token = common.token()
 Rent_Work = "Y"
 PO_Work = "Y"
+Mail_Work = "Y"
 
 def billentryIndex(request):
     utl.check_authorization(request)
@@ -98,6 +99,9 @@ def GL_Report(request):
     utl.check_authorization(request)
     return render(request, "GL_Report.html")
 
+def Expense_Claim_Report(request):
+    utl.check_authorization(request)
+    return render(request, "Expense_Claim_Report.html")
 
 def Inward_entry(request):
     utl.check_authorization(request)
@@ -397,7 +401,39 @@ def Invoice_set(request):
             inward_dtl.employee_gid = int(decry_data(request.session['Emp_gid']))
             common.main_fun1(request.read(), path)
             out = outputSplit(inward_dtl.set_Invoice(), 1)
-            return JsonResponse(out, safe=False)
+            if (jsondata.get('params').get('type') == 'INVOICE_DETAILS' and
+                    jsondata.get('params').get('status_json').get('Status') == 'BOUNCE' and out == "SUCCESS"):
+                try:
+                    header_gid = jsondata.get('params').get('status_json').get("Invoice_Header_Gid")
+                    inward_dtl.action = "GET"
+                    inward_dtl.type = "MAIL_TEMPLATE"
+                    inward_dtl.filter = json.dumps({"template_name": "BOUNCE_PROCESS",
+                                                    "header_gid": header_gid, "queryname": "BOUNCE"})
+                    inward_dtl.classification = json.dumps(
+                        {"Entity_Gid": inward_dtl.entity_gid, "Emp_gid": inward_dtl.employee_gid})
+                    templates_data = inward_dtl.get_multiple_email_templates_data()
+                    Mail_Data = templates_data.get("Mail_Data")[0].get("mailtemplate_body")
+                    Header_Data = templates_data.get("Header_Data")[0]
+                    for (k, v) in Header_Data.items():
+                        value = str(v)
+                        key = "{{" + k + "}}"
+                        Mail_Data = Mail_Data.replace(key, value);
+                    cleanr = re.compile('<.*?>')
+                    body_text = re.sub(cleanr, '', Mail_Data)
+                    to_email = "vsolvstab@gmail.com"
+                    # email = EmailMessage('Invoice Bounced', body_text, to=[to_email])
+                    # email.send()
+                    # return JsonResponse(out, safe=False)
+                    # to_email = "rvignesh@vsolv.co.in"
+                    mail_status = CoreViews.sending_mail(Mail_Data, to_email, body_text)
+                    if (mail_status == "SUCCESS"):
+                        return JsonResponse(mail_status, safe=False)
+                    else:
+                        return JsonResponse({"MESSAGE": "ERROR_OCCURED_BOUNCE_MAIL_SEND", "ERROR": mail_status,"INVOICE_DETAIL_STATUS":"SUCCESS"})
+                except Exception as e:
+                    return JsonResponse({"MESSAGE": "MAIL_TEMPLATE_GET","INVOICE_DETAIL_STATUS":"SUCCESS","DATA": str(e)})
+            else:
+                return JsonResponse(out, safe=False)
         except Exception as e:
             return JsonResponse({"MESSAGE": "ERROR_OCCURED", "DATA": str(e)})
 
@@ -1699,6 +1735,34 @@ def get_Accounting_Entry_Data(request):
                 final_df.to_excel(writer, sheet_name='Sheet1', startcol=-1,startrow=5)
                 writer.save()
                 return response
+            elif (action == "GET" and type == "AP_BASIC_REPORT"):
+                invoice_set.action = final_data.get('action')
+                invoice_set.type = final_data.get('type')
+                branch_gid = final_data.get("branch_gid")
+                from_date = final_data.get("from_date")
+                to_date = final_data.get("to_date")
+                InvoiceHeader_Status = final_data.get("InvoiceHeader_Status")
+                filter={"branch_gid":branch_gid,"InvoiceHeader_Status":InvoiceHeader_Status,"from_date":from_date,"to_date":to_date}
+                invoice_set.filter = json.dumps(filter)
+                invoice_set.classification = json.dumps({"Entity_Gid": entity_gid})
+                XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                response = HttpResponse(content_type=XLSX_MIME)
+                response['Content-Disposition'] = 'attachment; filename="Branch_Basic_Report.xlsx"'
+                writer = pd.ExcelWriter(response, engine='xlsxwriter')
+                df_view = invoice_set.get_gl_report()
+                df_view['null_values'] = ""
+                df_view['S_No'] = range(1, 1 + len(df_view))
+                final_df = df_view[['S_No','ECF_No','ECF_InvTyp','ECF_InvNo','ECF_InvDate','ECF_Debit_Brach',
+                                    'ECF_InvAmt','ECF_TaxableAmt','ECF_Purpose','ECF_Raiser','ECF_Raised_Date',
+                                    'Supplier_Code','Supplier_BranchName','ECF_Status','AP_Status','AP_Payment_PVNo',
+                                    'AP_Payment_Date','AP_Payment_Amount','AP_Paymode','AP_CBSRef_No','AP_UTR_RefNo']]
+                final_df.columns = ['S.No','ECF CR Number','ECF Invoice Type','ECF Invoice Number','ECF Invoice Date','ECF Debit Branch',
+                                    'ECF Invoice Amount','ECF Taxable Amount','ECF Purpose','ECF Raiser','ECF Raised Date',
+                                    'Supplier Code','Supplier Branch Name','ECF Status','AP Status','AP Payment PV Number',
+                                    'AP Payment Date','AP Payment Amount','AP Paymode','AP CBSRef No','AP UTR RefNo']
+                final_df.to_excel(writer, index=False)
+                writer.save()
+                return response
 
         except Exception as e:
             return JsonResponse({"MESSAGE": "ERROR_OCCURED", "DATA": str(e)})
@@ -1777,7 +1841,7 @@ def get_GL_Report(request):
             jsondata = json.loads(request.body.decode('utf-8'))
             action = jsondata.get('action')
             type = jsondata.get('type')
-            if (action == "GET" and (type == "AP_TRANSACTION_GL_REPORT" or type=="AP_DAILY_GL_REPORT")):
+            if (action == "GET" and (type == "AP_TRANSACTION_GL_REPORT" or type=="AP_DAILY_GL_REPORT" or type=="AP_BASIC_REPORT")):
                 dedube_get.action = action
                 dedube_get.type = type
                 dedube_get.filter = json.dumps(jsondata.get('filter'))
@@ -2132,7 +2196,7 @@ def Invoiceheader_set1(request):
                         out = outputSplit(inward_dtl.set_Invoiceheader_status_update(), 1)
 
                     if(jsondata.get('params').get('action') == 'INSERT' and
-                            jsondata.get('params').get('type') == 'INVOICE_HEADER' and out=="SUCCESS"):
+                            jsondata.get('params').get('type') == 'INVOICE_HEADER' and out=="SUCCESS" and Mail_Work=="Y"):
                         try:
                             inward_dtl.action = "GET"
                             inward_dtl.type = "MAIL_TEMPLATE"
@@ -2162,7 +2226,7 @@ def Invoiceheader_set1(request):
                             return JsonResponse("Email_Not_Send", safe=False)
                     if (jsondata.get('params').get('action') == 'UPDATE' and
                             jsondata.get('params').get('type') == 'STATUS' and
-                            jsondata.get('params').get('status_json').get('Status') == 'BOUNCE' and out == "SUCCESS"):
+                            jsondata.get('params').get('status_json').get('Status') == 'BOUNCE' and out == "SUCCESS" and Mail_Work=="Y"):
                         try:
                             header_gid=jsondata.get('params').get('status_json').get("Invoice_Header_Gid")
                             inward_dtl.action = "GET"
