@@ -214,6 +214,7 @@
                                                             <th>Description</th>
                                                             <th>HSN Code</th>
                                                             <th>Product Name</th>
+                                                            <th>Product Code</th>
                                                             <th>Unit Price</th>
                                                             <th>Quantity</th>
                                                             <th>Amount</th>
@@ -246,6 +247,7 @@
                                                                 <p><span style="color:blue">IS-Blocked: </span>{{invoice.product_isblocked}}
                                                                 </p>
                                                             </td>
+                                                            <td>{{invoice.product_code}}</td>
                                                             <td>{{invoice.invoicedetails_unitprice}}</td>
                                                             <td>{{invoice.invoicedetails_qty}}</td>
                                                             <td>{{invoice.invoicedetails_amount
@@ -274,7 +276,7 @@
                                                         </tbody>
                                                         <tfoot>
                                                         <tr align="center">
-                                                            <td colspan="10">
+                                                            <td colspan="11">
                                                                 <ul uib-pagination
                                                                     total-items="invoice_summary.length"
                                                                     ng-model="invoice_currentPage"
