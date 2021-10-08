@@ -1,0 +1,2255 @@
+{% extends 'Shared/mainLayout.html' %}
+{% load static from staticfiles %}
+{% block title %} Stock Invertory {% endblock %}
+{% block content %}
+{% csrf_token %}
+{% verbatim %}
+
+<div class="maincontent">
+    <div ng-app="Appstockinvertory" ng-controller="Ctrlstockinvertory" class="container container1">
+        <div class="row">
+            <div class="row-header col-lg-12 col-sm-12">
+                <h4>Stock Inventory</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-3">
+                    <md-select ng-model="selectedtype">
+                        <md-option ng-value="type.id" ng-repeat="type in typefunction">{{ type.name }}</md-option>
+                    </md-select>
+                </div>
+                <div class="col-md-1">
+                    <md-button class="md-fab md-mini md-primary custbutton"
+                               ng-hide="showform" ng-click="createNew()">
+                        <md-icon>add</md-icon>
+                        <md-tooltip>Create New</md-tooltip>
+                    </md-button>
+                </div>
+                <div class="col-md-4">
+                    <section class="pull-right" layout-align="center center pull-right">
+                        <md-data-table-pagination md-page="query.page" md-limit="query.limit"
+                                                  md-total="{{supplierrate.length}}"/>
+                    </section>
+                </div>
+            </div>
+        </div>
+        <div class="row" ng-show="showformpurchase">
+            <form name="myForm">
+                <div class="col-md-12">
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Supplier Name</label>
+                            <md-select ng-model="supplier_gid" ng-disabled="disabled" md-on-close="clearSearchTerm()"
+                                       data-md-container-class="selectdemoSelectHeader">
+                                <md-select-header class="demo-select-header">
+                                    <input ng-model="searchTerm" type="search"
+                                           placeholder="Search for a Supplier Name.."
+                                           class="demo-header-searchbox md-text">
+                                </md-select-header>
+                                <md-optgroup label="Supplier Name">
+                                    <md-option ng-repeat="posupplier in POsupplier_list | filter:searchTerm"
+                                               ng-selected="supplier_gid.supplier_gid == posupplier.supplier_gid"
+                                               ng-value="posupplier">
+                                        {{posupplier.supplier_name}}
+                                    </md-option>
+                                </md-optgroup>
+                            </md-select>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-3">
+                        <md-autocomplete
+                                ng-disabled="disabled"
+                                md-no-cache="true"
+                                md-selected-item="selectedItempurchase"
+                                md-search-text="searchText"
+                                md-selected-item-change="ACselectpurchase(item)"
+                                md-items="item in querySearch(searchText)"
+                                md-item-text="item.product_displayname"
+                                md-min-length=0
+                                placeholder="Product">
+                            <md-item-template>
+                                <span md-highlight-text="searchText"> {{item.product_displayname}} </span>
+                            </md-item-template>
+                            <md-not-found>
+                                No product matching "{{ctrl.searchText}}" were found.
+                            </md-not-found>
+                        </md-autocomplete>
+                    </div>
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Qty</label>
+                            <input name="number" placeholder="Enter Qty" valid-number
+                                   autocomplete="off"
+                                   maxlength="11"
+                                   ng-model="inwardqty" required/>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Inward Date</label>
+                            <md-datepicker md-hide-icons="calendar" formatDate
+                                           ng-model="inwarddate"></md-datepicker>
+                        </md-input-container>
+                    </div>
+
+                </div>
+                <div class="col-md-12">
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Unit Prize</label>
+                            <input type="number" style="width:100%;" ng-model="purch_retunitprize"
+                                   ng-blur="taxamount('purch_inward',inwardqty,purch_retunitprize,purch_retamount,purch_retgstper)"
+                                   maxlength="32">
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Amount</label>
+                            <input style="width:100%;" ng-model="purch_retamount"
+                                   ng-disabled="true" numbers-only
+                                   maxlength="5">
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>GST Percentage</label>
+                            <input style="width:100%;" ng-model="purch_retgstper"
+                                   ng-blur="taxamount('purch_inward',inwardqty,purch_retunitprize,purch_retamount,purch_retgstper)"
+                                   maxlength="5">
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-2">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Total</label>
+                            <input style="width:100%;" ng-model="purch_rettotal"
+                                   ng-disabled="true">
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-1">
+                        <md-button class="md-fab md-mini md-primary custbutton"
+                                   ng-click="Addsupplier()">
+                            <md-icon>add</md-icon>
+                            <md-tooltip>ADD</md-tooltip>
+                        </md-button>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <table class="table table-striped table-bordered table-condensed table-hover md-primary"
+                           md-progress="deferred">
+                        <thead class="header">
+                        <tr>
+                            <th>S.No</th>
+                            <th>Date</th>
+                            <th>Supplier Name</th>
+                            <th>Product Name</th>
+                            <th>Qty</th>
+                            <th>Unit Prize</th>
+                            <th>Amount</th>
+                            <th>Tax Amount</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="header in stock_purchaseinward  | filter:search:strict ">
+                            <td>
+                                {{$index+1}}
+                            </td>
+                            <td>{{header.date|date:'dd-MM-yyyy'}}</td>
+                            <td class="text-center"><span class="editlink"
+                                                          ng-click="view_editdata(header,'Purchase Inward')">{{header.supplier_name}}</span>
+                            <td>{{header.product_name}}</td>
+                            <td>{{header.qty}}</td>
+                            <td>{{header.unitprize}}</td>
+                            <td>{{header.amount}}</td>
+                            <td>{{header.taxmaount}}</td>
+                            <td>{{header.total}}</td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="7">
+                                <ul uib-pagination total-items="stock_purchaseinward.length" ng-model="currentPage"
+                                    max-size="maxSize"
+                                    class="pagination-sm cust_pagination" boundary-links="true"
+                                    items-per-page="itemsPerPage"></ul>
+                            </td>
+                            <td colspan="3">
+                                Total Count:{{stock_purchaseinward.length}}
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="col-md-12">
+                    <div class="col-md-4 col-md-offset-5">
+                        <md-button class="md-raised custbutton" value="submit"
+                                   ng-click="save('purch_inward','draft')">
+                            Draft
+                        </md-button>
+                        <md-button class="md-raised custbutton" value="submit" ng-click="save('purch_inward','submit')">
+                            Submit
+                        </md-button>
+                        <md-button class="md-raised" value="close" ng-click="end()">Cancel
+                        </md-button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row" ng-show="showsalesreturn">
+            <form name="myForm">
+                <div>
+
+                    <div>
+                        <div class="col-md-12">
+                            <div class="col-md-3">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Select Customer</label>
+                                    <md-select ng-model="ddlcustomersalesreturn"
+                                               data-md-container-class="selectSelectHeader">
+                                        <md-select-header class="select-header">
+                                            <input ng-model="searchTerm"
+                                                   ng-disabled="salesreturn" type="search"
+                                                   placeholder="Search customer name.."
+                                                   class="header-searchbox md-text">
+                                        </md-select-header>
+                                        <md-option md-search-text="searchTerm"
+                                                   ng-repeat="c in mullti | filter:searchTerm"
+                                                   ng-value="c">{{c.customer_name}} - {{c.location_name}}
+                                        </md-option>
+                                    </md-select>
+                                </md-input-container>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-4">
+                                <md-autocomplete
+                                        ng-disabled="salesreturn"
+                                        md-no-cache="true"
+                                        md-selected-item="selecteditemsalesreturn"
+                                        md-search-text="searchText"
+                                        md-selected-item-change="ACselectsalesreturn(item)"
+                                        md-items="item in querySearch(searchText)"
+                                        md-item-text="item.product_displayname"
+                                        md-min-length=0
+                                        placeholder="Product">
+                                    <md-item-template>
+                                        <span md-highlight-text="searchText"> {{item.product_displayname}} </span>
+                                    </md-item-template>
+                                    <md-not-found>
+                                        No product matching "{{ctrl.searchText}}" were found.
+                                    </md-not-found>
+                                </md-autocomplete>
+                            </div>
+                            <div class="col-md-4">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Qty</label>
+                                    <input style="width:100%;" ng-model="salesreturnqty"
+                                           numbers-only
+                                           maxlength="5">
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-4">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Unit Prize</label>
+                                    <input type="number" style="width:100%;" ng-model="salesreturnunitprize"
+                                           ng-blur="taxamount('sales_return',salesreturnqty,salesreturnunitprize,salesreturnamount,salesreturngstper)"
+                                           maxlength="32">
+                                </md-input-container>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-4">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Amount</label>
+                                    <input style="width:100%;" ng-model="salesreturnamount"
+                                           ng-disabled="true" numbers-only
+                                           maxlength="5">
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-4">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>GST Percentage</label>
+                                    <input style="width:100%;" ng-model="salesreturngstper"
+                                           ng-blur="taxamount('sales_return',salesreturnqty,salesreturnunitprize,salesreturnamount,salesreturngstper)"
+                                           numbers-only
+                                           maxlength="5">
+                                </md-input-container>
+                            </div>
+
+                            <div class="col-md-3">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Total</label>
+                                    <input style="width:100%;" ng-model="salesreturntotal"
+                                           ng-disabled="true"
+                                    >
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-1">
+                                <md-button class="md-fab md-mini md-primary custbutton"
+                                           ng-click="Addsalesretundetails()">
+                                    <md-icon>add</md-icon>
+                                    <md-tooltip>ADD</md-tooltip>
+                                </md-button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <table class="table table-striped table-bordered table-condensed table-hover md-primary"
+                               md-progress="deferred">
+                            <thead class="header">
+                            <tr>
+                                <th>S.No</th>
+                                <th>Customer Name</th>
+                                <th>Product Name</th>
+                                <th>Received Qty</th>
+                                <th>Unit Rate</th>
+                                <th>Amount</th>
+                                <th>Tax Amount</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="y in stock_salesreturndetails  | filter:search:strict ">
+                                <td>
+                                    {{$index+1}}
+                                </td>
+                                <td class="text-center"><span class="editlink"
+                                                          ng-click="view_editdata(y,'Sales Return',y.returndetails_gid)">{{y.salesrtdt_customer_name}}</span>
+
+                                <td>{{y.salesrtdt_product_name}}</td>
+                                <td>{{y.salesrtdt_qty}}</td>
+                                <td>{{y.salesrtdt_unitprz}}</td>
+                                <td>{{y.salesrtdt_amt}}</td>
+                                <td>{{y.salesrtdt_taxamt}}</td>
+                                <td>{{y.salesrtdt_total}}</td>
+                                <td><i class="material-icons removelink" title="Remove"
+                                       ng-click="delete_stock_salesretun(salesrtdt_gid)">delete</i></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="6">
+                                    <ul uib-pagination total-items="supplierrate.length" ng-model="currentPage"
+                                        max-size="maxSize"
+                                        class="pagination-sm cust_pagination" boundary-links="true"
+                                        items-per-page="itemsPerPage"></ul>
+
+                                </td>
+                                <td colspan="3">
+                                    Total Count:{{supplierrate.length}}
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="col-md-4 col-md-offset-5">
+                        <md-button class="md-raised custbutton" value="submit"
+                                   ng-click="save('sales_return','draft')">
+                            Draft
+                        </md-button>
+                        <md-button class="md-raised custbutton" value="submit" ng-click="save('sales_return','submit')">
+                            Submit
+                        </md-button>
+                        <md-button class="md-raised" value="close" ng-click="end()">Cancel
+                        </md-button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row" ng-show="showpurchasereturn">
+            <form name="myForm">
+                <div>
+                    <div class="col-md-12 col-lg-12 col-sm-12">
+                        <div class="col-md-12">
+                            <div class="col-md-3">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Supplier Name</label>
+                                    <md-select ng-model="supplierpurchasereturn" ng-disabled="disabled"
+                                               md-on-close="clearSearchTerm()"
+                                               data-md-container-class="selectdemoSelectHeader">
+                                        <md-select-header class="demo-select-header">
+                                            <input ng-model="searchTerm" type="search"
+                                                   ng-disabled="purchasereturn"
+                                                   placeholder="Search for a Supplier Name.."
+                                                   class="demo-header-searchbox md-text">
+                                        </md-select-header>
+                                        <md-optgroup label="Supplier Name">
+                                            <md-option ng-repeat="purreturnsup in Purchasesupplier | filter:searchTerm"
+                                                       ng-click="supplier_product();"
+                                                       ng-selected="supplierpurchasereturn.supplier_gid == purreturnsup.supplier_gid"
+                                                       ng-value="purreturnsup">
+                                                {{purreturnsup.supplier_name}}
+                                            </md-option>
+                                        </md-optgroup>
+                                    </md-select>
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-3">
+                                <md-autocomplete
+                                        ng-disabled="purchasereturn"
+                                        md-no-cache="true"
+                                        md-selected-item="selectedpurchasereturn"
+                                        md-search-text="searchText"
+                                        md-selected-item-change="ACselectpurchasereturn(item)"
+                                        md-items="item in querypurchasereturn(searchText)"
+                                        md-item-text="item.product_displayname"
+                                        md-min-length=0
+                                        placeholder="Product">
+                                    <md-item-template>
+                                        <span md-highlight-text="searchText"> {{item.product_displayname}} </span>
+                                    </md-item-template>
+                                    <md-not-found>
+                                        No product matching "{{ctrl.searchText}}" were found.
+                                    </md-not-found>
+                                </md-autocomplete>
+                            </div>
+                            <div class="col-md-3">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Return Date</label>
+                                    <md-datepicker md-hide-icons="calendar" formatDate
+                                                   ng-model="Returndate"></md-datepicker>
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-3">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Stock Qty</label>
+                                    <input name="number" placeholder="Enter Qty" valid-number
+                                           autocomplete="off"
+                                           maxlength="11" ng-disabled="true"
+                                           ng-model="supplier_product_stock" required/>
+                                </md-input-container>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-3">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Return Qty</label>
+                                    <input name="number" placeholder="Enter Qty" valid-number
+                                           autocomplete="off"
+                                           maxlength="11"
+                                           ng-blur="checkqty(supplier_product_stock,purchretunqty,'single',0)"
+                                           ng-model="purchretunqty" required/>
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-3">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Unit Prize</label>
+                                    <input type="number" style="width:100%;" ng-model="purchreturnunitprize"
+                                           ng-blur="taxamount('purch_return',purchretunqty,purchreturnunitprize,purchreturnamount,purchreturngstper)"
+                                           maxlength="32">
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-3">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Amount</label>
+                                    <input style="width:100%;" ng-model="purchreturnamount"
+                                           ng-disabled="true" numbers-only
+                                           maxlength="5">
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-3">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>GST Percentage</label>
+                                    <input style="width:100%;" ng-model="purchreturngstper"
+                                           ng-blur="taxamount('purch_return',purchretunqty,purchreturnunitprize,purchreturnamount,purchreturngstper)"
+                                    >
+                                </md-input-container>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-3">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Total</label>
+                                    <input style="width:100%;" ng-model="purchreturntotal"
+                                           ng-disabled="true"
+                                    >
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-1">
+                                <md-button class="md-fab md-mini md-primary custbutton"
+                                           ng-click="Addpuchasereturn()">
+                                    <md-icon>add</md-icon>
+                                    <md-tooltip>ADD</md-tooltip>
+                                </md-button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-md-12 col-lg-12 col-sm-12">
+                            <table class="table table-striped table-bordered table-condensed table-hover md-primary"
+                                   md-progress="deferred">
+                                <thead class="header">
+                                <tr>
+                                    <th>S.No</th>
+                                    <th>Supplier Name</th>
+                                    <th>Product Name</th>
+                                    <th>Retutn Qty</th>
+                                    <th>Unit Prize</th>
+                                    <th>Amount</th>
+                                    <th>Tax Amount</th>
+                                    <th>Total</th>
+                                    <th>Action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr ng-repeat="y in stock_purchasereturn  | filter:search:strict ">
+                                    <td>
+                                        {{$index+1}}
+                                    </td>
+                                      <td class="text-center"><span class="editlink"
+                                                          ng-click="view_editdata(y,'Purchase Return - Damage')">{{y.supplier_name}}</span>
+
+                                    <td>{{y.product_name}}</td>
+                                    <td>{{y.returnqty}}</td>
+                                    <td>{{y.purchasereturn_unitprize}}</td>
+                                    <td>{{y.purchasereturn_amount}}</td>
+                                    <td>{{y.purchasereturn_taxmount}}</td>
+                                    <td>{{y.purchasereturn_total}}</td>
+                                    <td><i class="material-icons removelink" title="Remove"
+                                           ng-click="delete_stock_purchasereturn(stock_purchasereturn_gid)">delete</i>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td colspan="3">
+                                        <ul uib-pagination total-items="stock_purchasereturn.length"
+                                            ng-model="currentPage"
+                                            max-size="maxSize"
+                                            class="pagination-sm cust_pagination" boundary-links="true"
+                                            items-per-page="itemsPerPage"></ul>
+
+                                    </td>
+                                    <td colspan="2">
+                                        Total Count:{{stock_purchasereturn.length}}
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="col-md-4 col-md-offset-5">
+                            <md-button class="md-raised custbutton" value="submit"
+                                       ng-click="save('purch_return','draft')"
+                            >
+                                Draft
+                            </md-button>
+                            <md-button class="md-raised custbutton" value="submit"
+                                       ng-click="save('purch_return','submit')"
+                            >
+                                Submit
+                            </md-button>
+                            <md-button class="md-raised" value="close" ng-click="end()">Cancel
+                            </md-button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row" ng-show="showpurchasereturnreceived">
+            <form name="myForm">
+                <div>
+                    <div class="col-md-12 col-lg-12 col-sm-12">
+                        <table class="table table-striped table-bordered table-condensed table-hover md-primary"
+                               md-progress="deferred">
+                            <thead class="header">
+                            <tr>
+                                <th>S.No</th>
+                                <th>Date</th>
+                                <th>Supplier Name</th>
+                                <th>Qty</th>
+                                <th>Unit Amount</th>
+                                <th>Received Qty</th>
+                                <th>Check</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="y in purch_retrunreceived">
+                                <td>
+                                    <center>{{$index+1}}</center>
+                                </td>
+                                <td>{{y.returnheader_code}}</td>
+                                <td>{{y.supplier_name}}</td>
+                                <td>{{y.returndetails_qty}}</td>
+                                <td>{{y.returndetails_unitrate}}</td>
+                                <td><input style="width:100%;" ng-model="y.purchreturnqty"
+                                           ng-blur="checkqty(y.returndetails_qty,y.purchreturnqty,$index,y.edit,'purch_rtrev')"
+                                           numbers-only
+                                           maxlength="5"></td>
+                                <td align="center">
+                                    <input type="checkbox" ng-model="y.checked" ng-click="purch_retrev(y)"/>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="5">
+                                    <ul uib-pagination total-items="purch_retrunreceived.length" ng-model="currentPage"
+                                        max-size="maxSize"
+                                        class="pagination-sm cust_pagination" boundary-links="true"
+                                        items-per-page="itemsPerPage"></ul>
+                                    <!--<ul uib-pagination total-items="city.length" ng-model="currentPage" max-size="maxSize"-->
+                                    <!--class="pagination-sm cust_pagination" boundary-links="true"-->
+                                    <!--items-per-page="itemsPerPage"></ul>-->
+                                </td>
+                                <td colspan="2">
+                                    Total Count:{{purch_retrunreceived.length}}
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <div class="col-md-12">
+                        <table class="table table-striped table-bordered table-condensed table-hover md-primary"
+                               md-progress="deferred">
+                            <thead class="header">
+                            <tr>
+                                <th>S.No</th>
+                                <th>Supplier Name</th>
+                                <th>Product Name</th>
+                                <th>Received Qty</th>
+                                <th>Unit Rate</th>
+                                <th>Amount</th>
+                                <th>Tax Return</th>
+                                <th>Net Amount</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="y in purchreturn_rec | filter:search:strict ">
+                                <td>
+                                    {{$index+1}}
+                                </td>
+                                <td>{{y.supplier_name}}</td>
+                                <td>{{y.product_name}}</td>
+                                <td>{{y.received_qty}}</td>
+                                <td>{{y.unit_rate}}</td>
+                                <td>{{y.amount}}</td>
+                                <td>{{y.tax}}</td>
+                                <td>{{y.total}}</td>
+                                <td align="center">
+                            <span class="editlink"
+                                  ng-click="returnview(y.returnheader_gid,y.returnheader_status,y.metadata_value)">
+                               <i class="material-icons">visibility</i>
+                                <md-tooltip>View</md-tooltip>
+                            </span>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="6">
+                                    <ul uib-pagination total-items="purchreturn_rec.length" ng-model="currentPage"
+                                        max-size="maxSize"
+                                        class="pagination-sm cust_pagination" boundary-links="true"
+                                        items-per-page="itemsPerPage"></ul>
+
+                                </td>
+                                <td colspan="2">
+                                    Total Count:{{purchreturn_rec.length}}
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="col-md-4 col-md-offset-5">
+                        <md-button class="md-raised custbutton" value="Draft"
+                                   ng-click="save('purch_rec_rtn','draft')"
+                        >
+                            Draft
+                        </md-button>
+                        <md-button class="md-raised custbutton" value="submit"
+                                   ng-click="save('purch_rec_rtn','submit')"
+                        >
+                            Submit
+                        </md-button>
+                        <md-button class="md-raised" value="close" ng-click="end()">Cancel
+                        </md-button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row" ng-show="showconversion">
+            <form name="myForm">
+                <div class="col-md-12 col-lg-12 col-sm-12">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="col-md-4">
+                                <md-autocomplete
+                                        md-no-cache="true"
+                                        md-selected-item="selectedItem"
+                                        md-search-text="searchText"
+                                        md-selected-item-change="ACselectchange(item)"
+                                        md-items="item in querySearch(searchText)"
+                                        md-item-text="item.product_displayname"
+                                        md-min-length=0
+                                        placeholder="Product">
+                                    <md-item-template>
+                                        <span md-highlight-text="searchText"> {{item.product_displayname}} </span>
+                                    </md-item-template>
+                                    <md-not-found>
+                                        No product matching "{{ctrl.searchText}}" were found.
+                                    </md-not-found>
+                                </md-autocomplete>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 col-lg-12 col-sm-12">
+                    <table class="table table-striped table-bordered table-condensed table-hover md-primary"
+                           md-progress="deferred">
+                        <thead class="header">
+                        <tr>
+                            <th>S.No</th>
+                            <th>Product Catergory</th>
+                            <th>Product Name</th>
+                            <th>Qty</th>
+                            <th>Converted Qty</th>
+                            <th>Select</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="header in stock_get  | filter:search:strict">
+                            <td>
+                                {{$index+1}}
+                            </td>
+                            <td>{{header.producttype_name|date:'dd-MM-yyyy'}}</td>
+                            <td>{{header.product_name}}</td>
+                            <td align="center">{{header.stock}}</td>
+                            <td><input style="width:100%;" ng-model="header.qty"
+                                       ng-blur="checkqty(header.stock,header.qty,$index,header.edit)" numbers-only
+                                       maxlength="5"></td>
+                            <td align="center">
+                                <input type="checkbox" ng-model="header.checked" ng-click="convertion(header)"/>
+                            </td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="4">
+                                <ul uib-pagination total-items="stock_get.length" ng-model="currentPage"
+                                    max-size="maxSize"
+                                    class="pagination-sm cust_pagination" boundary-links="true"
+                                    items-per-page="itemsPerPage"></ul>
+                            </td>
+                            <td colspan="2">
+                                Total Count:{{stock_get.length}}
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div>
+                    <div class="row-header col-lg-12 col-sm-12">
+                        <h4>Conversion Stock</h4>
+                    </div>
+                    <div class="col-md-12 col-lg-12 col-sm-12">
+                        <table class="table table-striped table-bordered table-condensed table-hover md-primary"
+                               md-progress="deferred">
+                            <thead class="header">
+                            <tr>
+                                <th>S.No</th>
+                                <th>Conversion Product Name</th>
+                                <th>Product Name</th>
+                                <th>Qty</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="y in stock_conversion  | filter:search:strict ">
+                                <td>
+                                    {{$index+1}}
+                                </td>
+                                <td>{{y.coversion_product_name}}</td>
+                                <td>{{y.product_name}}</td>
+                                <td>{{y.qty}}</td>
+                                <td><i class="material-icons removelink" title="Remove"
+                                       ng-click="delete_stockconversion(stock_conversion_gid)">delete</i></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="3">
+                                    <ul uib-pagination total-items="supplierrate.length" ng-model="currentPage"
+                                        max-size="maxSize"
+                                        class="pagination-sm cust_pagination" boundary-links="true"
+                                        items-per-page="itemsPerPage"></ul>
+
+                                </td>
+                                <td colspan="2">
+                                    Total Count:{{supplierrate.length}}
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="col-md-4 col-md-offset-5">
+                    <md-button class="md-raised custbutton" value="submit"
+                               ng-click="Save_stock('Insert','conversion')"
+                    >
+                        Save
+                    </md-button>
+                    <md-button class="md-raised custbutton" value="submit"
+                               ng-click="Update_supplierrate(li_supplierproduct_gid)"
+                    >
+                        Update
+                    </md-button>
+                    <md-button class="md-raised" value="close" ng-click="end()">Cancel
+                    </md-button>
+                </div>
+            </form>
+        </div>
+        <div class="row" ng-show="showsalesdamage">
+            <form name="myForm">
+                <div>
+                    <div class="col-md-12">
+                        <div class="col-md-3">
+                            <md-input-container class="md-block inputcontainer">
+                                <label>Select Customer</label>
+                                <md-select ng-model="ddlcustomer"
+                                           ng-click="invoice_based_Customer()"
+                                           data-md-container-class="selectSelectHeader">
+                                    <md-select-header class="select-header">
+                                        <input ng-model="searchTerm"
+                                               type="search"
+                                               placeholder="Search customer name.."
+                                               class="header-searchbox md-text">
+                                    </md-select-header>
+                                    <md-option md-search-text="searchTerm" ng-repeat="c in mullti | filter:searchTerm"
+                                               ng-value="c">{{c.customer_name}} - {{c.location_name}}
+                                    </md-option>
+                                </md-select>
+                            </md-input-container>
+                        </div>
+                        <div class="col-md-3">
+                            <md-input-container class="md-block inputcontainer">
+                                <label>Invoice</label>
+                                <md-select ng-model="ddlinvoiceno"
+                                           ng-click="invoice_amount()"
+                                           data-md-container-class="selectSelectHeader">
+                                    <md-select-header class="select-header">
+                                        <input ng-model="searchTerm"
+                                               type="search"
+                                               placeholder="Search customer name.."
+                                               class="header-searchbox md-text">
+                                    </md-select-header>
+                                    <md-option md-search-text="searchTerm"
+                                               ng-repeat="c in stock_invoiceno | filter:searchTerm"
+                                               ng-value="c">{{c.invoiceheader_no}}
+                                    </md-option>
+                                </md-select>
+                            </md-input-container>
+                        </div>
+                        <div class="col-md-2">
+                            <label>
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Amount</label>
+                                    <input style="width:100%;" ng-disabled="true" ng-model="salesinvoiceamt">
+                                </md-input-container>
+                            </label>
+                        </div>
+                        <div class="col-md-2">
+                            <label>
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Return Amount</label>
+                                    <input style="width:100%;"
+                                           ng-click="checkqty(salesinvoiceamt,salesinvoiceretunnamt,'invoice',0)"
+                                           ng-model="salesinvoiceretunnamt">
+                                </md-input-container>
+                            </label>
+                        </div>
+                        <div class="col-md-2">
+                            <md-button class="md-fab md-mini md-primary custbutton"
+                                       ng-click="Addsalesretunnheader()">
+                                <md-icon>add</md-icon>
+                                <md-tooltip>ADD</md-tooltip>
+                            </md-button>
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered table-condensed table-hover md-primary"
+                           md-progress="deferred">
+                        <thead class="header">
+                        <tr>
+                            <th>S.No</th>
+                            <th>Customer Name</th>
+                            <th>Invoice No</th>
+                            <th>Reduce Amount</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="header in stock_invoiceheader | filter:search:strict "
+                            ng-click="go(header)">
+                            <td>
+                                {{$index+1}}
+                            </td>
+                            <td>{{header.customer_name}}</td>
+                            <td>{{header.invoiceheader_no}}</td>
+                            <td>{{header.returnamount}}</td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="3">
+                                <ul uib-pagination total-items="stock_invoiceheader.length" ng-model="currentPage"
+                                    max-size="maxSize"
+                                    class="pagination-sm cust_pagination" boundary-links="true"
+                                    items-per-page="itemsPerPage"></ul>
+                            </td>
+                            <td colspan="2">
+                                Total Count:{{stock_invoiceheader.length}}
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div>
+                    <div>
+                        <div class="col-md-12">
+                            <div class="col-md-4">
+                                <md-autocomplete
+                                        ng-disabled="disabled"
+                                        md-no-cache="true"
+                                        md-selected-item="selecteditemsalesreturn"
+                                        md-search-text="searchText"
+                                        md-selected-item-change="ACselectsalesreturn(item)"
+                                        md-items="item in querySearch(searchText)"
+                                        md-item-text="item.product_displayname"
+                                        md-min-length=0
+                                        placeholder="Product">
+                                    <md-item-template>
+                                        <span md-highlight-text="searchText"> {{item.product_displayname}} </span>
+                                    </md-item-template>
+                                    <md-not-found>
+                                        No product matching "{{ctrl.searchText}}" were found.
+                                    </md-not-found>
+                                </md-autocomplete>
+                            </div>
+                            <div class="col-md-4">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Qty</label>
+                                    <input style="width:100%;" ng-model="salesreturnqty"
+                                           numbers-only
+                                           maxlength="5">
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-4">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Unit Prize</label>
+                                    <input type="number" style="width:100%;" ng-model="salesreturnunitprize"
+                                           ng-blur="taxamount(salesreturnqty,salesreturnunitprize,salesreturnamount,salesreturngstper)"
+                                           maxlength="32">
+                                </md-input-container>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-4">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Amount</label>
+                                    <input style="width:100%;" ng-model="salesreturnamount"
+                                           ng-disabled="true" numbers-only
+                                           maxlength="5">
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-4">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>GST Percentage</label>
+                                    <input style="width:100%;" ng-model="salesreturngstper"
+                                           ng-blur="taxamount(salesreturnqty,salesreturnunitprize,salesreturnamount,salesreturngstper)"
+                                           maxlength="5">
+                                </md-input-container>
+                            </div>
+
+                            <div class="col-md-3">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Total</label>
+                                    <input style="width:100%;" ng-model="salesreturntotal"
+                                           ng-disabled="true"
+                                    >
+                                </md-input-container>
+                            </div>
+                            <div class="col-md-1">
+                                <md-button class="md-fab md-mini md-primary custbutton"
+                                           ng-click="Addsalesretundetails(retrundetails_gid)">
+                                    <md-icon>add</md-icon>
+                                    <md-tooltip>ADD</md-tooltip>
+                                </md-button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <table class="table table-striped table-bordered table-condensed table-hover md-primary"
+                               md-progress="deferred">
+                            <thead class="header">
+                            <tr>
+                                <th>S.No</th>
+                                <th>Customer Name</th>
+                                <th>Product Name</th>
+                                <th>Received Qty</th>
+                                <th>Unit Rate</th>
+                                <th>Amount</th>
+                                <th>Tax Amount</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="y in stock_salesreturndetails  | filter:search:strict ">
+                                <td>
+                                    {{$index+1}}
+                                </td>
+                                <th>{{y.salesrtdt_customer_name}}</th>
+                                <td>{{y.salesrtdt_product_name}}</td>
+                                <td>{{y.salesrtdt_qty}}</td>
+                                <td>{{y.salesrtdt_unitprz}}</td>
+                                <td>{{y.salesrtdt_amt}}</td>
+                                <td>{{y.salesrtdt_taxamt}}</td>
+                                <td>{{y.salesrtdt_total}}</td>
+                                <td><i class="material-icons removelink" title="Remove"
+                                       ng-click="delete_stock_salesretun(salesrtdt_gid)">delete</i></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="6">
+                                    <ul uib-pagination total-items="supplierrate.length" ng-model="currentPage"
+                                        max-size="maxSize"
+                                        class="pagination-sm cust_pagination" boundary-links="true"
+                                        items-per-page="itemsPerPage"></ul>
+
+                                </td>
+                                <td colspan="3">
+                                    Total Count:{{supplierrate.length}}
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+                </div>
+                <div class="col-md-12" text-right>
+                    <div class="col-md-4 col-md-offset-5">
+                        <md-button class="md-raised custbutton" value="submit"
+                                   ng-click="Save_invertory()">
+                            Draft
+                        </md-button>
+                        <md-button class="md-raised custbutton" value="submit"
+                                   ng-click="Update_supplierrate(li_supplierproduct_gid)">
+                            Submit
+                        </md-button>
+                        <md-button class="md-raised" value="close" ng-click="end()">Cancel
+                        </md-button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row table-responsive" ng-show="showfalse">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <table class="table table-striped table-bordered table-condensed table-hover md-primary"
+                       md-progress="deferred">
+                    <thead class="header">
+                    <tr>
+                        <th>S.No</th>
+                        <th>Return Code</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Supplier Name</th>
+                        <th>Customer Name</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="y in returnheader">
+                        <td>
+                            <center>{{$index+1}}</center>
+                        </td>
+                        <td>{{y.returnheader_code}}</td>
+                        <td>{{y.metadata_value}}</td>
+                        <td>{{y.date}}</td>
+                        <td>{{y.supplier_name}}</td>
+                        <td>{{y.customer_name}}</td>
+                        <td>{{y.returnheader_netamount}}</td>
+                        <td>{{y.returnheader_status}}</td>
+                        <td align="center">
+                            <span class="editlink"
+                                  ng-click="returnview(y.returnheader_gid,y.returnheader_status,y.metadata_value)">
+                               <i class="material-icons">visibility</i>
+                                <md-tooltip>View</md-tooltip>
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colspan="6">
+                            <ul uib-pagination total-items="returnheader.length" ng-model="currentPage"
+                                max-size="maxSize"
+                                class="pagination-sm cust_pagination" boundary-links="true"
+                                items-per-page="itemsPerPage"></ul>
+                            <!--<ul uib-pagination total-items="city.length" ng-model="currentPage" max-size="maxSize"-->
+                            <!--class="pagination-sm cust_pagination" boundary-links="true"-->
+                            <!--items-per-page="itemsPerPage"></ul>-->
+                        </td>
+                        <td colspan="4">
+                            Total Count:{{returnheader.length}}
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endverbatim %}
+<script>
+var app = angular.module('Appstockinvertory', ['ngMaterial', 'ui.bootstrap', 'AppCommon']).config(function($httpProvider) {
+   $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+   $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+
+});
+app.run(function($mdDateLocale, $filter) {
+   $mdDateLocale.formatDate = function(date) {
+      return $filter('date')(date, "dd-MMM-yyyy");
+   };
+})
+app.controller('Ctrlstockinvertory', ['$scope', '$http', '$filter', 'invertoryService', '$mdDateLocale', '$mdDialog', '$window', function($scope, $http, $filter, invertoryService, $mdDateLocale, $mdDialog, $window) {
+   $scope.typefunction = $scope.users || [{
+      id: 1,
+      name: 'Sales Return'
+   }, {
+      id: 2,
+      name: 'Purchase Return'
+   }, {
+      id: 3,
+      name: 'Purchase Inward'
+   }, {
+      id: 4,
+      name: 'Sales Damage'
+   }, {
+      id: 5,
+      name: 'Purchase Retrun Received'
+   }, {
+      id: 6,
+      name: 'Conversion '
+   }];
+   $scope.showfalse = true;
+
+   var returnheader = invertoryService.getreturn('RETURN HEADER', 0, 0, 0, 0, '')
+   returnheader.then(function(result) {
+         $scope.returnheader = result.data;
+      },
+      function(err) {
+         alert('No data!.');
+      }).finally($scope.endloading);
+
+   $scope.end = function() {
+      $scope.showformpurchase = false;
+      $scope.showsalesreturn = false;
+      $scope.showpurchasereturn = false;
+      $scope.showpurchasereturnreceived = false;
+      $scope.showconversion = false;
+      $scope.disabled = true;
+      $scope.showfalse = true;
+      $scope.showform = false;
+      $scope.saveshow = false;
+      $scope.selectedtype = 0;
+   }
+   $scope.createNew = function() {
+      if ($scope.selectedtype == '1') {
+         $scope.showformpurchase = false;
+         $scope.showsalesreturn = true;
+         $scope.showpurchasereturn = false;
+         $scope.showpurchasereturnreceived = false;
+         $scope.showconversion = false;
+         $scope.showsalesdamage = false;
+
+         var jsonData = "{}"
+         var customer = invertoryService.getcustomer(jsonData)
+         customer.then(function(result) {
+               $scope.mullti = result.data;
+            },
+            function(err) {
+               alert('No data!.');
+            }).finally($scope.endloading);
+
+         $scope.querySearch = function(query) {
+            if (query) {
+               query = query.replace(/[\s]/g, '')
+            } else {
+               query = ''
+            }
+            var result = $http.get(Appname + "/Productjson/").then(function(response) {
+
+               var res = JSON.parse(response.data);
+               te = res.filter(function(val) {
+                  var t = val.product_displayname.replace(/[\s]/g, '').toLowerCase();
+                  var r = t.indexOf(query)
+                  return r != -1;
+               });
+               var data = te.filter(function(obj) {
+                  return obj.name.replace(/[\s]/g, '').toLowerCase().indexOf(query) != -1;
+               });
+               return data;
+            });
+            return result;
+         }
+      } else if ($scope.selectedtype == '2') {
+         $scope.showformpurchase = false;
+         $scope.showsalesreturn = false;
+         $scope.showpurchasereturn = true;
+         $scope.showpurchasereturnreceived = false;
+         $scope.showconversion = false;
+         $scope.showsalesdamage = false;
+
+         var posupplier = invertoryService.getdropdown("supplier");
+         posupplier.then(function(posupplier) {
+            var posupplier = JSON.parse(posupplier.data)
+            $scope.Purchasesupplier = posupplier;
+
+         }, function() {
+            alert("Record Not Found")
+         });
+
+      } else if ($scope.selectedtype == '3') {
+         $scope.showformpurchase = true;
+         $scope.showsalesreturn = false;
+         $scope.showpurchasereturn = false;
+         $scope.showpurchasereturnreceived = false;
+         $scope.showconversion = false;
+         $scope.showsalesdamage = false;
+
+         <!--dropdown for supplier-->
+         var posupplier = invertoryService.getdropdown("supplier");
+         posupplier.then(function(posupplier) {
+            var posupplier = JSON.parse(posupplier.data)
+            $scope.POsupplier_list = posupplier;
+
+         }, function() {
+            alert("Record Not Found")
+         });
+
+         $scope.querySearch = function(query) {
+            if (query) {
+               query = query.replace(/[\s]/g, '')
+            } else {
+               query = ''
+            }
+            var result = $http.get(Appname + "/Productjson/").then(function(response) {
+
+               var res = JSON.parse(response.data);
+               te = res.filter(function(val) {
+                  var t = val.product_displayname.replace(/[\s]/g, '').toLowerCase();
+                  var r = t.indexOf(query)
+                  return r != -1;
+               });
+               var data = te.filter(function(obj) {
+                  return obj.name.replace(/[\s]/g, '').toLowerCase().indexOf(query) != -1;
+               });
+               return data;
+            });
+            return result;
+         }
+
+      } else if ($scope.selectedtype == '4') {
+         $scope.showformpurchase = false;
+         $scope.showsalesreturn = false;
+         $scope.showpurchasereturn = false;
+         $scope.showpurchasereturnreceived = false;
+         $scope.showconversion = false;
+         $scope.showsalesdamage = true;
+      } else if ($scope.selectedtype == '5') {
+         $scope.showformpurchase = false;
+         $scope.showsalesreturn = false;
+         $scope.showpurchasereturn = false;
+         $scope.showpurchasereturnreceived = true;
+         $scope.showconversion = false;
+         $scope.showsalesdamage = false;
+
+         var returnheader = invertoryService.getreturn('PURCHASE RETURN', 0, 0, 0, 0, '')
+         returnheader.then(function(result) {
+               $scope.purch_retrunreceived = result.data;
+            },
+            function(err) {
+               alert('No data!.');
+            }).finally($scope.endloading);
+      } else if ($scope.selectedtype == '6') {
+         $scope.showformpurchase = false;
+         $scope.showsalesreturn = false;
+         $scope.showpurchasereturn = false;
+         $scope.showpurchasereturnreceived = false;
+         $scope.showconversion = true;
+         $scope.showsalesdamage = false;
+
+         $scope.querySearch = function(query) {
+            if (query) {
+               query = query.replace(/[\s]/g, '')
+            } else {
+               query = ''
+            }
+            var result = $http.get(Appname + "/Productjson/").then(function(response) {
+
+               var res = JSON.parse(response.data);
+               te = res.filter(function(val) {
+                  var t = val.product_displayname.replace(/[\s]/g, '').toLowerCase();
+                  var r = t.indexOf(query)
+                  return r != -1;
+               });
+               var data = te.filter(function(obj) {
+                  return obj.name.replace(/[\s]/g, '').toLowerCase().indexOf(query) != -1;
+               });
+               return data;
+            });
+            return result;
+         }
+      }
+      $scope.disabled = false;
+      $scope.showfalse = false;
+      $scope.showform = false;
+   }
+
+   var get_header = invertoryService.getgrnheader()
+   get_header.then(function(result) {
+         $scope.stock_header = [];
+         $scope.maintable = result.data;
+         $scope.stock_header = $scope.maintable;
+         $scope.userTotalItems = $scope.stock_header.length;
+         $scope.Totalpages = Math.ceil($scope.stock_header.length / $scope.itemsPerPage);
+      }),
+      function() {
+         alert('no data');
+      };
+
+   $scope.go = function(result) {
+      var get_grndetails = invertoryService.getgrndetails(result.grninwardheader_gid, result.supplier_gid)
+      get_grndetails.then(function(result) {
+            $scope.maintable1 = result.data
+            $scope.stock_details = $scope.maintable1;
+            $scope.userTotalItems = $scope.stock_details.length;
+            $scope.Totalpages = Math.ceil($scope.stock_details.length / $scope.itemsPerPage);
+         }),
+         function() {
+            alert('no data');
+         };
+   }
+
+   function stock_Detials(producttype, product_name, product_gid) {
+      var get_stockdetails = invertoryService.getstockdetails('Stock_ALL', formatDate(new Date()), formatDate(new Date()), 0, 0)
+      get_stockdetails.then(function(result) {
+            $scope.maintable2 = result.data
+            $scope.stock_get = $filter('filter')($scope.maintable2, {
+               "producttype_name": producttype
+            });
+            $scope.stock_get = $scope.stock_get.filter(function(x) {
+               return x.product_name !== product_name;
+            });
+
+            $scope.userTotalItems = $scope.stock_get.length;
+            $scope.Totalpages = Math.ceil($scope.stock_get.length / $scope.itemsPerPage);
+         }),
+         function() {
+            alert('no data');
+         };
+   }
+
+
+
+   $scope.ACselectpurchase = function(query) {
+
+      $scope.productdetailpurchase = [];
+      $scope.productdetailpurchase = query;
+   }
+
+   $scope.ACselectpurchasereturn = function(query) {
+      var get_stockpurchase = invertoryService.getstockdetails('Supplier_Stock', '', '', $scope.supplierpurchasereturn.supplier_gid, query.product_gid)
+      get_stockpurchase.then(function(result) {
+         $scope.supplier_product_stock = result.data[0].stock;
+      });
+   }
+
+   $scope.ACselectchange = function(query) {
+      $scope.productdetail = [];
+      $scope.productdetail = query;
+      stock_Detials(query.producttype_name, query.product_name, query.product_gid);
+   }
+
+   $scope.ACselectsalesreturn = function(query) {
+      $scope.salesreturngstper = query.hsn_igstrate;
+   }
+
+   $scope.querypurchasereturn = function(query) {
+      if (query) {
+         query = query.replace(/[\s]/g, '')
+      } else {
+         query = ''
+      }
+      var result = $http.post(Appname + "/product_name/", {
+            params: {
+               "date": "",
+               "supplier_gid": $scope.supplierpurchasereturn.supplier_gid,
+               "product_gid": 0,
+               "char_active": 'Y'
+            }
+         })
+         .then(function(response) {
+            var res = JSON.parse(response.data);
+            te = res.filter(function(val) {
+               var t = val.product_displayname.replace(/[\s]/g, '').toLowerCase();
+               var r = t.indexOf(query)
+               return r != -1;
+            });
+            var data = te.filter(function(obj) {
+               return obj.product_displayname.replace(/[\s]/g, '').toLowerCase().indexOf(query) != -1;
+            });
+            return data;
+         });
+      return result;
+   }
+
+   $scope.checkqty = function(balanceqty, qty, index, value, type) {
+      if (type == 'purch_rtrev') {
+         if (qty > balanceqty) {
+            $scope.purch_retrunreceived[index].purchreturnqty = 0;
+         }
+
+      }
+      if (index == 'invoice') {
+         if (qty > balanceqty) {
+            $scope.salesinvoiceretunnamt = 0;
+         }
+      }
+      if (index == 'single') {
+         if (qty > balanceqty) {
+            $scope.purchretunqty = 0;
+         }
+      }
+      if (index == '') {
+         if (qty > balanceqty) {
+            $scope.stock_get[index].qty = 0;
+         }
+         $scope.stock_get[index].checked = false;
+      }
+
+   }
+   $scope.stock_conversion = [];
+   $scope.convertion = function(header) {
+      $scope.stock_conversion.push({
+         stock_conversion_gid: ($scope.stock_conversion.length + 1),
+         product_name: $scope.selectedItem.product_name,
+         coversion_product_name: header.product_name,
+         qty: header.qty,
+         product_gid: $scope.selectedItem.product_gid,
+         con_product_gid: header.product_gid
+      });
+   }
+
+   $scope.delete_stockconversion = function(stock_conversion_gid) {
+      $scope.stock_conversion.splice(stock_conversion_gid - 1, 1);
+   }
+   $scope.purchreturn_rec = [];
+   $scope.purch_retrev = function(y) {
+      $scope.purchreturn_rec.push({
+         "supplier_name": y.supplier_name,
+         "supplier_gid": y.supplier_gid,
+         "product_name": y.product_name,
+         "product_gid": y.product_gid,
+         "received_qty": y.purchreturnqty,
+         "unit_rate": y.returndetails_unitrate,
+         "amount": (y.returndetails_amount / y.returndetails_qty) * y.purchreturnqty,
+         "tax": (y.returndetails_taxamount / y.returndetails_qty) * y.purchreturnqty,
+         "total": (y.returndetails_netamount / y.returndetails_qty) * y.purchreturnqty
+      })
+   }
+
+   $scope.stock_purchaseinward = [];
+   $scope.Addsupplier = function() {
+      $scope.stock_purchaseinward.push({
+         supplier_gid: $scope.supplier_gid.supplier_gid,
+         supplier_name: $scope.supplier_gid.supplier_name,
+         product_gid: $scope.selectedItempurchase.product_gid,
+         product_name: $scope.selectedItempurchase.product_name,
+         qty: $scope.inwardqty,
+         date: $scope.inwarddate,
+         unitprize: $scope.purch_retunitprize,
+         amount: $scope.purch_retamount,
+         taxmaount: $scope.purch_rettotal - $scope.purch_retamount,
+         total: $scope.purch_rettotal
+      });
+   }
+   $scope.stockdetails = [];
+   $scope.Save_stock = function(action, type) {
+      debugger;
+      if (type == "conversion") {
+         $scope.stock = [];
+         angular.forEach($scope.stock_conversion, function(user) {
+            $scope.stock.push({
+               "product_gid": user.product_gid,
+               "quantity": user.qty,
+               "godown_gid": "1",
+               "con_prod_gid": user.con_product_gid
+            })
+         });
+
+         jsonheader = {
+            ref_Gid: "CONVERSION",
+            "reftable_gid": "0",
+            "type_mode": "Conversion",
+            "available": "1",
+            "stock": $scope.stock,
+         }
+
+         var stock_get = invertoryService.setstockdetails(action, '', jsonheader);
+         stock_get.then(function(result) {
+            if (result.data == "SUCCESS") {
+               alert("Inserted successfully")
+
+            } else {
+               alert("Data not inserted")
+            }
+         })
+      }
+
+   }
+   $scope.stock_purchasereturn = [];
+   $scope.Addpuchasereturn = function() {
+      $scope.stock_purchasereturn.push({
+         stock_purchasereturn_gid: ($scope.stock_purchasereturn.length + 1),
+         supplier_gid: $scope.supplierpurchasereturn.supplier_gid,
+         supplier_name: $scope.supplierpurchasereturn.supplier_name,
+         product_name: $scope.selectedpurchasereturn.product_name,
+         product_gid: $scope.selectedpurchasereturn.product_gid,
+         returnqty: $scope.purchretunqty,
+         purchasereturn_date: $scope.Returndate,
+         purchasereturn_amount: $scope.purchreturnamount,
+         purchasereturn_unitprize: $scope.purchreturnunitprize,
+         purchasereturn_total: $scope.purchreturntotal,
+         purchasereturn_taxmount: $scope.purchreturntotal - $scope.purchreturnamount
+      });
+
+      $scope.Returndate = '';
+      $scope.purchretunqty = 0;
+      $scope.supplier_product_stock = 0;
+      $scope.selectedpurchasereturn = '';
+   }
+
+
+   function salesinvoice_get(customer_gid) {
+      var get_entrydetail = invertoryService.getinvoiceheader(customer_gid, 'INVOICE_HEADER', '', '{}')
+      get_entrydetail.then(function(result) {
+
+         $scope.stock_invoiceno = result.data;
+
+      });
+   }
+   $scope.invoice_details = function(invoice_no) {
+      var get_entrydetail = invertoryService.getinvoiceheader(0, 'INVOICE_DETAILS', '', '{invoiceheader_no:invoice_no}')
+      get_entrydetail.then(function(result) {
+         $scope.stock_invoicedetails = result.data;
+      });
+   }
+
+
+
+   $scope.invoice_based_Customer = function() {
+      salesinvoice_get($scope.ddlcustomer.customer_gid)
+   }
+   $scope.stock_invoiceheader = [];
+   $scope.Addsalesretunnheader = function() {
+      $scope.stock_invoiceheader.push({
+         customer_gid: $scope.ddlcustomer.customer_gid,
+         customer_name: $scope.ddlcustomer.customer_name,
+         invoiceheader_no: $scope.ddlinvoiceno.invoiceheader_no,
+         invoiceheader_gid: $scope.ddlinvoiceno.invoiceheader_gid,
+         returnamount: $scope.salesinvoiceretunnamt,
+      });
+   }
+   $scope.invoice_amount = function() {
+      $scope.salesinvoiceamt = $scope.ddlinvoiceno.invoiceheader_total;
+   }
+
+   $scope.taxamount = function(type, qty, unitprize, amount, taxpercentage) {
+      if (type == 'purch_inward') {
+         $scope.purch_retamount = parseFloat(qty) * parseFloat(unitprize);
+         $scope.purch_rettotal = parseFloat(amount) * (parseFloat(taxpercentage) / 100) + parseFloat($scope.purch_retamount);
+      }
+      if (type == 'sales_return') {
+         $scope.salesreturnamount = parseFloat(qty) * parseFloat(unitprize)
+         $scope.salesreturntotal = (parseFloat($scope.salesreturnamount) * (parseFloat(taxpercentage) / 100)) + parseFloat($scope.salesreturnamount);
+      }
+      if (type == 'purch_return') {
+         $scope.purchreturnamount = parseFloat(qty) * parseFloat(unitprize)
+         $scope.purchreturntotal = (parseFloat($scope.purchreturnamount) * (parseFloat(taxpercentage) / 100)) + parseFloat($scope.purchreturnamount);
+      }
+   }
+   $scope.stock_salesreturndetails = [];
+   $scope.Addsalesretundetails = function() {
+   if(returndetails_gid==0){
+      $scope.stock_salesreturndetails.push({
+         "salesrtdt_gid": ($scope.stock_salesreturndetails.length + 1),
+         "salesrtdt_customer_name": $scope.ddlcustomersalesreturn.customer_name,
+         "salesrtdt_customer_gid": $scope.ddlcustomersalesreturn.customer_gid,
+         "salesrtdt_product_name": $scope.selecteditemsalesreturn.product_name,
+         "salesrtdt_product_gid": $scope.selecteditemsalesreturn.product_gid,
+         "salesrtdt_qty": $scope.salesreturnqty,
+         "salesrtdt_unitprz": $scope.salesreturnunitprize,
+         "salesrtdt_amt": $scope.salesreturnamount,
+         "salesrtdt_taxper": $scope.salesreturngstper,
+         "salesrtdt_taxamt": $scope.salesreturntotal - $scope.salesreturnamount,
+         "salesrtdt_total": $scope.salesreturntotal
+      });
+      }
+      else{
+
+      }
+      $scope.selecteditemsalesreturn = '';
+      $scope.salesreturnqty = 0;
+      $scope.salesreturnunitprize = 0;
+      $scope.salesreturnamount = 0;
+      $scope.salesreturngstper = 0;
+      $scope.salesreturntotal = 0;
+
+   };
+
+   function selecteddate(date) {
+      var d = date;
+      var curr_date = d.getDate();
+      var curr_month = d.getMonth();
+      curr_month++;
+      var curr_year = d.getFullYear();
+      var date = curr_year + "-" + curr_month + "-" + curr_date;
+      return date;
+   }
+
+   $scope.save = function(type, action) {
+      var jsonheader = [];
+      var jsonheader_json = [];
+      var jsondetails_json = [];
+      var jsondetails = [];
+      var jsonrecepit = [];
+      var jsonrecepit_json = [];
+      var Amount = 0.00;
+      var Taxamount = 0.00;
+      var Netamount = 0.00;
+      var date;
+      var supplier_gid;
+      var customer_gid;
+      var remarks;
+      var return_status;
+      var i = 0;
+      if (action == 'draft') {
+         return_status = 'Draft';
+      } else if (action == 'submit') {
+         return_status = 'Pending For Approval';
+      }
+      if (type == 'purch_inward') {
+
+         angular.forEach($scope.stock_purchaseinward, function(user) {
+
+            jsondetails_json.push({
+               Header_gid: 0,
+               product_gid: user.product_gid,
+               Qty: user.qty,
+               Unitrate: user.unitprize,
+               Amount: parseFloat(Math.round(user.amount * 100) / 100).toFixed(2),
+               Taxamount: parseFloat(Math.round(user.taxmaount * 100) / 100).toFixed(2),
+               Netamount: parseFloat(Math.round(user.total * 100) / 100).toFixed(2),
+               Remarks: '',
+               returnheader_Sno: 1
+            });
+
+            Amount = Amount + user.amount;
+            Taxamount = Taxamount + user.taxmaount;
+            Netamount = Netamount + user.total;
+            supplier_gid = user.supplier_gid;
+            date = user.date;
+            remarks = '';
+
+         });
+
+         jsonheader_json.push({
+            "Returntype": 'Purchase Inward ',
+            "Date": selecteddate(date),
+            "Supplier_gid": supplier_gid,
+            "Amount": Amount,
+            "Taxamount": Taxamount,
+            "Netamount": Netamount,
+            "Remarks": '',
+            "Status_details": return_status,
+            "returnheader_Sno": 1
+         });
+
+         jsonrecepit_json.push({
+            "From": 'Supplier',
+            "Date": selecteddate(date),
+            "vch_type": 'R',
+            "type": 'Purchase Inward',
+            "ref_gid": 35,
+            "reftable_gid": 0,
+            "amount": Netamount,
+            "balanceamount": 0,
+            "remarks": ''
+         });
+         jsondetails = {
+            Returndetails: jsondetails_json
+         }
+         jsonheader = {
+            Returnheader: jsonheader_json
+         }
+         jsonrecepit = {
+            receipt: jsonrecepit_json
+         }
+      }
+
+      if (type == 'sales_return') {
+
+         angular.forEach($scope.stock_salesreturndetails, function(user) {
+            jsondetails_json.push({
+               Header_gid: 0,
+               product_gid: user.salesrtdt_product_gid,
+               Qty: user.salesrtdt_qty,
+               Unitrate: user.salesrtdt_unitprz,
+               Amount: parseFloat(Math.round(user.salesrtdt_amt * 100) / 100).toFixed(2),
+               Taxamount: parseFloat(Math.round(user.salesrtdt_taxamt * 100) / 100).toFixed(2),
+               Netamount: parseFloat(Math.round(user.salesrtdt_total * 100) / 100).toFixed(2),
+               Remarks: '',
+               returnheader_Sno: 1
+
+            });
+
+            Amount = Amount + parseFloat(Math.round(user.salesrtdt_amt * 100) / 100).toFixed(2);
+            Taxamount = Taxamount + parseFloat(Math.round(user.salesrtdt_taxamt * 100) / 100).toFixed(2);
+            Netamount = Netamount + parseFloat(Math.round(user.salesrtdt_total * 100) / 100).toFixed(2);
+            customer_gid = user.salesrtdt_customer_gid;
+            date = new Date();
+            remarks = '';
+
+         });
+
+         jsonheader_json.push({
+            "Returntype": 'Sales Return',
+            "Date": selecteddate(date),
+            "Customer_gid": customer_gid,
+            "Amount": Amount,
+            "Taxamount": Taxamount,
+            "Netamount": Netamount,
+            "Remarks": '',
+            "Status_details": 'Draft',
+            "returnheader_Sno": 1
+         });
+
+         jsonrecepit_json.push({
+            "From": 'Customer',
+            "Date": selecteddate(date),
+            "vch_type": 'R',
+            "type": 'Sales Return',
+            "ref_gid": 35,
+            "reftable_gid": 0,
+            "amount": Netamount,
+            "balanceamount": 0,
+            "remarks": ''
+         });
+         jsondetails = {
+            Returndetails: jsondetails_json
+         }
+         jsonheader = {
+            Returnheader: jsonheader_json
+         }
+         jsonrecepit = {
+            receipt: jsonrecepit_json
+         }
+      }
+
+      if (type == 'purch_return') {
+
+         angular.forEach($scope.stock_purchasereturn, function(user) {
+
+            jsondetails_json.push({
+               Header_gid: 0,
+               product_gid: user.product_gid,
+               Qty: user.returnqty,
+               Unitrate: user.purchasereturn_unitprize,
+               Amount: parseFloat(Math.round(user.purchasereturn_amount * 100) / 100).toFixed(2),
+               Taxamount: parseFloat(Math.round(user.purchasereturn_taxmount * 100) / 100).toFixed(2),
+               Netamount: parseFloat(Math.round(user.purchasereturn_total * 100) / 100).toFixed(2),
+               Remarks: '',
+               returnheader_Sno: 1
+            });
+
+            Amount = Amount + user.purchasereturn_amount;
+            Taxamount = Taxamount + user.purchasereturn_taxmount;
+            Netamount = Netamount + user.purchasereturn_total;
+            supplier_gid = user.supplier_gid;
+            date = user.purchasereturn_date;
+            remarks = '';
+
+         });
+
+         jsonheader_json.push({
+            "Returntype": 'Purchase Return - Damage',
+            "Date": selecteddate(date),
+            "Supplier_gid": supplier_gid,
+            "Amount": Amount,
+            "Taxamount": Taxamount,
+            "Netamount": Netamount,
+            "Remarks": '',
+            "Status_details": return_status,
+            "returnheader_Sno": 1
+         });
+
+         jsonrecepit_json.push({
+            "From": 'Supplier',
+            "Date": selecteddate(date),
+            "vch_type": 'R',
+            "type": 'Purchase Return - Damage',
+            "ref_gid": 35,
+            "reftable_gid": 0,
+            "amount": Netamount,
+            "balanceamount": 0,
+            "remarks": ''
+         });
+         jsondetails = {
+            Returndetails: jsondetails_json
+         }
+         jsonheader = {
+            Returnheader: jsonheader_json
+         }
+         jsonrecepit = {
+            receipt: jsonrecepit_json
+         }
+      }
+      if (type == 'purch_rec_rtn') {
+
+         angular.forEach($scope.purchreturn_rec, function(user) {
+            jsondetails_json.push({
+               Header_gid: 0,
+               product_gid: user.product_gid,
+               Qty: user.received_qty,
+               Unitrate: user.unit_rate,
+               Amount: parseFloat(Math.round(user.amount * 100) / 100).toFixed(2),
+               Taxamount: parseFloat(Math.round(user.tax * 100) / 100).toFixed(2),
+               Netamount: parseFloat(Math.round(user.total * 100) / 100).toFixed(2),
+               Remarks: '',
+               returnheader_Sno: 1
+            });
+
+            Amount = Amount + user.amount;
+            Taxamount = Taxamount + user.tax;
+            Netamount = Netamount + user.total;
+            supplier_gid = user.supplier_gid;
+            date = new Date();
+            remarks = '';
+
+         });
+
+         jsonheader_json.push({
+            "Returntype": 'Purchase Return - Received',
+            "Date": selecteddate(date),
+            "Supplier_gid": supplier_gid,
+            "Supplier_gid": supplier_gid,
+            "Amount": Amount,
+            "Taxamount": Taxamount,
+            "Netamount": Netamount,
+            "Remarks": '',
+            "Status_details": return_status,
+            "returnheader_Sno": 1
+         });
+
+         jsonrecepit_json.push({
+            "From": 'Supplier',
+            "Date": selecteddate(date),
+            "vch_type": 'R',
+            "type": 'Purchase Return - Received',
+            "ref_gid": 35,
+            "reftable_gid": 0,
+            "amount": Netamount,
+            "balanceamount": 0,
+            "remarks": ''
+         });
+         jsondetails = {
+            Returndetails: jsondetails_json
+         }
+         jsonheader = {
+            Returnheader: jsonheader_json
+         }
+         jsonrecepit = {
+            receipt: jsonrecepit_json
+         }
+      }
+
+
+      var save_return = invertoryService.return_set('Insert', jsonheader, jsondetails, jsonrecepit);
+      save_return.then(function(result) {
+         if (result.data == 'SUCCESS') {
+            alert(" Insert Successfully");
+            $window.location.href = "servicesummary";
+         } else {}
+
+      })
+   }
+   $scope.status = '';
+   $scope.returnview = function(hd_gid, status, type) {
+      $scope.status = status;
+      var returnheader = invertoryService.getreturn('RETURN DETAIL', 0, 0, hd_gid, 0, 0, '')
+      returnheader.then(function(result) {
+            $scope.disabled = false;
+            $scope.showfalse = false;
+            $scope.showform = false;
+            if (type == 'Sales Return') {
+               $scope.stock_salesreturndetails = [];
+               angular.forEach(result.data, function(user) {
+                  $scope.stock_salesreturndetails.push({
+                     "salesrtdt_gid": ($scope.stock_salesreturndetails.length + 1),
+                     "salesrtdt_customer_name": user.customer_name,
+                     "salesrtdt_customer_gid": user.customer_gid,
+                     "salesrtdt_product_name": user.product_name,
+                     "salesrtdt_product_gid": user.product_gid,
+                     "salesrtdt_qty": user.returndetails_qty,
+                     "salesrtdt_unitprz": user.returndetails_unitrate,
+                     "salesrtdt_amt": user.returndetails_amount,
+                     "salesrtdt_taxamt": user.returndetails_taxamount,
+                     "salesrtdt_total": user.returndetails_netamount,
+                     "salesrtdt_productdisplayname":user.product_displayname,
+                     "salesrtdt_productcode":user.product_code,
+                     "location_name":user.location_name,
+                     "returndetails_gid":user.returndetails_gid,
+                     "returnheader_gid":user.returndetails_gid,
+                  });
+
+               });
+               $scope.showformpurchase = false;
+               $scope.showsalesreturn = true;
+               $scope.showpurchasereturn = false;
+               $scope.showpurchasereturnreceived = false;
+               $scope.showconversion = false;
+               $scope.showsalesdamage = false;
+               var jsonData = "{}"
+               var customer = invertoryService.getcustomer(jsonData)
+               customer.then(function(result) {
+                     $scope.mullti = result.data;
+                  },
+                  function(err) {
+                     alert('No data!.');
+                  }).finally($scope.endloading);
+
+               $scope.querySearch = function(query) {
+                  if (query) {
+                     query = query.replace(/[\s]/g, '')
+                  } else {
+                     query = ''
+                  }
+                  var result = $http.get(Appname + "/Productjson/").then(function(response) {
+
+                     var res = JSON.parse(response.data);
+                     te = res.filter(function(val) {
+                        var t = val.product_displayname.replace(/[\s]/g, '').toLowerCase();
+                        var r = t.indexOf(query)
+                        return r != -1;
+                     });
+                     var data = te.filter(function(obj) {
+                        return obj.name.replace(/[\s]/g, '').toLowerCase().indexOf(query) != -1;
+                     });
+                     return data;
+                  });
+                  return result;
+               }
+            }
+            if (type == 'Purchase Return - Received') {
+
+            }
+            if (type == 'Purchase Inward') {
+
+               $scope.showformpurchase = true;
+               $scope.showsalesreturn = false;
+               $scope.showpurchasereturn = false;
+               $scope.showpurchasereturnreceived = false;
+               $scope.showconversion = false;
+               $scope.showsalesdamage = false;
+
+               <!--dropdown for supplier-->
+               var posupplier = invertoryService.getdropdown("supplier");
+               posupplier.then(function(posupplier) {
+                  var posupplier = JSON.parse(posupplier.data)
+                  $scope.POsupplier_list = posupplier;
+
+               }, function() {
+                  alert("Record Not Found")
+               });
+
+               $scope.querySearch = function(query) {
+                  if (query) {
+                     query = query.replace(/[\s]/g, '')
+                  } else {
+                     query = ''
+                  }
+                  var result = $http.get(Appname + "/Productjson/").then(function(response) {
+
+                     var res = JSON.parse(response.data);
+                     te = res.filter(function(val) {
+                        var t = val.product_displayname.replace(/[\s]/g, '').toLowerCase();
+                        var r = t.indexOf(query)
+                        return r != -1;
+                     });
+                     var data = te.filter(function(obj) {
+                        return obj.name.replace(/[\s]/g, '').toLowerCase().indexOf(query) != -1;
+                     });
+                     return data;
+                  });
+                  return result;
+               }
+               angular.forEach(result.data, function(user) {
+                  $scope.stock_purchaseinward.push({
+                     supplier_gid: user.supplier_gid,
+                     supplier_name: user.supplier_name,
+                     product_gid: user.product_gid,
+                     product_name: user.product_name,
+                     qty:user.returndetails_qty,
+                     date: user.date,
+                     unitprize: user.returndetails_unitrate,
+                     amount: user.returndetails_amount,
+                     taxmaount: user.returndetails_netamount - user.returndetails_amount,
+                     total: user.returndetails_netamount,
+                     product_displayname:user.product_displayname,
+                     uom_gid:user.uom_gid,
+                     uom_name:user.uom_name
+                  });
+               });
+            }
+            if (type == 'Purchase Return - Damage') {
+                 $scope.stock_purchasereturn = [];
+               angular.forEach(result.data, function(user) {
+                  $scope.stock_purchasereturn.push({
+                     "stock_purchasereturn_gid": ($scope.stock_purchasereturn.length + 1),
+                     "supplier_gid": user.supplier_gid,
+                     "supplier_name": user.supplier_name,
+                     "product_name": user.product_name,
+                     "product_gid": user.product_gid,
+                     "returnqty": user.returndetails_qty,
+                     "purchasereturn_unitprize": user.returndetails_unitrate,
+                     "purchasereturn_amount": user.returndetails_amount,
+                     "purchasereturn_taxmount": user.returndetails_netamount - user.returndetails_amount,
+                     "purchasereturn_total": user.returndetails_netamount,
+                     "purchasereturn_displayname":user.product_displayname
+                  });
+               });
+
+               $scope.showformpurchase = false;
+               $scope.showsalesreturn = false;
+               $scope.showpurchasereturn = true;
+               $scope.showpurchasereturnreceived = false;
+               $scope.showconversion = false;
+               $scope.showsalesdamage = false;
+
+               var posupplier = invertoryService.getdropdown("supplier");
+               posupplier.then(function(posupplier) {
+                  var posupplier = JSON.parse(posupplier.data)
+                  $scope.Purchasesupplier = posupplier;
+               }, function() {
+                  alert("Record Not Found")
+               });
+            }
+            if (type == 'Sales Return - Cancel') {
+
+            }
+            if (type == 'Sales Return - Damage') {
+
+            }
+         },
+         function(err) {
+            alert('No data!.');
+         }).finally($scope.endloading);
+   }
+
+    $scope.view_editdata=function(details,type,returndetail){
+
+        if(type=='Purchase Inward')
+        {
+
+         var product={ name: details.product_displayname,
+                    product_code: details.product_code,
+                    product_displayname: details.product_displayname,
+                    product_gid:  details.product_gid,
+                    product_name: details.product_name,
+                      uom_gid: details.uom_gid,
+                    uom_name: details.uom_name};
+
+                $scope.supplier_gid={supplier_gid:details.supplier_gid,supplier_name:details.supplier_name};
+                $scope.selectedItempurchase=product;
+                $scope.inwardqty=details.qty;
+                $scope.inwarddate=details.date;
+                $scope.purch_retunitprize=details.unitprize;
+                $scope.purch_retamount=details.amount;
+                $scope.purch_retgstper=(details.taxmaount/details.amount*100);
+                $scope.purch_rettotal=details.total;
+        }
+
+        if(type=='Sales Return')
+        {
+
+         var product={ name: details.product_displayname,
+                    product_code: details.salesrtdt_productcode,
+                    product_displayname: details.salesrtdt_productdisplayname,
+                    product_gid:  details.salesrtdt_product_gid,
+                    product_name: details.salesrtdt_product_name};
+         $scope.ddlcustomersalesreturn={customer_gid:details.salesrtdt_customer_gid,
+                             customer_name:details.salesrtdt_customer_name,
+                              location_name:details.location_name};
+
+         $scope.selecteditemsalesreturn=product;
+         $scope.salesreturnqty=details.salesrtdt_qty;
+         $scope.salesreturnunitprize=details.salesrtdt_unitprz;
+         $scope.salesreturnamount=details.salesrtdt_amt;
+         $scope.salesreturngstper=(details.salesrtdt_taxamt/details.salesrtdt_amt)*100;
+         $scope.salesreturntotal=details.salesrtdt_total;
+        }
+
+        if(type='Purchase Return - Damage'){
+
+                    var product={ name: details.purchasereturn_displayname,
+                    product_displayname: details.purchasereturn_displayname,
+                    product_gid:  details.product_gid,
+                    product_name: details.product_name};
+
+            $scope.supplierpurchasereturn={supplier_gid:details.supplier_gid,supplier_name:details.supplier_name};
+            $scope.selectedpurchasereturn=product;
+            $scope.Returndate=details.date;
+            $scope.ACselectpurchasereturn(details);
+            $scope.purchretunqty=details.returnqty;
+            $scope.purchreturnunitprize=details.purchasereturn_unitprize;
+            $scope.purchreturnamount=details.purchasereturn_amount;
+            $scope.purchreturngstper=(details.purchasereturn_taxmount/details.purchasereturn_amount)*100;
+            $scope.purchreturntotal=details.purchasereturn_total;
+
+
+        }
+    }
+
+}]);
+
+app.service("invertoryService", function($http, $filter) {
+   this.getgrnheader = function() {
+      var response = $http.get(Appname + "/get_grnheadersumry/");
+      return response;
+   }
+   this.getstockdetails = function(action, fromdate, todate, supplier_gid, product_gid) {
+      var response = $http.post(Appname + "/getstock_details/", {
+         params: {
+            "action": action,
+            "fromdate": fromdate,
+            "todate": todate,
+            "product_gid": product_gid,
+            "supplier_gid": supplier_gid
+         }
+      });
+      return response;
+   }
+
+   this.getgrndetails = function(grnheader_gid, grnsupplier_gid) {
+      var response = $http.post(Appname + "/get_grndetails/", {
+         params: {
+            "grnheader_gid": grnheader_gid,
+            "grnheader_supplier_gid": grnsupplier_gid
+         }
+      })
+      return response;
+   }
+
+   this.getdropdown = function(tablename) {
+      var responsee = $http.post(Appname + "/Dropdown_details/", {
+         params: {
+            "tablename": tablename,
+            "gid": 0,
+            "name": ''
+         }
+      });
+      return responsee;
+   }
+   this.setstockdetails = function(action, type, jsonheader) {
+      var response = $http.post(Appname + "/stockdetials_set/", {
+         params: {
+            "action": action,
+            "type": type,
+            "jsonheader": jsonheader
+         }
+      })
+      return response;
+   }
+
+   this.getproductname = function(supplier_gid) {
+      var response = $http.post(Appname + "/product_name/", {
+         params: {
+            "date": "",
+            "supplier_gid": supplier_gid,
+            "product_gid": 0,
+            "char_active": 'Y'
+         }
+      })
+      return response;
+   }
+
+   this.getinvoiceheader = function(e, action, Cname, jsondata) {
+      var respons = $http.post(Appname + "/stock_sales_order_get/", {
+         parms: {
+            "custid": e,
+            "action": action,
+            "Cname": Cname,
+            "filter": jsondata
+         }
+      });
+      return respons;
+   }
+
+   this.getcustomer = function(jsonData) {
+      var response = $http.get(Appname + "/customer_ddl/", {
+         params: {
+            'jsonData': jsonData
+         }
+      });
+      return response;
+   }
+   this.return_set = function(action, jsonheader, jsonedetails, jsonrecepit) {
+      var respons = $http.post(Appname + "/return_set/", {
+         parms: {
+            "action": action,
+            "jsonheader": jsonheader,
+            "jsondetails": jsonedetails,
+            "jsonreceipt": jsonrecepit
+         }
+      });
+      return respons;
+   }
+
+   this.getreturn = function(action, custgid, supgid, rpt, rptdet_gid, status) {
+      var response = $http.post(Appname + "/get_recepit/", {
+         params: {
+            "action": action,
+            "customer_gid": custgid,
+            "supplier_gid": supgid,
+            "receipt_gid": rpt,
+            "receiptdetails_gid": rptdet_gid,
+            "status": status
+         }
+      });
+      return response;
+   }
+});
+
+
+
+</script>
+{% endblock %}

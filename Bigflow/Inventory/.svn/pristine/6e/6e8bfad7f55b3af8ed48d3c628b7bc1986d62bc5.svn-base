@@ -1,0 +1,12 @@
+from django.conf.urls import url
+from django.urls import path
+from Bigflow.Inventory import views
+
+urlpatterns = [
+    path('Invertory/', views.Invertory_Index, name='Invertory_Index'),
+    path('getstock_details/',views.getstock_details,name='getstock_details'),
+    path('stockdetials_set/',views.stockdetials_set,name='stockdetials_set'),
+    path('stock_sales_order_get/',views.stock_sales_order_get,name='stock_sales_order_get'),
+    path('return_set/',views.return_set,name='return_set'),
+    path('get_recepit/',views.get_recepit,name='get_recepit'),
+]

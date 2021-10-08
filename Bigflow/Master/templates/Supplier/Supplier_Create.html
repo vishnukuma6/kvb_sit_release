@@ -1,0 +1,496 @@
+{% extends 'Shared/mainLayout.html' %}
+{% load static from staticfiles %}
+{% block title %} Supplier Rate Master {% endblock %}
+{% block content %}
+{% csrf_token %}
+{% verbatim %}
+<div class="maincontent">
+    <div ng-app="Appsupplierrate" ng-controller="Ctrlsupplierrate" class="container container1">
+        <div class="row">
+            <div class="row-header col-lg-12 col-sm-12">
+                <h4>{{title}} Supplier </h4>
+            </div>
+        </div>
+        <form name="demoForm" novalidate>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="col-md-3 col-sm-12 col-xs-12">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Supplier Name</label>
+                            <input ng-model="name" maxlength="60" ng-change="getsupcode(name)"
+                                   ng-pattern="/^([A-Za-z0-9 @&(\[\])-/]){3,}]*$/" capitalize ng-required="true"/>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-3 col-sm-12 col-xs-12">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Supplier Capacity</label>
+                            <input ng-model="code1" numbers-only maxlength="4" ng-required="true"/>
+                        </md-input-container>
+                    </div>
+                </div>
+            </div>
+            <div class="row" layout-xs="column" layout-padding="">
+                <div class="col-md-12">
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Address Line 1</label>
+                            <input ng-model="adline" capitalize maxlength="128" ng-disabled="addressdisabled"
+                                   ng-required="true"/>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Address Line 2</label>
+                            <input ng-model="adline2" capitalize maxlength="128" ng-disabled="addressdisabled"/>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Address Line 3</label>
+                            <input ng-model="adline3" capitalize maxlength="128" ng-disabled="addressdisabled"/>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>State</label>
+                            <md-select ng-model="selectedState" ng-change="state_clk(selectedState)"
+                                       ng-disabled="addressdisabled" md-on-close="clearSearchTerm()"
+                                       data-md-container-class="selectdemoSelectHeader">
+                                <md-select-header class="demo-select-header">
+                                    <input ng-model="serchTerm" type="search" placeholder="Search for a State.."
+                                           onkeydown="mdSelectOnKeyDownOverride(event)"
+                                           class="demo-header-searchbox md-text"/>
+                                </md-select-header>
+                                <md-optgroup label="State">
+                                    <md-option ng-value="c.state_gid" ng-repeat="c in stateddl |
+                                     filter:serchTerm">{{c.state_name}}
+                                    </md-option>
+                                </md-optgroup>
+                            </md-select>
+                        </md-input-container>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>District</label>
+                            <md-select ng-model="selecteddistrict" ng-change="district_clk(selecteddistrict)"
+                                       ng-disabled="addressdisabled" md-on-close="clearSearchTerm()"
+                                       data-md-container-class="selectdemoSelectHeader">
+                                <md-select-header class="demo-select-header">
+                                    <input ng-model="sarchTerm" type="search" placeholder="Search for a State.."
+                                           onkeydown="mdSelectOnKeyDownOverride(event)"
+                                           class="demo-header-searchbox md-text"/>
+                                </md-select-header>
+                                <md-optgroup label="State">
+                                    <md-option ng-value="c.district_gid" ng-repeat="c in distritddl |
+                                     filter:sarchTerm">{{c.district_name}}
+                                    </md-option>
+                                </md-optgroup>
+                            </md-select>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>City</label>
+                            <md-select ng-model="selectedcity" ng-change="city_clk(selectedcity)"
+                                       ng-disabled="addressdisabled" md-on-close="clearSearchTerm()"
+                                       data-md-container-class="selectdemoSelectHeader">
+                                <md-select-header class="demo-select-header">
+                                    <input ng-model="srchTerm" type="search" placeholder="Search for a City.."
+                                           onkeydown="mdSelectOnKeyDownOverride(event)"
+                                           class="demo-header-searchbox md-text">
+                                </md-select-header>
+                                <md-optgroup label="City">
+                                    <md-option ng-value="c.city_gid" ng-repeat="c in city1 |
+                                     filter:srchTerm">{{c.City_Name}}
+                                    </md-option>
+                                </md-optgroup>
+                            </md-select>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-3">
+                        <md-input-container class="md-block inputcontainer">
+                            <label>Pincode</label>
+                            <input ng-model="pcode" ng-pattern="pincodevalidation"
+                                   ng-blur="pinchange(pcode)"
+                                   ng-disabled="addressdisabled"
+                                   ng-required="true"/>
+                        </md-input-container>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div ng-include="'empcntct'">Add Contact</div>
+            </div>
+            <div class="col-md-4 col-md-offset-4">
+                <md-input-container class="md-block inputcontainer">
+                    <md-button class="md-raised custbutton" value="save" ng-hide="save" ng-disabled="demoForm.$invalid"
+                               ng-click="grpsave(add)">
+                        save
+                    </md-button>
+                    <md-button class="md-raised custbutton" value="submit" ng-hide="update" ng-click="grpedit(add)"
+                               ng-disabled=" myForm.Name.$invalid  || myForm.Code.$invalid">
+                        update
+                    </md-button>
+                    <md-button class="md-raised" ng-click="cancel()" ng-href="suppliersummary">Cancel</md-button>
+                </md-input-container>
+            </div>
+        </form>
+    </div>
+</div>
+{% endverbatim %}
+<script>
+    var app = angular.module('Appsupplierrate', ['ngMaterial', 'ui.bootstrap', 'AppCommon']).config(function(
+        $httpProvider) {
+        $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+        $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+    });
+app.run(function($mdDateLocale, $filter) {
+    $mdDateLocale.formatDate = function(date) {
+        return $filter('date')(date, "dd-MMM-yyyy");
+    };
+})
+app.controller('Ctrlsupplierrate', ['$scope', 'testService', '$window', '$mdDialog', '$filter', '$http',
+    'SerCommon', '$element',
+    function($scope, testService, $window, $mdDialog, $filter, $http, SerCommon, $element) {
+        $scope.update = true;
+        var detail = JSON.parse(sessionStorage.getItem('today'));
+        $scope.employgid = detail.employee_gid;
+        $scope.entity_gid = detail.entity_gid;
+        $scope.tdate = convertdate(detail.date);
+        $scope.current_date = new Date();
+        $scope.distritddl = [];
+        $scope.disabled = true;
+        $scope.loading = function() {
+            $mdDialog.show({
+                templateUrl: 'loaderSpinner',
+                parent: angular.element(document.body),
+                clickOutsideToClose: false
+            });
+        };
+        $scope.endloading = function() {
+            $mdDialog.hide();
+        };
+        window.mdSelectOnKeyDownOverride = function(event) {
+            event.stopPropagation();
+        };
+        var sttddl = testService.getstateddl()
+        sttddl.then(function(result) {
+                $scope.stateddl = [];
+                $scope.stateddl = JSON.parse(result.data);
+                $scope.locstate = JSON.parse(result.data);
+            }),
+            function() {
+                alert('no data');
+            };
+
+        $scope.state_clk = function(state_gid) {
+            var distddl = testService.getdistddl(state_gid)
+            distddl.then(function(result) {
+                    $scope.distritddl = JSON.parse(result.data);
+                }),
+                function() {
+                    alert('no data');
+                };
+        };
+
+        $scope.district_clk = function(district_gid) {
+            var ctyddl = testService.getcityddl(district_gid)
+            ctyddl.then(function(result) {
+                    $scope.city1 = JSON.parse(result.data);
+                }),
+                function() {
+                    alert('no data');
+                };
+        };
+
+        $scope.pinchange = function(pincode) {
+            var pincd = testService.getpincodeall(pincode)
+            pincd.then(function(result) {
+                    var apincde = [];
+                    apincde = JSON.parse(result.data);
+                    $scope.selectedState = apincde[0].city_state_gid;
+                    $scope.state_clk($scope.selectedState);
+                    $scope.selecteddistrict = apincde[0].pincode_district_gid;
+                    $scope.district_clk($scope.selecteddistrict);
+                    $scope.selectedcity = apincde[0].pincode_City_gid;
+                    $scope.pcode = apincde[0].pincode_no;
+                }),
+                function() {
+                    alert('No data!.');
+                };
+        };
+        var custgrpddl = testService.getcustgrp()
+        custgrpddl.then(function(result) {
+                $scope.conttype = [];
+                $scope.conttype = JSON.parse(result.data);
+            }),
+            function() {
+                alert('No data!.');
+            };
+
+        function loaddata1() {
+            $scope.designationdetails == [];
+            var rolegrouplist = testService.getdesg();
+            rolegrouplist.then(function(rolegrouplist) {
+                    $scope.designationdetails = JSON.parse(rolegrouplist.data);
+                }, function(err) {
+                    alert('No data!.');
+                })
+                .finally();
+        };
+        loaddata1();
+        $scope.city_clk = function(city_gid) {
+            var pincd = testService.getpincode(city_gid)
+            pincd.then(function(result) {
+                    var pincde = [];
+                    pincde = JSON.parse(result.data);
+                    $scope.pcode = pincde[0].pincode_no;
+                }),
+                function() {
+                    alert('no data');
+                };
+        };
+
+        $scope.grpedit = function() {
+            if ($scope.add.dobb == undefined || $scope.add.dobb == null) {
+                $scope.add.dobb1 = formatStringDate($scope.current_date, 'yyyy-mm-dd')
+            } else {
+                $scope.add.dobb1 = formatStringDate(new Date($scope.add.dobb), 'yyyy-mm-dd')
+            }
+            var data1 = {
+                "Params": {
+                    "Supplier": {
+                        "Supplier_Name": $scope.name,
+                        "Supplier_Gid": $scope.supplier_gid,
+                        "Supplier_Capacity": $scope.code1
+                    },
+                    "Address": {
+                        "Address_Gid": $scope.address_gid,
+                        "Address1": $scope.adline,
+                        "Address2": $scope.adline2,
+                        "Address3": $scope.adline3,
+                        "Pincode": $scope.pcode,
+                        "District_Gid": $scope.selecteddistrict,
+                        "City_Gid": $scope.selectedcity,
+                        "State_Gid": $scope.selectedState
+                    },
+                    "Contact": {
+                        "Contact_Gid": $scope.contact_gid,
+                        "Contacttype_Gid": $scope.add.cntcttype,
+                        "Contact_Name": $scope.add.prsnname,
+                        "Designation_Gid": $scope.add.dsgntn,
+                        "Landline_No1": $scope.add.lndlne,
+                        "Landline_No2": $scope.add.lndlne2,
+                        "Mobile_No1": $scope.add.mobno,
+                        "Mobile_No2": $scope.add.mobno2,
+                        "Email": $scope.add.mailid,
+                        "Contact_Dob": $filter('date')($scope.add.dobb, "yyyy-MM-dd"),
+                        "Contact_Wd": $filter('date')($scope.add.weddy, "yyyy-MM-dd")
+                    },
+                    "Classification": {
+                        "Entity_Gid": $scope.entity_gid,
+                        "Create_By": $scope.employgid
+                    }
+                }
+            }
+            var kdata = {
+                Group: 'Supplier_Set',
+                Action: 'SUPP_UPDATE',
+                value: data1
+            }
+            var get_supplierproduct = testService.getsupplierrate(kdata)
+            get_supplierproduct.then(function(result) {
+                    if (result.data.MESSAGE == 'SUCCESS') {
+                        alert(result.data.MESSAGE);
+                        $scope.loading();
+                        $window.location.href = "suppliersummary";
+                    } else {
+                        alert(result.data.DATA);
+                    }
+                },
+                function() {
+                    alert('no data');
+                }).finally();
+        }
+
+        $scope.getsupcode = function(n) {
+            var params = {
+                "Action": n
+            }
+            var get_suppliercode = testService.supcode(params)
+            get_suppliercode.then(function(result) {
+                $scope.code = result.data;
+            })
+        }
+
+        $scope.emp = new Date();
+        $scope.maxDate = new Date($scope.emp.getFullYear() - 18, $scope.emp.getMonth(), $scope.emp.getDate());
+        $scope.doj = new Date();
+        $scope.maximumDate = new Date($scope.doj.getFullYear(), $scope.doj.getMonth(), $scope.doj.getDate());
+        $scope.add = [];
+
+        $scope.grpsave = function() {
+            var data = {
+                "Params": {
+                    "Supplier": {
+                        "Supplier_Name": $scope.name,
+                        "Supplier_Capacity": $scope.code1
+                    },
+                    "Address": {
+                        "Address1": $scope.adline,
+                        "Address2": $scope.adline2,
+                        "Address3": $scope.adline3,
+                        "Pincode": $scope.pcode,
+                        "District_Gid": $scope.selecteddistrict,
+                        "City_Gid": $scope.selectedcity,
+                        "State_Gid": $scope.selectedState
+                    },
+                    "Contact": {
+                        "Contacttype_Gid": $scope.add.cntcttype,
+                        "Contact_Name": $scope.add.prsnname,
+                        "Designation_Gid": $scope.add.dsgntn,
+                        "Landline_No1": $scope.add.lndlne,
+                        "Landline_No2": $scope.add.lndlne2,
+                        "Mobile_No1": $scope.add.mobno,
+                        "Mobile_No2": $scope.add.mobno2,
+                        "Email": $scope.add.mailid,
+                        "Contact_Dob": $filter('date')($scope.add.dobb, "yyyy-MM-dd"),
+                        "Contact_Wd": $filter('date')($scope.add.weddy, "yyyy-MM-dd"),
+                    },
+                    "Classification": {
+                        "Entity_Gid": $scope.entity_gid,
+                        "Create_By": $scope.employgid
+                    }
+                }
+            }
+            var jdata = {
+                Group: 'Supplier_Set',
+                Action: 'SUPP_INSERT',
+                key: data
+            }
+
+            var get_supplierproduct = testService.getsupplierrate(jdata)
+            get_supplierproduct.then(function(result) {
+                    if (result.data.MESSAGE == 'SUCCESS') {
+                        alert('Inserted Successfully');
+                        $scope.load();
+                        $scope.loading();
+                    } else {
+                        alert(result.data.DATA)
+                    }
+                },
+                function() {
+                    alert('no data');
+                }).finally();
+        }
+
+        $scope.load = function() {
+            $window.location.href = "supplier";
+        }
+
+        //edit
+        if (sessionStorage.getItem('emp_details') != null) {
+            $scope.update = false;
+            $scope.save = true;
+            var employee_detail = JSON.parse(sessionStorage.getItem('emp_details'));
+            $scope.supplier_gid = employee_detail.supt_gid.supplier_gid;
+            $scope.address_gid = employee_detail.supt_gid.address_gid;
+            $scope.contact_gid = employee_detail.supt_gid.contact_gid;
+            $scope.name = employee_detail.supt_gid.supplier_name;
+            $scope.code1 = employee_detail.supt_gid.supplier_capacity;
+            $scope.adline = employee_detail.supt_gid.address_1;
+            $scope.adline2 = employee_detail.supt_gid.address_2;
+            $scope.adline3 = employee_detail.supt_gid.address_3;
+            $scope.selectedcity = employee_detail.supt_gid.city_name;
+            $scope.selectedState = employee_detail.supt_gid.state_name;
+            $scope.add.cntcttype = employee_detail.supt_gid.contact_contacttype_gid;
+            $scope.add.dsgntn = employee_detail.supt_gid.contact_designation_gid;
+            $scope.add.prsnname = employee_detail.supt_gid.contact_personname;
+            $scope.add.mobno = employee_detail.supt_gid.contact_mobileno;
+            $scope.add.mobno2 = employee_detail.supt_gid.contact_mobileno2;
+            // $scope.add.cntcttype=employee_detail.supt_gid.contact_gid;
+            $scope.add.mailid = employee_detail.supt_gid.contact_email;
+            $scope.add.dobb = employee_detail.supt_gid.contact_Dob;
+            $scope.add.lndlne = employee_detail.supt_gid.contact_landline;
+            $scope.add.lndlne2 = employee_detail.supt_gid.contact_landline2;
+            $scope.pcode = employee_detail.supt_gid.address_pincode;
+            $scope.selectedState = employee_detail.supt_gid.address_state_gid;
+            $scope.state_clk(employee_detail.supt_gid.address_state_gid);
+            $scope.selecteddistrict = employee_detail.supt_gid.address_district_gid;
+            $scope.district_clk(employee_detail.supt_gid.address_district_gid);
+            $scope.selectedcity = employee_detail.supt_gid.address_city_gid;
+            $scope.city_clk(employee_detail.supt_gid.address_city_gid);
+            $scope.add.weddy = employee_detail.supt_gid.contact_Wd;
+            // $scope.add.cntcttype=employee_detail.supt_gid.contact_ref_gid;
+            // $scope.add.cntcttype=employee_detail.supt_gid.contact_reftablecode;
+        }
+        if ($scope.update) {
+            $scope.title = 'Create'
+        } else {
+            $scope.title = 'Edit'
+        }
+    }
+]);
+//service
+app.service("testService", function($http) {
+    this.getsupplierrate = function(data) {
+        var response = $http.post(Appname + "/Supplier_Master/", data);
+        return response;
+    }
+    this.getstateddl = function(d) {
+        var response = $http.get(Appname + "/stateddl/");
+        return response;
+    }
+    this.getdistddl = function(state_gid) {
+        var response = $http.get(Appname + "/districtddl/", {
+            params: {
+                "state_gid": state_gid
+            }
+        });
+        return response;
+    }
+    this.getcityddl = function(district_gid) {
+        var response = $http.get(Appname + "/cityddl/", {
+            params: {
+                "district_gid": district_gid
+            }
+        });
+        return response;
+    }
+    this.getpincodeall = function(pincode) {
+        var response = $http.get(Appname + "/allpinget/", {
+            params: {
+                "pincode": pincode
+            }
+        });
+        return response;
+    }
+    this.getcustgrp = function(d) {
+        var response = $http.get(Appname + "/get_contctgroup/");
+        return response;
+    }
+    //supcode
+    this.supcode = function(d) {
+        var response = $http.post(Appname + "/suppcode/", d);
+        return response;
+    }
+    this.getdesg = function() {
+        var response = $http.get(Appname + "/desgjson/");
+        return response;
+    }
+    this.getpincode = function(city_gid) {
+        var response = $http.get(Appname + "/pincode/", {
+            params: {
+                "city_gid": city_gid
+            }
+        });
+        return response;
+    }
+});
+
+</script>
+{% endblock %}

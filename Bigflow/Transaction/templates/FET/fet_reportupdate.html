@@ -1,0 +1,785 @@
+{% extends 'Shared/mainLayout.html' %}
+{% load static from staticfiles %}
+{% block title %} Report update{% endblock %}
+{% block content %}
+{% verbatim %}
+<div class="maincontent" ng-app="Appschedulesummary" ng-controller="Ctrlschedulesummary" ng-cloak>
+    <div class="container container1">
+        <div class="row">
+            <div class="row-header col-lg-12 col-sm-12">
+                <div class="col-lg-10 col-sm-10">
+                    <h4><strong> Schedule Summary</strong></h4>
+                </div>
+                <div class="col-lg-2 col-sm-2">
+                    <md-input-container>
+                        <label>Client Name</label>
+                        <md-select ng-model="sltdclient" ng-change="chngclnt(sltdclient)">
+                            <md-optgroup label="Client Name">
+                                <md-option ng-repeat="c in clientname" ng-value="c.client_gid"> {{c.client_name}}
+                                </md-option>
+                            </md-optgroup>
+                        </md-select>
+                    </md-input-container>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">
+                <md-button class="md-icon-button md-primary" aria-label="Settings" ng-click="go_pre()">
+                    <md-icon>keyboard_arrow_left</md-icon>
+                    <md-tooltip>Previous</md-tooltip>
+                </md-button>
+            </div>
+            <div class="col-xs-6  text-center" ng-init="dateEnable=false" ng-click="dateEnable=true">
+                <div ng-hide="dateEnable"><h4> {{dateSearch | date:'dd-MMM-yyyy'}}</h4></div>
+
+                <md-input-container class="md-block inputcontainer" ng-show="dateEnable">
+                    <label>Date</label>
+                    <md-datepicker md-hide-icons="calendar" ng-model="dateSearch"
+                                   ng-change="dateChange()" md-min-date="minDate" md-max-date="maxDate" ng-click="date"
+                                   formatDate></md-datepicker>
+                </md-input-container>
+            </div>
+            <div class="col-xs-3 text-right">
+                <md-button class="md-icon-button md-primary" aria-label="Settings" ng-click="go_next()">
+                    <md-icon>keyboard_arrow_right</md-icon>
+                    <md-tooltip>Next</md-tooltip>
+                </md-button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 col-sm-12">
+                <div class=" col-lg-4 col-sm-12">
+                    <!--Schedule Details -->
+                    <div class="panel panel-overall">
+                        <div class="panel-heading" ng-click="details=!details">
+                            <div class="row">
+                                <div class="col-xs-4">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="material-icons huge">timer</span>
+                                        </div>
+                                        <figcaption class="figure-caption"></figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-xs-8 text-right">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="huge">{{allSchedule.length}}</span>
+                                        </div>
+                                        <figcaption class="figure-caption">Day's Schedule</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body" ng-show="details">
+                            <div class="row scrollbar" ng-if="allSchedule.length !=0">
+                                <div class="col-lg-12 col-sm-12">
+                                    <div class="list-group">
+                                        <div class="list-group-item" ng-repeat="sch in allSchedule">
+                                            <div ng-init="showdetails=false" ng-click="showdetails=!showdetails">
+                                                {{sch.customer_name}}
+                                            </div>
+                                            <div ng-if="showdetails" class="material-icons">
+                                                <div class="col-xs-2" ng-if="sch.sh_BOOKING !='0'">
+                                            <span class="sales-color" ng-click="schedule_go(sch,'sales')">
+                                                <span>shopping_cart</span>
+                                                <md-tooltip>Sale</md-tooltip>
+                                            </span>
+                                                </div>
+                                                <div class="col-xs-2" ng-if="sch.sh_COLLECTION !='0'">
+                                            <span class="collection-color" ng-click="schedule_go(sch,'collection')">
+                                                <span>account_balance_wallet</span>
+                                                <md-tooltip>collection</md-tooltip>
+                                            </span>
+                                                </div>
+                                                <div class="col-xs-2" ng-if="sch.sh_SERVICE !='0'">
+                                            <span ng-click="schedule_go(sch,'service')" class="service-color">
+                                                <span>build</span>
+                                                <md-tooltip>service</md-tooltip>
+                                            </span>
+                                                </div>
+                                                <div class="col-xs-2" ng-if="sch.sh_OTHERS !='0'">
+                                            <span ng-click="schedule_go(sch,'')" class="others-color">
+                                                <span>edit</span>
+                                                <md-tooltip>Others</md-tooltip>
+                                            </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="row" ng-if="allSchedule.length==0">
+                                <div class="alert alert-info" role="alert"> No Record..!</div>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="row">
+                                <div class="col-sm-9 col-xs-9">
+                                    <span ng-click="schedule_detail('viewDetails')"> <span class="badge badge-success">View Details >></span></span>
+                                </div>
+                                <div class="col-sm-3 col-xs-3 text-center">
+                                    <md-button class="md-icon-button md-primary" aria-label="Settings"
+                                               ng-click="addSchedule('addSchedule')">
+                                        <md-icon>add</md-icon>
+                                        <md-tooltip>Add Schedule</md-tooltip>
+                                    </md-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--Schedule Details  End-->
+
+                </div>
+                <div class="col-lg-4 col-sm-12">
+                    <!--Sales Details -->
+                    <div class="panel panel-sales">
+                        <div class="panel-heading" ng-click="sales_show=!sales_show">
+                            <div class="row">
+                                <div class="col-xs-4">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="material-icons huge">shopping_cart</span>
+                                        </div>
+                                        <figcaption class="figure-caption"></figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-xs-8 text-right">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="huge">{{salesSchedule.length}}</span>
+                                        </div>
+                                        <figcaption class="figure-caption">Sales Details</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body" ng-show="sales_show">
+                            <div class="row scrollbar" ng-if="salesSchedule.length !=0">
+                                <div class="col-lg-12 col-sm-12">
+                                    <div class="list-group">
+                                        <div ng-repeat="sch in salesSchedule" ng-click="schedule_go(sch,'salesdetails')"
+                                             class="list-group-item">
+                                            {{sch.customer_name}} -
+                                            {{sch.schedule_status=='OPEND'?'OPENED':sch.schedule_status}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" ng-if="salesSchedule.length==0">
+                                <div class="alert alert-info" role="alert"> No Record..!</div>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="row">
+                                <div class="col-sm-9 col-xs-9"><h5>Add Sales </h5></div>
+                                <div class="col-sm-3 col-xs-3 text-center">
+                                    <md-button class="md-icon-button md-primary" ng-click="addSchedule('addSchedule')"
+                                               aria-label="Settings"
+                                    >
+                                        <md-icon>add</md-icon>
+                                        <md-tooltip>Add Schedule</md-tooltip>
+                                    </md-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--Sales Details End-->
+                </div>
+                <div class="col-lg-4 col-sm-12">
+                    <!--Collection Details -->
+                    <div class="panel panel-collection">
+                        <div class="panel-heading" ng-click="collection_show=!collection_show">
+                            <div class="row">
+                                <div class="col-xs-4">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="material-icons huge">account_balance_wallet</span>
+                                        </div>
+                                        <figcaption class="figure-caption"></figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-xs-8 text-right">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="huge">{{collectionSche.length}}</span>
+                                        </div>
+                                        <figcaption class="figure-caption">Collection Details</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body" ng-show="collection_show">
+                            <div class="row scrollbar" ng-if="collectionSche.length !=0">
+                                <div class="col-lg-12 col-sm-12">
+                                    <div class="list-group">
+                                        <div ng-repeat="sch in collectionSche"
+                                             ng-click="schedule_go(sch,'collectiondetails')"
+                                             class="list-group-item">
+                                            {{sch.customer_name}} -
+                                            {{sch.schedule_status=='OPEND'?'OPENED':sch.schedule_status}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" ng-if="collectionSche.length==0">
+                                <div class="alert alert-info" role="alert"> No Record..!</div>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="row">
+                                <div class="col-sm-9 col-xs-9"><h5>Add Collection </h5></div>
+                                <div class="col-sm-3 col-xs-3 text-center">
+                                    <md-button class="md-icon-button md-primary" aria-label="Settings"
+                                               ng-click="addSchedule('addCollection')">
+                                        <md-icon>add</md-icon>
+                                        <md-tooltip>Add Collection</md-tooltip>
+                                    </md-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--Collection Details End-->
+                </div>
+
+                <div class="col-lg-4 col-sm-12">
+                    <!--service Details -->
+                    <div class="panel panel-service">
+                        <div class="panel-heading" ng-click="service_show=!service_show">
+                            <div class="row">
+                                <div class="col-xs-4">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="material-icons huge">build</span>
+                                        </div>
+                                        <figcaption class="figure-caption"></figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-xs-8 text-right">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="huge">{{serviceSche.length}}</span>
+                                        </div>
+                                        <figcaption class="figure-caption">Services Details</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body" ng-show="service_show">
+                            <div class="row scrollbar" ng-if="serviceSche.length !=0">
+                                <div class="col-lg-12 col-sm-12">
+                                    <div class="list-group">
+                                        <div ng-repeat="sch in serviceSche" ng-click="schedule_go(sch,'servicedetails')"
+                                             class="list-group-item">
+                                            {{sch.customer_name}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" ng-if="serviceSche.length==0">
+                                <div class="alert alert-info" role="alert"> No Record..!</div>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="row">
+                                <div class="col-sm-9 col-xs-9"><h5>Add Service </h5></div>
+                                <div class="col-sm-3 col-xs-3 text-center">
+                                    <md-button class="md-icon-button md-primary" aria-label="Settings"
+                                               ng-href="service">
+                                        <md-icon>add</md-icon>
+                                        <md-tooltip>Add Services</md-tooltip>
+                                    </md-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--Service Details End-->
+                </div>
+                <div class="col-lg-4 col-sm-12">
+                    <!--TA Details -->
+                    <div class="panel panel-ta">
+                        <div class="panel-heading" ng-click="ta_show=!ta_show">
+                            <div class="row">
+                                <div class="col-xs-4">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="material-icons huge">drive_eta</span>
+                                        </div>
+                                        <figcaption class="figure-caption"></figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-xs-8 text-right">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="huge">{{serviceSche.length}}</span>
+                                        </div>
+                                        <figcaption class="figure-caption">Travelling Allowance</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body" ng-show="ta_show">
+                            <div class="row scrollbar" ng-if="allSchedule.length !=0">
+                                <div class="col-lg-12 col-sm-12" ng-repeat="sch in allSchedule">
+                                    {{sch.customer_name}} - {{sch.scheduletype_name}}
+                                </div>
+                            </div>
+                            <div class="row" ng-if="allSchedule.length==0">
+                                <div class="alert alert-info" role="alert"> No Record..!</div>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="row">
+                                <div class="col-sm-9 col-xs-9"><h5 title="Travelling Allowance">Add TA </h5></div>
+                                <div class="col-sm-3 col-xs-3 text-center">
+                                    <md-button class="md-icon-button md-primary" aria-label="Settings"
+                                               ng-href="TA_details">
+                                        <md-icon>add</md-icon>
+                                        <md-tooltip>Add Allowance</md-tooltip>
+                                    </md-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--TA Details End-->
+                </div>
+                <div class="col-lg-4 col-sm-12">
+                    <div class="panel panel-status">
+                        <div class="panel-heading" ng-click="status_show=!status_show">
+                            <div class="row">
+                                <div class="col-xs-4">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="material-icons huge">people</span>
+                                        </div>
+                                        <figcaption class="figure-caption"></figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-xs-8 text-right">
+                                    <figure class="figure">
+                                        <div class="figure-img img-fluid rounded">
+                                            <span class="huge">{{serviceSche.length}}</span>
+                                        </div>
+                                        <figcaption class="figure-caption">Status</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body" ng-show="status_show">
+                            <div class="row scrollbar" ng-if="allSchedule.length !=0">
+                                <div class="col-lg-12 col-sm-12" ng-repeat="sch in allSchedule">
+                                    {{sch.customer_name}} - {{sch.scheduletype_name}}
+                                </div>
+                            </div>
+                            <div class="row" ng-if="allSchedule.length==0">
+                                <div class="alert alert-info" role="alert"> No Record..!</div>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="row">
+                                <div class="col-sm-6 col-xs-6"><h5>Status updation </h5></div>
+                                <div class="col-sm-3 col-xs-3 text-center">
+                                    <md-button class="md-icon-button md-primary" aria-label="Settings"
+                                               ng-click="status_click('mdl_present','leave')">
+                                        <md-icon>add</md-icon>
+                                        <md-tooltip>Add Leave</md-tooltip>
+                                    </md-button>
+                                </div>
+                                <div class="col-sm-3 col-xs-3 text-center">
+                                    <md-button class="md-icon-button md-primary" aria-label="Settings"
+                                               ng-click="status_click('mdl_present','present')">
+                                        <md-icon>nature_people</md-icon>
+                                        <md-tooltip>Click To Present</md-tooltip>
+                                    </md-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!--Modal View Details-->
+    <div class="modal fade" id="mdl_present" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false"
+         aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-style" role="document">
+            <div class="modal-content">
+                <div class="modal-header popup-header">
+                    <h5 class="modal-title" id="exampleModalLabel">
+                        Today Status
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!--Leave details-->
+                        <div ng-if="!staus_presnt">
+                            <div class="col-xs-12 text-center">
+                                <div class="btn-group">
+                                    <label class="btn btn-default">
+                                        <input type="radio" ng-model="type_leave.type" value="FD"/> Full Day
+                                    </label>
+                                    <label class="btn btn-default">
+                                        <input type="radio" ng-model="type_leave.type" value="HD"/> Half Day
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 text-center" style="padding-top:15px;"
+                                 ng-if="type_leave.type == 'HD'">
+                                <div class="btn-group">
+                                    <label class="btn btn-default">
+                                        <input type="radio" ng-model="section_type.type" value="AM"/> Morning
+                                    </label>
+                                    <label class="btn btn-default">
+                                        <input type="radio" ng-model="section_type.type" value="PM"/> After Noon
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-xs-12" ng-if="type_leave.type == 'FD'">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Date</label>
+                                    <md-datepicker md-hide-icons="triangle" ng-model="dateLeave"
+                                    ></md-datepicker>
+                                </md-input-container>
+                            </div>
+                            <div class="col-xs-12">
+                                <md-input-container class="md-block inputcontainer">
+                                    <label>Remark</label>
+                                    <input type="text" ng-model="remark_leave" required/>
+                                </md-input-container>
+                            </div>
+                        </div>
+                        <!--Present details-->
+                        <div ng-if="staus_presnt">
+                            hello
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-info custbutton" ng-click="staus_update(HasPassport)">submit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endverbatim %}
+<script>
+    var app = angular.module('Appschedulesummary', ['ngMaterial']).config(function($httpProvider, $locationProvider) {
+        $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+        $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+        $locationProvider.html5Mode(true);
+    });
+    app.controller("Ctrlschedulesummary", ['$scope', '$http', '$mdDateLocale', '$filter', 'Serschedulesummary',
+        function($scope, $http, $mdDateLocale, $filter, Serschedulesummary) {
+            var overallSchedule = [];
+            $scope.allSchedule = [];
+            $scope.salesSchedule = [];
+            $scope.collectionSche = [];
+            $scope.serviceSche = [];
+            $scope.type_leave = {
+                'type': 'FD'
+            }
+            $scope.section_type = {
+                'type': 'AM'
+            }
+
+            var detail = JSON.parse(sessionStorage.getItem('today'));
+            var td = detail.date
+            $scope.dbdate = convertdate(td);
+
+            $scope.dateSearch = convertdate(td);
+
+            <!--format for validate date in datepicker-->
+            $scope.minDate = new Date(
+                $scope.dateSearch.getFullYear(),
+                $scope.dateSearch.getMonth(),
+                $scope.dateSearch.getDate()
+            );
+
+            $scope.maxDate = new Date(
+                $scope.dateSearch.getFullYear(),
+                $scope.dateSearch.getMonth() + 3,
+                $scope.dateSearch.getDate() + 1
+            );
+            <!--format for datepicker and date view-->
+            $mdDateLocale.formatDate = function(date) {
+                return $filter('date')($scope.dateSearch, "dd-MMM-yyyy");
+            };
+
+            var client = Serschedulesummary.getclient('')
+            client.then(function(result) {
+                    $scope.clientname = [];
+                    $scope.clientname = JSON.parse(result.data);
+                }),
+                function() {
+                    alert('no data');
+                };
+
+            $scope.chngclnt = gotoClientChange;
+
+            function gotoClientChange(c) {
+                loadMain(formatDate(convertdate(td)), c)
+            }
+
+            function loadMain(date_input, Cname) {
+                if (Cname == undefined) {
+                    Cname = ''
+                } else {
+                    Cname = $scope.sltdclient;
+                }
+
+                sessionStorage.setItem('Client', JSON.stringify(Cname));
+                <!--alert(date_input);-->
+                var overalldtl = Serschedulesummary.getschedulelist(date_input, {}, Cname);
+                overalldtl.then(function(res) {
+                    overallSchedule = res.data;
+                    $scope.salesSchedule = $filter('filter')(overallSchedule, {
+                        scheduletype_name: 'BOOKING'
+                    }, true);
+                    $scope.collectionSche = $filter('filter')(overallSchedule, {
+                        scheduletype_name: 'COLLECTION'
+                    }, true);
+                    $scope.serviceSche = $filter('filter')(overallSchedule, {
+                        scheduletype_name: 'SERVICE'
+                    }, true);
+                }, function(err) {
+                    alert(err);
+                });
+            }
+
+            $scope.chngclnt = gotoClientChange;
+
+            function gotoClientChange(c) {
+                loadMain(formatDate(convertdate(td)), c)
+            }
+
+            function loadAllSchedule(date_input, Cname) {
+                if (Cname == undefined) {
+                    Cname = ''
+                } else {
+                    Cname = $scope.sltdclient;
+                }
+
+                <!--alert(date_input)-->
+                var Cname = $scope.sltdclient;
+                var overalldtl = Serschedulesummary.getschedulelistALL(date_input, {}, Cname);
+                overalldtl.then(function(res) {
+                    $scope.allSchedule = res.data;
+                }, function(err) {
+                    alert(err);
+                });
+
+            };
+            loadAllSchedule(formatDate($scope.dateSearch));
+            loadMain(formatDate($scope.dateSearch));
+
+            $scope.go_next = function() {
+
+                var Cname = $scope.sltdclient;
+                var date1 = $scope.dateSearch;
+                date1.setDate(date1.getDate() + 1);
+                $scope.dateSearch = new Date(date1);
+                loadMain(formatDate(date1), Cname);
+                loadAllSchedule(formatDate(date1));
+            };
+
+            $scope.go_pre = function() {
+                var date1 = $scope.dateSearch;
+                var today = $scope.dbdate
+                if (date1.getMonth() == today.getMonth() && date1.getDate() == today.getDate() && date1.getYear() == today.getYear()) {
+                    alert("Previous Date Can't edit");
+                    return false;
+                } else {
+                    date1.setDate(date1.getDate() - 1);
+                    $scope.dateSearch = new Date(date1);
+                    loadMain(formatDate(date1));
+                    loadAllSchedule(formatDate(date1));
+                }
+            };
+
+            $scope.dateChange = function() {
+                if ($scope.dateSearch != null) {
+                    var date = formatDate($scope.dateSearch)
+                    if (datediff(date, formatDate(new Date())) > 0) {
+                        $scope.dateSearch = new Date();
+                        alert("Previous Date Can't edit");
+                        return false;
+                    }
+                    loadMain(date);
+                    loadAllSchedule(date);
+                } else {
+                    alert('Please Enter Date.');
+                    $scope.dateSearch = new Date();
+                }
+                $scope.dateEnable = false;
+            };
+
+            $scope.schedule_detail = function(type) {
+                var url_go;
+                if (type == 'viewDetails') {
+                    url_go = "pschedule";
+                }
+                var customer = {
+                    cus_gid: '',
+                    cus_name: '',
+                    schedule_gid: '',
+                    schedule_date: formatDate($scope.dateSearch)
+                };
+                sessionStorage.setItem('cus_details', JSON.stringify(customer));
+                window.location = url_go
+            }
+
+            $scope.schedule_go = function(cus_details, type) {
+                var date = formatDate($scope.dateSearch)
+                var url_go, tschedule_gid;
+                if ((datediff(date, formatDate(convertdate(td))) < 0)) {
+                    alert('You Cannot process for future Days');
+                    return false;
+                }
+                if (type == 'sales') {
+                    if ((cus_details.schedule_status == 'CLOSED') && (((cus_details.followupreason_name).search('Sales'))) < 0) {
+                        alert('Sales closed')
+                        return false;
+                    } else {
+                        url_go = "sales_order";
+                        tschedule_gid = cus_details.sh_BOOKING;
+                    }
+                } else if (type == 'salesdetails') {
+                    if ((cus_details.schedule_status == 'CLOSED')) {
+                        var r = confirm("'Sales closed!. Do You Want To Edit This Sales!");
+                        if (r == true) {
+                            url_go = "sales_order";
+                            tschedule_gid = cust_detl.sh_BOOKING;
+                        } else {
+                            alert('Sales closed')
+                            return false;
+                        }
+                    } else {
+                        url_go = "sales_order";
+                        tschedule_gid = cus_details.schedule_gid;
+                    }
+                } else if (type == 'collection') {
+                    if (cus_details.schedule_status == 'OPEND') {
+                        url_go = "pcollection";
+                        tschedule_gid = cus_details.sh_COLLECTION;
+                    } else {
+                        alert('Schedule Closed')
+                        return false;
+                    }
+
+                } else if (type == 'collectiondetails') {
+                    if (cus_details.schedule_status == 'OPEND') {
+                        url_go = "pcollection";
+                        tschedule_gid = cus_details.schedule_gid;
+                    } else {
+                        alert('Schedule Closed')
+                        return false;
+                    }
+                } else if (type == 'service') {
+                    if (cus_details.status_SERVICE == 'OPEND') {
+                        url_go = "service";
+                        tschedule_gid = cus_details.sh_SERVICE;
+                    } else {
+                        alert('Schedule Closed')
+                        return false;
+                    }
+                } else if (type == 'servicedetails') {
+                    if (cus_details.status_SERVICE == 'OPEND') {
+                        url_go = "service";
+                        tschedule_gid = cus_details.schedule_gid;
+                    } else {
+                        alert('Schedule Closed')
+                        return false;
+                    }
+                } else {
+                    url_go = "#";
+                    tschedule_gid = cus_details.sh_SERVICE;
+                }
+
+                var customer = {
+                    cus_gid: cus_details.schedule_customer_gid,
+                    cus_group_gid:cus_details.customer_group_gid,
+                    cus_name: cus_details.customer_name,
+                    schedule_gid: tschedule_gid,
+                    schedule_date: formatDate($scope.dateSearch)
+                };
+
+                sessionStorage.setItem('cus_details', JSON.stringify(customer));
+                window.location = url_go
+            };
+
+            $scope.addSchedule = function(type) {
+                var url_go;
+                if (type == 'addSchedule') {
+                    url_go = "add_schedule";
+                } else if (type == 'addCollection') {
+                    url_go = "schedule_collection";
+                } else {
+                    url_go = "#";
+                    return false;
+                }
+                var customer = {
+                    cus_gid: '',
+                    cus_name: '',
+                    schedule_gid: '',
+                    schedule_date: formatDate($scope.dateSearch)
+                };
+                sessionStorage.setItem('cus_details', JSON.stringify(customer));
+                window.location = url_go
+            };
+
+            $scope.status_click = function(modal_id, type) {
+                if (type == 'present') {
+                    $scope.staus_presnt = true;
+                } else {
+                    $scope.staus_presnt = false;
+                }
+                modalshow(modal_id);
+            };
+            $scope.staus_update = function(t) {
+                var r = $scope.type_leave;
+                alert(t)
+            };
+        }
+    ]);
+
+    app.service("Serschedulesummary", function($http) {
+        this.getschedulelist = function(t, jsondata, Client_gid) {
+            var response = $http.post(Appname + "/pre_schedule_get/", {
+                parms: {
+                    "action": "view",
+                    "f_date": t,
+                    "jsondata": jsondata,
+                    "Client_gid": Client_gid
+                }
+            });
+            return response;
+        };
+        this.getschedulelistALL = function(t, jsondata) {
+            var response = $http.post(Appname + "/pre_schedule_get/", {
+                parms: {
+                    "action": "customerwise",
+                    "f_date": t,
+                    "jsondata": jsondata
+                }
+            });
+            return response;
+        };
+        this.getclient = function(client_gid) {
+            var response = $http.get(Appname + "/client_get/", {
+                params: {
+                    "client_gid": client_gid
+                }
+            });
+            return response;
+        }
+    });
+</script>
+{% endblock %}
