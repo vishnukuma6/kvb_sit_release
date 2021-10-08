@@ -255,7 +255,7 @@ class Mono_to_Micro_Call_Back_API_Class:
 class AP_DD_Status_Update(APIView):
     def post(self, request):
         log_data = []
-        Paymode_Check="Y"
+        Rent_Work="Y"
         try:
             jsondata = json.loads(request.body.decode('utf-8'))
             log_data = [{"DD_STATUS_UPDATE_LOG": jsondata}]
@@ -301,7 +301,7 @@ class AP_DD_Status_Update(APIView):
                             out=list[0]
                             Invoice_Type=list[1]
                             Invoice_Header_pono=list[2]
-                            if(out=="SUCCESS" and Invoice_Type=="RENT" and Paymode_Check=="Y"):
+                            if(out=="SUCCESS" and Invoice_Type=="RENT" and Rent_Work=="Y"):
                                 now_today_date = datetime.now()
                                 today_date = now_today_date.strftime("%Y-%m-%d")
                                 micro_api = "/pdserv/rcn_update"
@@ -342,7 +342,7 @@ class AP_DD_Status_Update(APIView):
 class AP_NEFT_Status_Update(APIView):
     def post(self, request):
         log_data = []
-        Paymode_Check="Y"
+        Rent_Work="Y"
         try:
             jsondata = json.loads(request.body.decode('utf-8'))
             log_data = [{"NEFT_STATUS_UPDATE_LOG": jsondata}]
@@ -386,7 +386,7 @@ class AP_NEFT_Status_Update(APIView):
                             out = list[0]
                             Invoice_Type = list[1]
                             Invoice_Header_pono = list[2]
-                            if (out=="SUCCESS" and Invoice_Type=="RENT" and Paymode_Check=="Y"):
+                            if (out=="SUCCESS" and Invoice_Type=="RENT" and Rent_Work=="Y"):
                                 now_today_date = datetime.now()
                                 today_date = now_today_date.strftime("%Y-%m-%d")
                                 micro_api = "/pdserv/rcn_update"
