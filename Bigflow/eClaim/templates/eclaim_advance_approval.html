@@ -78,6 +78,7 @@
                     <th class="text-center" scope="col">From Date</th>
                     <th class="text-center" scope="col">To Date</th>
                     <th class="text-center" scope="col">Employee Name</th>
+                    <th class="text-center" scope="col">Branch</th>
                     <th class="text-center" scope="col">Raisedby</th>
                     <th class="text-center" scope="col">Employee Grade</th>
                     <th class="text-center" scope="col">Advance Amount</th>
@@ -95,6 +96,7 @@
                         <td class="text-right">{{eClaim.startdate}}</td>
                         <td class="text-right">{{eClaim.enddate}}</td>
                         <td class="text-left">{{eClaim.employee_name}}</td>
+                       <td class="text-left">{{eClaim.employee_branchname}} - {{eClaim.employee_branchcode}}</td>
                         <td class="text-left" ng-show="eClaim.onbehalof == 0">{{eClaim.employee_name}}</td>
                         <td class="text-left" ng-show="eClaim.onbehalof != 0">{{eClaim.onbehalof_employeename}}</td>
                         <td class="text-left">{{eClaim.empgrade}}</td>
@@ -118,7 +120,7 @@
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td colspan="7">
+                        <td colspan="8">
                             <ul boundary-links="true" class="pagination-sm cust_pagination"
                                 items-per-page="itemsPerPage"
                                 max-size="maxSize"
@@ -521,9 +523,10 @@ onbehalfof();
                 tour_requestdate: detail.requestdate,
                 tour_startdate: detail.startdate,
                 tour_enddate: detail.enddate,
+                employee_code: detail.employee_code,
                 emp_name: detail.employee_name,
                 emp_gid: detail.empgid,
-                designation: detail.designation,
+                designation: detail.employee_designation,
                 emp_grade: detail.empgrade,
                 Status: detail.status,
                 reason: detail.reason,

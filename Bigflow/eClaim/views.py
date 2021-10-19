@@ -1083,6 +1083,7 @@ def tour_set_file(request):
             resp = requests.post("" + ip + "/TOUR_MAKER_SET", params=params, data=datas, headers=headers,
                                  verify=False)
             response = resp.content.decode("utf-8")
+            print(response)
             return HttpResponse(response)
 
 def eclaim_process_set(request):

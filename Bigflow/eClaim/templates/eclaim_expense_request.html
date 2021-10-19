@@ -57,6 +57,8 @@
                     <th class="text-center" scope="col">S.No</th>
                     <th class="text-center" scope="col">Tour No</th>
                     <th class="text-center" scope="col">Tour Request Date</th>
+                    <th class="text-center" scope="col">Reason</th>
+                    <th class="text-center" scope="col">Branch</th>
                     <th class="text-center" scope="col">Employee Name</th>
                     <!--                    <th class="text-center" scope="col">Employee Garde</th>-->
                     <!--                    <th class="text-center" scope="col">Designation Name</th>-->
@@ -71,6 +73,8 @@
                         </td>
                         <td class="text-center">{{eclaim.requestno}}</td>
                         <td class="text-center">{{eclaim.requestdate}}</td>
+                        <td class="text-center">{{eclaim.tourreason}}</td>
+                        <td class="text-left">{{eclaim.branch_name}} - {{eclaim.branch_code}}</td>
                         <td class="text-center">{{eclaim.employee_name}} {{eclaim.employee_code}}</td>
                         <!--                        <td class="text-center">{{eclaim.empgrade}}</td>-->
                         <!--                        <td class="text-center">{{eclaim.designation}}</td>-->
@@ -127,7 +131,7 @@
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td colspan="5">
+                        <td colspan="6">
                             <ul boundary-links="true" class="pagination-sm cust_pagination"
                                 items-per-page="itemsPerPage"
                                 max-size="maxSize"
@@ -593,11 +597,12 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window,$http, $fi
                     tour_reason: detail.tourreason,
                     emp_name: detail.employee_name,
                     emp_gid: detail.empgid,
-                    designation: detail.designation,
+                    designation: detail.designation_name,
                     emp_grade: detail.empgrade,
                     Status: detail.claimstatus,
                     Gstno: detail.gstno,
                     applevel: detail.applevel,
+                    employee_code:detail.employee_code
                 };
                 sessionStorage.setItem('eClaim', JSON.stringify(eClaim_session));
                 $window.location.href = "eClaim/eclaim_expense";

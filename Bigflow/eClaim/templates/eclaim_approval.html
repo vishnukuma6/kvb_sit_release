@@ -79,6 +79,7 @@
                     <th class="text-center" scope="col">From Date</th>
                     <th class="text-center" scope="col">To Date</th>
                     <th class="text-center" scope="col">Reason</th>
+                    <th class="text-center" scope="col">Branch</th>
                     <th class="text-center" scope="col">Employee Grade</th>
                     <th class="text-center" scope="col">Tour Status</th>
                     <th class="text-center" scope="col">Action</th>
@@ -97,6 +98,7 @@
                         <td class="text-right">{{eClaim.startdate}}</td>
                         <td class="text-right">{{eClaim.enddate}}</td>
                         <td class="text-left">{{eClaim.tourreason}}</td>
+                        <td class="text-left">{{eClaim.employee_branchname}} - {{eClaim.employee_branchcode}}</td>
                         <td class="text-left">{{eClaim.empgrade}}</td>
                         <td class="text-left" ng-show="eClaim.status == 'RETURN'">
                             RETURN TO MAKER
@@ -117,7 +119,7 @@
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td colspan="9">
+                        <td colspan="10">
                             <ul boundary-links="true" class="pagination-sm cust_pagination"
                                 items-per-page="itemsPerPage"
                                 max-size="maxSize"

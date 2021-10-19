@@ -85,8 +85,7 @@
                     <th class="text-center" scope="col">From Date</th>
                     <th class="text-center" scope="col">To Date</th>
                     <th class="text-center" scope="col">Reason</th>
-<!--                    <th class="text-center" scope="col">Branch</th>-->
-<!--                    <th class="text-center" scope="col">Code</th>-->
+                    <th class="text-center" scope="col">Branch</th>
                     <th class="text-center" scope="col">Approver</th>
                     <th class="text-center" scope="col">Status</th>
                     <th class="text-center" scope="col">Action</th>
@@ -101,8 +100,13 @@
                         <td class="text-center">{{eclaim.startdate}}</td>
                         <td class="text-center">{{eclaim.enddate}}</td>
                         <td class="text-left">{{eclaim.tourreason}}</td>
+
+                        <td class="text-left">{{eclaim.branch_name}} - {{eclaim.branch_code}}</td>
+
+
 <!--                        <td class="text-left">{{eclaim.branch_name}}</td>-->
 <!--                        <td class="text-left">{{eclaim.code}}</td>-->
+
                         <td class="text-left">{{eclaim.permit_byname}} {{eclaim.permit_bycode}}</td>
                         <td class="text-left">
                             <p ng-show="eclaim.tourstatus == 'REJECTED'">

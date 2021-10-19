@@ -75,7 +75,9 @@
                     <th class="text-center" scope="col">Tour Date</th>
                     <th class="text-center" scope="col">From Date</th>
                     <th class="text-center" scope="col">To Date</th>
+                    <th class="text-center" scope="col">Tour Reason</th>
                     <th class="text-center" scope="col">Employee Name</th>
+                    <th class="text-center" scope="col">Branch</th>
                     <th class="text-center" scope="col">Raisedby</th>
                     <th class="text-center" scope="col">Employee Grade</th>
                     <th class="text-center" scope="col">Claim Amount</th>
@@ -92,7 +94,9 @@
                         <td class="text-right">{{eClaim.requestdate}}</td>
                         <td class="text-right">{{eClaim.startdate}}</td>
                         <td class="text-right">{{eClaim.enddate}}</td>
+                        <td class="text-right">{{eClaim.tourreason}}</td>
                         <td class="text-left">{{eClaim.employee_name}}</td>
+                        <td class="text-left">{{eClaim.employee_branchname}} - {{eClaim.employee_branchcode}}</td>
                         <td class="text-left" ng-show="eClaim.onbehalof == '0'">{{eClaim.employee_name}}</td>
                         <td class="text-left" ng-show="eClaim.onbehalof != '0'">{{eClaim.onbehalof_employeename}}</td>
                         <td class="text-left">{{eClaim.empgrade}}</td>
@@ -134,7 +138,7 @@
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td colspan="7">
+                        <td colspan="9">
                             <ul boundary-links="true" class="pagination-sm cust_pagination"
                                 items-per-page="itemsPerPage"
                                 max-size="maxSize"
@@ -547,11 +551,19 @@ app.controller('datectrl', function($scope, eclaimService, $window, $mdDialog,$m
         var eClaim_session = {
                 tour_gid: detail.tourgid,
                 tour_no: detail.requestno,
+                employee_name: detail.employee_name,
+                employee_code: detail.employee_code,
+                emp_gid: detail.empgid,
+                tourreason: detail.tourreason,
+                employee_designation: detail.employee_designation,
+                employee_grade: detail.empgrade,
+                Status: detail.status,
+                enddate: detail.enddate,
+                startdate: detail.startdate,
                 emp_name: detail.employee_name,
                 emp_gid: detail.empgid,
-                designation: detail.designation,
+                designation: detail.employee_designation,
                 emp_grade: detail.empgrade,
-                Status: detail.status,
             };
             sessionStorage.setItem('eClaim', JSON.stringify(eClaim_session));
         $window.location.href = "eClaim/eclaim_expense_dtl_aprvl";

@@ -23,25 +23,35 @@
             <div class="row">
                 <div class="col-md-12">
                     <md-subheader class="md-accent">Employee</md-subheader>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Tour ID</label>
                             <input disabled ng-model="tour_no" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
+                        <md-input-container>
+                            <label>Employee Code</label>
+                            <input maxlength="30"
+                                   disabled
+                                   ng-model="mainemployee_code"
+                                   placeholder="Employee Code"
+                                   type="text"/>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Employee Name</label>
                             <input disabled ng-model="emp_name" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Designation</label>
                             <input disabled ng-model="designation" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Employee Grade</label>
                             <input disabled ng-model="emp_grade" type="text"/>
@@ -62,7 +72,8 @@
                         </div>
                         <div class="col-md-3" ng-show="exp_add">
                             <md-button class="md-fab md-mini md-primary custbutton"
-                                       ng-click="add_taveltype()">
+                                       ng-click="add_taveltype()"
+                                       ng-disabled="tr_level == 1">
                                 <md-icon>add</md-icon>
                                 <md-tooltip>Add Expense</md-tooltip>
                             </md-button>
@@ -125,7 +136,7 @@
                                                ng-change="eligible_calc(eclaim,$index)"
                                                ng-model="eclaim.fromdate"
                                                md-max-date="eclaim.maxend" md-min-date="eclaim.minstart"
-                                               ng-disabled="applevel == 1 || applevel == 2"
+                                               ng-disabled="applevel == 1 || applevel == 2 || transfer_enable"
                                                ng-required="true"></md-datepicker>
                             </td>
                             <td>
@@ -139,7 +150,7 @@
                                      ng-model="eclaim.fr_time"
                                      name="fromtime"
                                      required
-                                     ng-disabled="applevel == 1 || applevel == 2"
+                                     ng-disabled="applevel == 1 || applevel == 2 || transfer_enable"
                                      ng-change="eligible_calc(eclaim,$index)" hour-step="hstep" minute-step="mstep"
                                      show-meridian="ismeridian"></div>
 
@@ -150,7 +161,7 @@
                                                ng-model="eclaim.todate"
                                                name="todate"
                                                md-max-date="eclaim.maxend" md-min-date="eclaim.minstart"
-                                               ng-disabled="applevel == 1 || applevel == 2"
+                                               ng-disabled="applevel == 1 || applevel == 2 || transfer_enable"
                                                ng-required="true"></md-datepicker>
                             </td>
 
@@ -166,7 +177,7 @@
                                      ng-model="eclaim.to_time"
                                      name="totime"
                                      required
-                                     ng-disabled="applevel == 1 || applevel == 2"
+                                     ng-disabled="applevel == 1 || applevel == 2 || transfer_enable"
                                      ng-change="eligible_calc(eclaim,$index)"
                                      hour-step="hstep" minute-step="mstep"
                                      show-meridian="ismeridian"></div>
@@ -423,10 +434,22 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window, $filter,$
     console.log(employee_data);
     $scope.tour_gid = employee_data.tour_gid;
     $scope.tour_no = employee_data.tour_no;
-    $scope.tour_requestdate = employee_data.tour_requestdate;
-
-    $scope.tour_startdate = new Date(employee_data.tour_startdate);
-    $scope.tour_enddate = new Date(employee_data.tour_enddate);
+    $scope.tour_requestdate = new Date(employee_data.tour_requestdate);
+    $scope.tour_reason = employee_data.tour_reason;
+    $scope.mainemployee_code = employee_data.employee_code;
+    $scope.transfer_enable = false;
+    if ($scope.tour_reason == 'Transfer-Reporting' || $scope.tour_reason == 'Transfer without Family' ||
+    $scope.tour_reason == 'Transfer with family'){
+        $scope.transfer_enable = true;
+    }
+    if ($scope.transfer_enable){
+        $scope.tour_startdate = new Date(employee_data.tour_requestdate);
+        $scope.tour_enddate = new Date(employee_data.tour_requestdate);
+    }
+    else{
+        $scope.tour_startdate = new Date(employee_data.tour_startdate);
+        $scope.tour_enddate = new Date(employee_data.tour_enddate);
+    }
     $scope.minstart = new Date($scope.tour_startdate.getFullYear(), $scope.tour_startdate.getMonth(), $scope.tour_startdate.getDate());
     $scope.maxend = new Date($scope.tour_enddate.getFullYear(), $scope.tour_enddate.getMonth(), $scope.tour_enddate.getDate());
     $scope.emp_name = employee_data.emp_name;
@@ -438,6 +461,8 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window, $filter,$
     if($scope.Status =="APPROVED"){
         $scope.notallow = true;
     }
+
+    
 
     if(sessionStorage.getItem('eClaim_tavel')){
        $scope.mode = [];
@@ -595,11 +620,16 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window, $filter,$
                     $scope.eClaim_dailys = $scope.main;
 
                     angular.forEach($scope.eClaim_dailys, function(item1) {
+                        if ($scope.tour_reason == 'Transfer-Reporting' || $scope.tour_reason == 'Transfer Without Family' ||
+                        $scope.tour_reason == 'Transfer with family'){
+                            $scope.tr_level = 1;
+                        }
                         item1.searchcity = item1.visitcity;
                         item1.fr_time = stringToDate(item1.fromdate);
                         item1.to_time = stringToDate(item1.todate);
                         $scope.startdate = new Date(item1.fromdate);
                         $scope.enddate = new Date(item1.todate);
+                        
                         item1.minstart = new Date($scope.startdate.getFullYear(), $scope.startdate.getMonth(), $scope.startdate.getDate());
                         item1.maxend = new Date($scope.enddate.getFullYear(), $scope.enddate.getMonth(), $scope.enddate.getDate());
                         $scope.minstart = item1.maxend;
@@ -789,14 +819,31 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window, $filter,$
             return result;
         }
     $scope.add_taveltype = function() {
+        if ($scope.transfer_enable){
+            var from_date = $scope.tour_requestdate;
+            var to_date = $scope.tour_requestdate;
+            var no_ofhours = "168";
+            $scope.tr_level = 1;
+            var fromtime = from_date;
+            var totime = to_date;
+        }
+        else{
+            var from_date = "";
+            var to_date = "";
+            var no_ofhours = "";
+            var fromtime = "";
+            var totime = "";
+        }
         data = {
          gid:0,
          tourgid: $scope.tour_gid,
          visitcity: "",
-         fromdate: "",
-         todate: "",
+         fromdate: from_date,
+         fr_time: fromtime,
+         todate: to_date,
+         to_time: totime,
          syshours: "",
-         noofhours: "",
+         noofhours: no_ofhours,
          accbybank:0,
          boardingbybank:0,
          declaration:0,
@@ -867,18 +914,18 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window, $filter,$
             var get_eclaim = eclaimService.ecalim_expense_post(data)
             get_eclaim.then(function(result) {
                 $scope.main = result.data.DATA;
-                $scope.eClaim_dailys[i].eligibleamount = $scope.main.Eligible_amount;
-                $scope.eClaim_dailys[i].syshours = $scope.main.sys_hours;
+                e.eligibleamount = $scope.main.Eligible_amount;
+                e.syshours = $scope.main.sys_hours;
+                e.fromdate = new Date($scope.main.fromdate);
+                e.todate = new Date($scope.main.todate);
             }).finally($scope.endloading);
-
             var v = i+1;
             var len = $scope.eClaim_dailys.length;
             if( v != len && v < len){
                 for(j=v; j<len; j++){
                     if($scope.eClaim_dailys[j].fromdate !=""  || $scope.eClaim_dailys[j].todate != ""){
-                        $scope.eClaim_dailys[j].fromdate ="";
-                        $scope.eClaim_dailys[j].todate ="";
-                        error_toast(date_clubed,time_toast);
+                        e.fromdate ="";
+                        e.todate ="";
                     }
                     $scope.eClaim_dailys[j].minstart = new Date(e.todate.getFullYear(), e.todate.getMonth(), e.todate.getDate());
                 }
@@ -926,6 +973,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window, $filter,$
         item1.fromdate = $filter('date')(new Date(item1.fromdate),'yyyy-MM-dd')+ " " +item1.fr_time.getHours()+":"+item1.fr_time.getMinutes();
         item1.todate = $filter('date')(new Date(item1.todate),'yyyy-MM-dd')+ " " +item1.to_time.getHours()+":"+item1.to_time.getMinutes();
         item1.visitcity = item1.searchcity
+        item1.req_date = $filter('date')(new Date($scope.tour_requestdate),'yyyy-MM-dd')
         $scope.total_claimamt = parseInt($scope.total_claimamt) + parseInt(item1.claimedamount);
     });
         var data = {

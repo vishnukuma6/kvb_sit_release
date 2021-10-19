@@ -43,25 +43,35 @@ img {
             <div class="row">
                 <div class="col-md-12">
                     <md-subheader class="md-accent">Employee</md-subheader>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Tour ID</label>
                             <input disabled ng-model="tour_no" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
+                        <md-input-container>
+                            <label>Employee Code</label>
+                            <input maxlength="30"
+                                   disabled
+                                   ng-model="mainemployee_code"
+                                   placeholder="Employee Code"
+                                   type="text"/>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Employee Name</label>
                             <input disabled ng-model="emp_name" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Designation</label>
                             <input disabled ng-model="designation" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Employee Grade</label>
                             <input disabled ng-model="emp_grade" type="text"/>
@@ -110,15 +120,17 @@ img {
                         <th class="text-center required" scope="col">Bill Available</th>
                         <th class="text-center required" scope="col">Total Bill Amount
                             (Excluding Tax)</th>
-                        <th class="text-center required" scope="col">Claim Amount</th>
-                        <th class="text-center" scope="col">Eligible Amount</th>
+                        <th class="text-center required" scope="col">Claim Amount 
+                            (Excluding Tax)</th>
+                        <th class="text-center" scope="col">Eligible Amount 
+                            (Excluding Tax)</th>
                         <th class="text-center required" scope="col">Tax only(Luxury & Service)</th>
                         <th class="text-center" scope="col">Vendor Name</th>
                         <th class="text-center" scope="col">HSN Code</th>
                         <th class="text-center" scope="col">Bank GST No</th>
                         <th class="text-center" scope="col">Lodge GST No</th>
                         <th class="text-center" scope="col" ng-show="gst_show">GST Percentage</th>
-                        <th class="text-center" scope="col" ng-show="approve">Approved Amount</th>
+                        <th class="text-center" scope="col" ng-show="approve">Approved Amount(Including Tax)</th>
                         <th class="text-center" scope="col" ng-show="exp_add">Action</th>
                         </thead>
                         <tbody>
@@ -574,6 +586,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $fil
        $element.find('input').on('keydown', function(ev) {
           ev.stopPropagation();
       });
+    
     var employee_data=JSON.parse(sessionStorage.getItem('eClaim'));
     console.log(employee_data);
     $scope.tour_gid = employee_data.tour_gid;
@@ -588,7 +601,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $fil
     $scope.designation = employee_data.designation;
     $scope.emp_grade = employee_data.emp_grade;
     $scope.Gstno = employee_data.Gstno;
-
+    $scope.mainemployee_code = employee_data.employee_code;
     $scope.hstep = 1;
     $scope.mstep = 5;
     $scope.ismeridian = true;
@@ -950,6 +963,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $fil
                                     "city": e.searchcity,
                                     "accbybank": accbybank,
                                     "claimedamount": claimedamount,
+                                    "taxonly":e.taxonly,
                                     "checkindate" :$filter('date')(new Date(e.checkindate),'yyyy-MM-dd')+ " " +$scope.fr_time,
                                     "checkoutdate" :$filter('date')(new Date(e.checkoutdate),'yyyy-MM-dd')+ " " +$scope.to_time
                                 }
@@ -963,16 +977,18 @@ myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $fil
                 $scope.main = result.data.DATA;
                 e.eligibleamount = $scope.main.Eligible_amount;
                 e.noofdays = $scope.main.noofdays;
+                e.checkindate = $scope.main.checkindate;
+                e.checkoutdate = $scope.main.checkoutdate;
             }).finally($scope.endloading);
 
             var v = i+1;
             var len = $scope.eClaim_lodg.length;
             if( v != len && v < len){
                 for(j=v; j<len; j++){
-                    if($scope.eClaim_lodg[j].checkindate !=""  || $scope.eClaim_dailys[j].checkoutdate != ""){
-                        $scope.eClaim_lodg[j].checkindate ="";
-                        $scope.eClaim_lodg[j].checkoutdate ="";
-                        error_toast(date_clubed,time_toast);
+                    if($scope.eClaim_lodg[j].checkindate !=""  || $scope.eClaim_lodg[j].checkoutdate != ""){
+                        e.checkindate ="";
+                        e.checkoutdate ="";
+                        
                     }
                     $scope.eClaim_lodg[j].minstart = new Date(e.checkoutdate.getFullYear(), e.checkoutdate.getMonth(), e.checkoutdate.getDate());
                 }

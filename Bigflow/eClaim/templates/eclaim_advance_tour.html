@@ -53,11 +53,12 @@
                     <th class="text-center" scope="col">S.No</th>
                     <th class="text-center" scope="col">Tour No</th>
                     <th class="text-center" scope="col">Tour Request Date</th>
+                    <th class="text-center" scope="col">Reason</th>
                     <th class="text-center" scope="col">Employee Name</th>
-                    <th class="text-center" scope="col">Employee Garde</th>
+                    <th class="text-center" scope="col">Employee Grade</th>
 <!--                    <th class="text-center" scope="col">Designation Name</th>-->
                     <th class="text-center" scope="col">Tour Approved By</th>
-                    <th class="text-center" scope="col">Expense Details</th>
+                    <th class="text-center" scope="col">Advance Details</th>
                     </thead>
                     <tbody>
                     <tr ng-repeat="eclaim in eClaim_data.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage)) | orderBy:orderByField:reverseSort">
@@ -66,6 +67,7 @@
                         </td>
                         <td class="text-center">{{eclaim.requestno}}</td>
                         <td class="text-center">{{eclaim.requestdate}}</td>
+                        <td class ="text-center">{{eclaim.tourreason}}</td>
                         <td class="text-center">{{eclaim.employee_name}} {{eclaim.employee_code}}</td>
                         <td class="text-center">{{eclaim.empgrade}}</td>
 <!--                        <td class="text-center">{{eclaim.designation}}</td>-->
@@ -252,6 +254,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window, $filter,$
         }
         if($scope.tourend_date >= $scope.today_date ){
             var eClaim_session = {
+                employee_code:detail.employee_code,
                 tour_gid: detail.gid,
                 tour_no: detail.requestno,
                 tour_requestdate: detail.requestdate,
@@ -259,7 +262,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window, $filter,$
                 tour_enddate: detail.enddate,
                 emp_name: detail.employee_name,
                 emp_gid: detail.empgid,
-                designation: detail.designation,
+                designation: detail.designation_name,
                 emp_grade: detail.empgrade,
                 Status: $scope.adv_status,
                 reason: detail.tourreason,

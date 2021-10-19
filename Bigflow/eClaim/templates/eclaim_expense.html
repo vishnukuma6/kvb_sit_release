@@ -416,14 +416,11 @@ img {
                             </md-autocomplete>
                         </div>
                         <div class="col-md-3" ng-show="claim_status =='REJECTED' || claim_status =='APPROVED'">
-                            <md-input-container>
+<!--                            <md-input-container>-->
                                 <label>Branch</label>
-                                <input maxlength="30"
-                                       disabled
-                                       ng-model="searchbr_data"
-                                       placeholder="Branch"
-                                       type="text"/>
-                            </md-input-container>
+                            <br/>
+                                {{ searchbr_data }}
+<!--                            </md-input-container>-->
                         </div>
 
                         <div class="col-md-3" ng-show="claim_status != 'REJECTED' && claim_status !='APPROVED'">
@@ -450,14 +447,11 @@ img {
                         </div>
 
                         <div class="col-md-3" ng-show="claim_status =='REJECTED' || claim_status =='APPROVED' ">
-                            <md-input-container>
+<!--                            <md-input-container>-->
                                 <label>Employee</label>
-                                <input maxlength="30"
-                                       disabled
-                                       ng-model="searchemp_data"
-                                       placeholder="Employee"
-                                       type="text"/>
-                            </md-input-container>
+                                <br/>
+                                {{ searchemp_data }}
+<!--                            </md-input-container>-->
                         </div>
 
                         <div class="col-md-3">
@@ -480,7 +474,7 @@ img {
                 <div class="col-md-12 text-center">
                     <md-button class="btn btn-info custbutton"
                                ng-click="submit_valid.$valid ? submit_data() : error_toast(submit_valid)"
-                               ng-disabled="submit_valid.$invalid || claim_status == 'APPROVED' || claim_status == 'REJECTED' || file_required || submit_date || status_check">
+                               ng-disabled="claim_status == 'APPROVED' || claim_status == 'REJECTED' || file_required || submit_date || status_check">
                         Submit
                         <md-tooltip>Submit</md-tooltip>
                     </md-button>
@@ -512,9 +506,9 @@ img {
                             <th class="text-center" scope="col">Status</th>
                             </thead>
                             <tbody>
-                            <tr ng-repeat="apprl in get_approval_data.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage)) | orderBy:orderByField:reverseSort">
+                            <tr ng-repeat="apprl in get_approval_data.slice(((currentAppPage-1)*itemsPerPage), ((currentAppPage)*itemsPerPage)) | orderBy:orderByField:reverseSort">
                                 <td class="text-center">
-                                    <center>{{((currentPage-1)*itemsPerPage)+$index+1}}</center>
+                                    <center>{{((currentAppPage-1)*itemsPerPage)+$index+1}}</center>
                                 </td>
                                 <td class="text-left">{{apprl.employee_name}} - {{apprl.employee_code}}</td>
                                 <td class="text-left" ng-show="apprl.onbehalof == '0'">{{apprl.employee_name}} -
@@ -561,7 +555,7 @@ img {
                                     <ul boundary-links="true" class="pagination-sm cust_pagination"
                                         items-per-page="itemsPerPage"
                                         max-size="maxSize"
-                                        ng-model="currentPage" total-items="eClaim_tavels.length"
+                                        ng-model="currentAppPage" total-items="get_approval_data.length"
                                         uib-pagination></ul>
                                 </td>
                                 <!--                        <td class="text-left" colspan="1">-->
@@ -850,6 +844,9 @@ myApp.controller('eclaimctrl',function($scope,$sce,eclaimService,$http, $window,
     $scope.emp_grade = employee_data.emp_grade;
     $scope.claim_status = employee_data.Status;
     $scope.claim_applevel = employee_data.applevel;
+    if ($scope.claim_status == 'RETURN'){
+        $scope.claim_applevel = 0;
+    }
     $scope.eClaim_tavels =[];
     $scope.approvaldata = false;
     $scope.db_file = false;
@@ -893,6 +890,7 @@ myApp.controller('eclaimctrl',function($scope,$sce,eclaimService,$http, $window,
     $scope.maxSize = 3;
     $scope.itemsPerPage = 10;
     $scope.currentPage = 1;
+    $scope.currentAppPage = 1;
     $scope.loading = function() {
         $mdDialog.show({
             templateUrl: 'loaderSpinner',
@@ -1434,6 +1432,7 @@ myApp.controller('eclaimctrl',function($scope,$sce,eclaimService,$http, $window,
                 emp_name: detail.employee_name,
                 designation: detail.designation_name,
                 emp_grade: detail.tourrequest_empgrade,
+                employee_code:detail.employee_code
             };
             sessionStorage.setItem('eClaim', JSON.stringify(eClaim_session));
             $window.location.href = "ECF_billentry_checker";

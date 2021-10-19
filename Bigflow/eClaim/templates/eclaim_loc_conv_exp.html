@@ -21,25 +21,35 @@
             <div class="row">
                 <div class="col-md-12">
                     <md-subheader class="md-accent">Employee</md-subheader>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Tour ID</label>
                             <input disabled ng-model="tour_no" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
+                        <md-input-container>
+                            <label>Employee Code</label>
+                            <input maxlength="30"
+                                   disabled
+                                   ng-model="mainemployee_code"
+                                   placeholder="Employee Code"
+                                   type="text"/>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Employee Name</label>
                             <input disabled ng-model="emp_name" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Designation</label>
                             <input disabled ng-model="designation" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Employee Grade</label>
                             <input disabled ng-model="emp_grade" type="text"/>
@@ -338,6 +348,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window, $filter,$
        $element.find('input').on('keydown', function(ev) {
           ev.stopPropagation();
       });
+    
     var employee_data=JSON.parse(sessionStorage.getItem('eClaim'));
     console.log(employee_data);
     $scope.tour_gid = employee_data.tour_gid;
@@ -346,7 +357,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window, $filter,$
     $scope.emp_name = employee_data.emp_name;
     $scope.designation = employee_data.designation;
     $scope.emp_grade = employee_data.emp_grade;
-
+    $scope.mainemployee_code = employee_data.employee_code;
     $scope.Status = employee_data.Status;
     $scope.notallow = false;
     if($scope.Status =="APPROVED"){

@@ -338,6 +338,23 @@ class eClaim_Model(mVariable.variable):
             sp_out_msg = cursor.fetchone()
             return {"MESSAGE": sp_out_msg[0], "DATA": "NO_DATA"}
 
+    def eClaim_employee_dept_get(self):
+        cursor = connection.cursor()
+        parameters = (self.filter_json, self.json_classification, '')
+        cursor.callproc('sp_eClaimEmp_dept_Get', parameters)
+        if cursor.description != None:
+            columns = [x[0] for x in cursor.description]
+            rows = cursor.fetchall()
+            cursor.execute('select @_sp_eClaimEmp_dept_Get_2')
+            outmsg_sp = cursor.fetchone()
+            rows = list(rows)
+            df_location = pd.DataFrame(rows, columns=columns)
+            return {"DATA": df_location, "MESSAGE": outmsg_sp[0]}
+        else:
+            cursor.execute('select @_sp_eClaimEmp_dept_Get_2')
+            sp_out_msg = cursor.fetchone()
+            return {"MESSAGE": sp_out_msg[0], "DATA": "NO_DATA"}
+
     def eClaim_employeename_get(self):
         cursor = connection.cursor()
         parameters = (self.filter_json, '')
@@ -402,7 +419,7 @@ class eClaim_Model(mVariable.variable):
 
     def eClaim_employeebnk_get(self):
         cursor = connection.cursor()
-        parameters = (self.filter_json,'')
+        parameters = (self.filter_json, '')
         cursor.callproc('sp_eClaimEmp_bank_Get', parameters)
         if cursor.description != None:
             columns = [x[0] for x in cursor.description]
@@ -608,10 +625,11 @@ class eClaim_Model(mVariable.variable):
     def eClaim_tourtoemp_get(self):
         cursor = connections['eclaim_db'].cursor()
         quot = ''
-        format = "%d-%b-%Y"
-        query = 'select requestno,empgrade,empgid,requestdate,empbranchgid,startdate,enddate,durationdays from claim_trn_ttourrequest where gid = '
+        datetimeFormat = '%Y-%m-%d %H:%M'
+        query = 'select a.requestno, a.empgrade, a.empgid, a.requestdate, a.empbranchgid, a.startdate, a.enddate, a.durationdays, a.reason, b.name from claim_trn_ttourrequest a'
         gid = str(self.employee_gid)
-        query = quot+query+gid+quot
+        query2 = ' inner join claim_mst_ttourreason b on a.reason= b.gid where a.gid ='
+        query = quot+query+query2+gid+quot
         cursor.execute(query)
         columns = [x[0] for x in cursor.description]
         rows = cursor.fetchall()
@@ -1589,5 +1607,13 @@ class eClaim_Model(mVariable.variable):
         parameters = (self.jsondata, self.jsonData,'')
         cursor.callproc('sp_localdeputation_set', parameters)
         cursor.execute('select @_sp_localdeputation_set_2')
+        out_message = cursor.fetchone()
+        return {"MESSAGE": out_message[0]}
+
+    def eClaim_approvedbydata_set(self):
+        cursor = connections['eclaim_db'].cursor()
+        parameters = (self.jsondata, '')
+        cursor.callproc('sp_approvedbydata_set', parameters)
+        cursor.execute('select @_sp_approvedbydata_set_1')
         out_message = cursor.fetchone()
         return {"MESSAGE": out_message[0]}

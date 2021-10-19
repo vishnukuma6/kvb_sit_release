@@ -50,25 +50,35 @@ img {
             <div class="row">
                 <div class="col-md-12">
                     <md-subheader class="md-accent">Employee</md-subheader>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Tour ID</label>
                             <input disabled ng-model="tour_no" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
+                        <md-input-container>
+                            <label>Employee Code</label>
+                            <input maxlength="30"
+                                   disabled
+                                   ng-model="mainemployee_code"
+                                   placeholder="Employee Code"
+                                   type="text"/>
+                        </md-input-container>
+                    </div>
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Employee Name</label>
                             <input disabled ng-model="emp_name" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Designation</label>
                             <input disabled ng-model="designation" type="text"/>
                         </md-input-container>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <md-input-container class="md-block inputcontainer">
                             <label>Employee Grade</label>
                             <input disabled ng-model="emp_grade" type="text"/>
@@ -259,9 +269,10 @@ img {
                                     <md-select md-container-class="popup_select"
                                                ng-model="eclaim.actualtravel"
                                                name="actualtravel"
+                                               ng-change="class_travel(eclaim)"
                                                ng-disabled="applevel == 1 || applevel == 2"
                                                ng-required="true">
-                                        <md-option ng-repeat="g in travel_mode" ng-click="travelmode_change(g)"
+                                        <md-option ng-repeat="g in travel_mode"
                                                    ng-value="g.id">
                                             {{g.data}}
                                         </md-option>
@@ -276,7 +287,7 @@ img {
                                                name="class"
                                                ng-disabled="applevel == 1 || applevel == 2"
                                                ng-required="true">
-                                        <md-option ng-repeat="h in travel_class" ng-value="h.id">
+                                        <md-option ng-repeat="h in eclaim.travel_class_all" ng-value="h.id">
                                             {{h.data}}
                                         </md-option>
                                     </md-select>
@@ -698,6 +709,7 @@ img {
         };
     })
 myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $filter,$mdDialog, $rootScope,$element,SerCommon) {
+    
     var employee_data=JSON.parse(sessionStorage.getItem('eClaim'));
     console.log(employee_data);
     $scope.tour_gid = employee_data.tour_gid;
@@ -711,6 +723,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $fil
     $scope.emp_name = employee_data.emp_name;
     $scope.designation = employee_data.designation;
     $scope.emp_grade = employee_data.emp_grade;
+    $scope.mainemployee_code = employee_data.employee_code;
 
     $scope.hstep = 1;
     $scope.mstep = 5;
@@ -889,7 +902,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $fil
                         $scope.startdate = new Date(item1.depaturedate);
                         $scope.enddate = new Date(item1.arrivaldate);
                         item1.minstart = new Date($scope.startdate.getFullYear(), $scope.startdate.getMonth(), $scope.startdate.getDate());
-                        item1.maxend = $scope.maxend;
+                        item1.maxend = new Date($scope.enddate.getFullYear(), $scope.enddate.getMonth(), $scope.enddate.getDate());
                         $scope.minstart = item1.maxend;
                         item1.searchgst = item1.bankgstno;
                         item1.auto_gst = true;
@@ -909,7 +922,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $fil
                             var result = $filter('filter')($scope.travel_mode, {
                                 'data': item1.actualtravel
                             });
-                            $scope.travelmode_change(result[0])
+                            $scope.class_travel(item1)
                        });
                     $scope.approvedamount = $scope.eClaim_tavelexp[0].approvedamount;
                     $scope.enable_submit=true;
@@ -921,6 +934,52 @@ myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $fil
             }
         }).finally($scope.endloading);
     }
+
+    $scope.class_travel= function (e){
+        if (e.actualtravel == 'Train'){
+            e.travel_class_all = [{
+            index: 1,
+            id: 'ac_II_tier',
+            data: 'AC II Tier'
+            },{
+                index: 1,
+            id: 'ac_III_tier',
+            data: 'AC III Tier'
+            }, {
+                index: 1,
+            id: 'II_ac_scleeper',
+            data: 'II AC Sleeper'
+            }];            
+        }
+        else if (e.actualtravel == 'Road'){
+            e.travel_class_all =
+            [{
+            index: 2,
+            id: 'bus',
+            data: 'Bus'
+            },
+            {index: 2,
+            id: 'auto',
+            data: 'Auto'
+            },
+            {index: 2,
+            id: 'taxi',
+            data: 'Taxi'
+            }];    
+        }
+        else if (e.actualtravel == 'Air'){
+            e.travel_class_all =  [{
+            index: 3,
+            id: 'economy_class',
+            data: 'Economy Class'
+            }];            
+        }
+        else if (e.actualtravel == 'Sea'){
+            e.travel_class_all = [{
+            index: 4,
+                id: 'boat',
+            data: 'Boat' }];     }
+        }
 
     $scope.approveamt_tot = function(e){
         if(e.appamt <= e.claimedamount){
@@ -954,51 +1013,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $fil
         id: '0',
         data: 'NO'
     }];
-    $scope.travel_class_all = [{
-        index:2,
-        id: 'ac_II_tier',
-        data: 'AC II Tier'
-    },{
-        index:2,
-        id: 'ac_III_tier',
-        data: 'AC III Tier'
-    }, {
-        index:2,
-        id: 'II_ac_scleeper',
-        data: 'II AC Sleeper'
-    },{
-        index:3,
-        id: 'economy_class',
-        data: 'Economy Class'
-        },
-    {
-        index:1,
-        id: 'bus',
-        data: 'Bus'
-        },
-    {
-        index:1,
-        id: 'auto',
-        data: 'Auto'
-        },
-    {
-        index:1,
-        id: 'taxi',
-        data: 'Taxi'
-        },
-    {
-        index:4,
-        id: 'boat',
-        data: 'Boat'
-        },
-    ];
-    $scope.travelmode_change = function(g) {
-        var result = $filter('filter')($scope.travel_class_all, {
-                'index': g.index
-            });
-            $scope.travel_class = result;
-    }
-
+    
     $scope.travel_mode = [{
         id: 'Road',
         index:1,

@@ -247,9 +247,9 @@
                                             <th class="text-center" scope="col">Status</th>
                                         </thead>
                                         <tbody>
-                                            <tr ng-repeat="apprl in get_approval_data.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage)) | orderBy:orderByField:reverseSort">
+                                            <tr ng-repeat="apprl in get_approval_data.slice(((currentAppPage-1)*itemsPerPage), ((currentAppPage)*itemsPerPage)) | orderBy:orderByField:reverseSort">
                                                 <td class="text-center">
-                                                    <center>{{((currentPage-1)*itemsPerPage)+$index+1}}</center>
+                                                    <center>{{((currentAppPage-1)*itemsPerPage)+$index+1}}</center>
                                                 </td>
                                                 <td class="text-left">{{apprl.employee_name}} - {{apprl.employee_code}}</td>
                                                 <td class="text-left" ng-show="apprl.onbehalof == '0'">{{apprl.employee_name}} -
@@ -261,28 +261,7 @@
                                                 <td class="text-left">{{apprl.apptype}}</td>
                                                 <td class="text-left">{{apprl.approveddate}}</td>
                                                 <td class="text-left">{{apprl.appcomment}}</td>
-                                                <td class="text-left">
-                                                    <p ng-show="apprl.status == 'REJECTED'">
-                                                        Tour Request Rejected</p>
-                                                    <p ng-show="apprl.status == 'APPROVED' && apprl.apptype == 'TOUR'">
-                                                        Tour Request Approved</p>
-                                                    <p ng-show="apprl.status == 'APPROVED' && apprl.apptype == 'TOURCANCEL'">
-                                                        Tour Cancel Approved</p>
-                                                    <p ng-show="apprl.status == 'PENDING' && apprl.applevel == '1' && apprl.apptype == 'TOUR'">
-                                                        Tour Request Submitted To Approver</p>
-                                                    <p ng-show="apprl.status == 'PENDING' && apprl.applevel == '2' && apprl.apptype == 'TOUR'">
-                                                        Tour Request Forwarder Pending </p>
-                                                    <p ng-show="apprl.status == 'PENDING' && apprl.apptype == 'TOURCANCEL' ">
-                                                        Tour Cancel Submitted To Approver</p>
-                                                    <p ng-show="apprl.status == 'REQUESTED'">
-                                                        Tour Request Submitted</p>
-                                                    <p ng-show="apprl.status == 'CANCEL REQUEST'">
-                                                        Tour Cancel Request Submitted</p>
-                                                    <p ng-show="apprl.status == 'RETURN'">
-                                                        Tour Request Returned From Approver</p>
-                                                    <p ng-show="apprl.status == 'FORWARD'">
-                                                        Tour Request Forward To Another Employee</p>
-                                                </td>
+                                                <td class="text-left"> {{apprl.status}} </td>
                                             </tr>
                                             <tr ng-show="data_len ==  0">
                                                 <td class="warning" colspan="17">
@@ -294,7 +273,7 @@
                                             <tr>
                                                 <td colspan="7">
                                                     <ul boundary-links="true" class="pagination-sm cust_pagination" items-per-page="itemsPerPage"
-                                                        max-size="maxSize" ng-model="currentPage" total-items="eClaim_tavels.length" uib-pagination></ul>
+                                                        max-size="maxSize" ng-model="currentAppPage" total-items="get_approval_data.length" uib-pagination></ul>
                                                 </td>
                                                 <!--                        <td class="text-left" colspan="1">-->
                                                 <!--                            <span>Total Count:<br/> <b class="text-centre"> {{eClaim_tavels.length}}</b></span>-->
@@ -385,6 +364,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService, $window,$http, $fi
     $scope.maxSize = 3;
     $scope.itemsPerPage = 10;
     $scope.currentPage = 1;
+    $scope.currentAppPage = 1;
     $scope.loading = function() {
         $mdDialog.show({
             templateUrl: 'loaderSpinner',

@@ -21,6 +21,7 @@ img {
     padding-bottom: 15px;
     height:100%;
 }
+
 </style>
 <div class="maincontent">
     <div class="container container1" ng-app="eclaimapp" ng-controller="eclaimctrl" ng-cloak>
@@ -135,8 +136,8 @@ img {
                                 </md-autocomplete>
 
                                 <span class="error" style="color:red"
-                                          ng-show="tour_valid.tourreason.$invalid">Data Missing</span>
-<!--                                {{tour_valid.tourreason.$invalid}}-->
+                                      ng-show="tour_valid.tourreason.$invalid">Data Missing</span>
+                                <!--                                {{tour_valid.tourreason.$invalid}}-->
 
                             </div>
                             <div ng-show="reason_noedit">
@@ -162,8 +163,8 @@ img {
                                            ng-required="true">
                             </md-datepicker>
                             <span class="error" style="color:red"
-                                          ng-show="tour_valid.startdate.$invalid">Data Missing</span>
-<!--                                    {{tour_valid.startdate.$invalid}}-->
+                                  ng-show="tour_valid.startdate.$invalid">Data Missing</span>
+                            <!--                                    {{tour_valid.startdate.$invalid}}-->
 
                         </div>
                         <div class="col-md-3">
@@ -177,9 +178,9 @@ img {
                                            name="enddate"
                                            ng-required="true">
                             </md-datepicker>
-<!--                            <span class="error" style="color:red"-->
-<!--                                          ng-show="tour_valid.enddate.$invalid">Data Missing</span>-->
-<!--                                    {{tour_valid.$error}}-->
+                            <!--                            <span class="error" style="color:red"-->
+                            <!--                                          ng-show="tour_valid.enddate.$invalid">Data Missing</span>-->
+                            <!--                                    {{tour_valid.$error}}-->
                         </div>
                         <div class="col-md-3">
                             <md-input-container>
@@ -206,8 +207,8 @@ img {
                                        type="text"/>
                             </md-input-container>
                             <span class="error" style="color:red"
-                                          ng-show="tour_valid.ordernoremarks.$invalid">Data Missing</span>
-<!--                                    {{tour_valid.$error}}-->
+                                  ng-show="tour_valid.ordernoremarks.$invalid">Data Missing</span>
+                            <!--                                    {{tour_valid.$error}}-->
                         </div>
                         <!--                        <div class="col-md-3">-->
                         <!--                            <md-input-container>-->
@@ -243,8 +244,8 @@ img {
                                     </md-not-found>
                                 </md-autocomplete>
                                 <span class="error" style="color:red"
-                                          ng-show="tour_valid.permitedbyemp.$invalid">Data Missing</span>
-<!--                                    {{tour_valid.$error}}-->
+                                      ng-show="tour_valid.permitedbyemp.$invalid">Data Missing</span>
+                                <!--                                    {{tour_valid.$error}}-->
 
                             </div>
                             <div ng-show="reason_noedit">
@@ -279,8 +280,24 @@ img {
                                        type="text"/>
                                 <span class="error" style="color:red"
                                       ng-show="tour_valid.quantum_offunds.$error.pattern">Special char Error</span>
-<!--                                {{myForm.$error}}-->
+                                <!--                                {{myForm.$error}}-->
                             </md-input-container>
+                        </div>
+                        <div class="col-md-3" ng-show="pro_enable">
+                            <label>Transfer on Promotion</label><br>
+                            <md-autocomplete
+                                    md-items="item in promotion"
+                                    md-min-length=0
+                                    md-no-cache="true"
+                                    ng-required="pro_enable"
+                                    md-selected-item="transferon_promotion" ,
+                                    md-selected-item-change=""
+                                    placeholder="Transfer on Promotion"
+                                    type="text">
+                                <md-item-template>
+                                    <span md-highlight-text="searchText"> {{item}} </span>
+                                </md-item-template>
+                            </md-autocomplete>
                         </div>
                         <div class="col-md-2" ng-show="fit_enable">
                             <md-input-container>
@@ -296,7 +313,7 @@ img {
                                        type="text"/>
                                 <span class="error" style="color:red"
                                       ng-show="tour_valid.opening_balance.$error.pattern">Special char Error</span>
-<!--                                {{myForm.$error}}-->
+                                <!--                                {{myForm.$error}}-->
                             </md-input-container>
                         </div>
                         <!--                        <div class="col-md-3">-->
@@ -365,7 +382,7 @@ img {
                                           ng-show="tour_valid.startingpoint{{$index}}.$error.pattern">Special char Error</span>
                                     <span class="error" style="color:red"
                                           ng-show="tour_valid.startingpoint{{$index}}.$invalid">Data Missing</span>
-<!--                                    {{tour_valid.$error}}-->
+                                    <!--                                    {{tour_valid.$error}}-->
                                 </td>
                                 <td class="text-center">
                                     <input maxlength="30"
@@ -381,7 +398,7 @@ img {
                                           ng-show="tour_valid.placeofvisit{{$index}}.$error.pattern">Special char Error</span>
                                     <span class="error" style="color:red"
                                           ng-show="tour_valid.placeofvisit{{$index}}.$invalid">Data Missing</span>
-<!--                                    {{tour_valid.$error}}-->
+                                    <!--                                    {{tour_valid.$error}}-->
                                 </td>
                                 <td class="text-center">
                                     <input maxlength="30"
@@ -397,7 +414,7 @@ img {
                                           ng-show="tour_valid.purposeofvisit{{$index}}.$error.pattern">Special char Error</span>
                                     <span class="error" style="color:red"
                                           ng-show="tour_valid.purposeofvisit{{$index}}.$invalid">Data Missing</span>
-<!--                                    {{tour_valid.$error}}-->
+                                    <!--                                    {{tour_valid.$error}}-->
                                 </td>
                                 <td class="text-center"
                                     ng-disabled="applevel == 1 || tourstatus == 'APPROVED'|| tourstatus == 'REJECTED' || tourstatus =='CANCEL'">
@@ -448,7 +465,7 @@ img {
                                            ng-required="file_required"
                                            onchange="angular.element(this).scope().imageUpload(event)"
                                            type="file"/>
-                                      <span class="error" style="color:red"
+                                    <span class="error" style="color:red"
                                           ng-show="tour_valid.files.$error.pattern">Please Upload File</span>
                                 </div>
                             </div>
@@ -501,8 +518,8 @@ img {
                                     </md-not-found>
                                 </md-autocomplete>
                                 <span class="error" style="color:red"
-                                          ng-show="tour_valid.branchdata.$invalid">Data Missing</span>
-<!--                                    {{tour_valid.$error}}-->
+                                      ng-show="tour_valid.branchdata.$invalid">Data Missing</span>
+                                <!--                                    {{tour_valid.$error}}-->
                             </div>
                             <div class="col-md-3" ng-show="tourstatus =='REJECTED'">
                                 <md-input-container>
@@ -537,8 +554,8 @@ img {
                                     </md-not-found>
                                 </md-autocomplete>
                                 <span class="error" style="color:red"
-                                          ng-show="tour_valid.approvalemp.$invalid">Data Missing</span>
-<!--                                    {{tour_valid.$error}}-->
+                                      ng-show="tour_valid.approvalemp.$invalid">Data Missing</span>
+                                <!--                                    {{tour_valid.$error}}-->
                             </div>
                             <div class="col-md-3" ng-show="tourstatus =='REJECTED'">
                                 <md-input-container>
@@ -873,9 +890,9 @@ img {
                             <th class="text-center" scope="col">Status</th>
                             </thead>
                             <tbody>
-                            <tr ng-repeat="apprl in get_approval_data.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage)) | orderBy:orderByField:reverseSort">
+                            <tr ng-repeat="apprl in get_approval_data.slice(((currentAppPage-1)*itemsPerPage), ((currentAppPage)*itemsPerPage)) | orderBy:orderByField:reverseSort">
                                 <td class="text-center">
-                                    <center>{{((currentPage-1)*itemsPerPage)+$index+1}}</center>
+                                    <center>{{((currentAppPage-1)*itemsPerPage)+$index+1}}</center>
                                 </td>
                                 <td class="text-left">{{apprl.employee_name}} - {{apprl.employee_code}}</td>
                                 <td class="text-left" ng-show="apprl.onbehalof == '0'">{{apprl.employee_name}} -
@@ -923,7 +940,7 @@ img {
                                     <ul boundary-links="true" class="pagination-sm cust_pagination"
                                         items-per-page="itemsPerPage"
                                         max-size="maxSize"
-                                        ng-model="currentPage" total-items="eClaim_tavels.length"
+                                        ng-model="currentAppPage" total-items="get_approval_data.length"
                                         uib-pagination></ul>
                                 </td>
                                 <!--                        <td class="text-left" colspan="1">-->
@@ -1250,6 +1267,7 @@ img {
  .md-select-menu-container.md-active {
     z-index: 1060;
     }
+
 </style>
 <script>
    var myApp = angular.module('eclaimapp', ['ngMaterial','ui.bootstrap','ngMessages','AppCommon'])
@@ -1271,6 +1289,7 @@ myApp.controller('eclaimctrl',function($scope,$sce, eclaimService, $window,$http
     $scope.maxSize = 3;
     $scope.itemsPerPage = 10;
     $scope.currentPage = 1;
+    $scope.currentAppPage = 1;
     $scope.loading = function() {
         $mdDialog.show({
             templateUrl: 'loaderSpinner',
@@ -1362,11 +1381,14 @@ myApp.controller('eclaimctrl',function($scope,$sce, eclaimService, $window,$http
                     $scope.tour.empdesignation = item1.empdesignation;
                     $scope.tour.empdepartmentgid = item1.empdepartmentgid;
                     $scope.tour.empgrade = item1.empgrade;
+                    $scope.tour.employee_grade1 = item1.employee_grade1;
+                    $scope.tour.employee_grade2 = item1.employee_grade2;
                     $scope.tour.empbranchgid = item1.empbranchgid;
                     $scope.tour.stategid = item1.stategid;
                     $scope.tour.employee_code = item1.employee_code;
                     $scope.tour.designation = item1.employee_designation;
                     $scope.tour.employee_name = item1.employee_name;
+
                     $scope.file_required = false;
                     if (item1.quantum_offunds == null){
                         $scope.tour.quantum_offunds = 0
@@ -1401,6 +1423,15 @@ myApp.controller('eclaimctrl',function($scope,$sce, eclaimService, $window,$http
 
                     if(item1.tourreason == "Funds Transfer" ){
                         $scope.fit_enable = true;
+                    }
+                    else if(item1.tourreason == "Transfer-Reporting" ){
+                        $scope.pro_enable = true;
+                    }
+                    else if(item1.tourreason == "Transfer with family" ){
+                        $scope.pro_enable = true;
+                    }
+                    else if(item1.tourreason == "Transfer without Family" ){
+                        $scope.pro_enable = true;
                     }
             }).finally($scope.endloading);
 
@@ -1520,6 +1551,7 @@ myApp.controller('eclaimctrl',function($scope,$sce, eclaimService, $window,$http
         modalshow('permittedby_view');
     }
     $scope.stdate_change = function(d,e){
+        $scope.empgrade_enable = 0;
         var v = d+1;
         var len = $scope.tour_details.length;
 <!--        if( v != len && v < len){-->
@@ -1592,7 +1624,7 @@ myApp.controller('eclaimctrl',function($scope,$sce, eclaimService, $window,$http
                     if ( grade_date1 <= fromdate ){
                         $scope.tour.empgrade = $scope.emp_data.employee_grade1;
                     }
-                    else {
+                    else{
                         $scope.tour.empgrade = $scope.emp_data.employee_grade2;
                     }
 
@@ -1684,6 +1716,7 @@ myApp.controller('eclaimctrl',function($scope,$sce, eclaimService, $window,$http
             $scope.tour.designation = $scope.emp_data.designation_name;
             $scope.tour.employee_name = $scope.emp_data.employee_name;
             $scope.onbehalf_emp = $scope.emp_data.employee_name;
+            $scope.tour.transferon_promotion = $scope.emp_data.transferon_promotion;
             $scope.branchdata($scope.tour.empbranchgid);
             if ($scope.emp_data.grade == undefined || $scope.emp_data.grade == "undefined" ){
                 $scope.tour.empgrade = $scope.emp_data.employee_grade1;
@@ -1867,6 +1900,8 @@ myApp.controller('eclaimctrl',function($scope,$sce, eclaimService, $window,$http
     $scope.file_required = true;
     $scope.remarks_required = true;
     $scope.fit_enable = false;
+    $scope.pro_enable = false;
+    $scope.promotion = ["YES","NO"]
     $scope.choose_reason = function(e){
         $scope.tour.reason = e.gid;
         if(e.fileupload == 1 ){
@@ -1877,14 +1912,19 @@ myApp.controller('eclaimctrl',function($scope,$sce, eclaimService, $window,$http
             $scope.file_required = false;
             $scope.remarks_required = false;
         }
+
         if(e.name == "Funds Transfer" ){
             $scope.fit_enable = true;
+            $scope.pro_enable = false;
+        }
+        else if(e.name == "Transfer-Reporting" || e.name == "Transfer with family" || e.name == "Transfer without Family"){
+            $scope.pro_enable = true;
+            $scope.fit_enable = false;
         }
         else{
             $scope.fit_enable = false;
+            $scope.pro_enable = false;
         }
-
-
     }
 
     $scope.empchange = function(e){
@@ -2118,6 +2158,21 @@ myApp.controller('eclaimctrl',function($scope,$sce, eclaimService, $window,$http
                         item1.startdate = $filter('date')(new Date(item1.startdate),'yyyy-MM-dd');
                         item1.enddate = $filter('date')(new Date(item1.enddate),'yyyy-MM-dd');
                    });
+                   if ($scope.tour.employee_code.substring(0, 2).toUpperCase() != 'VS'){
+                       if ($scope.transferon_promotion == "YES"){
+                           $scope.tour.transferon_promotion = 1;
+                           if ($scope.tour.employee_grade2 == "-" || $scope.tour.employee_grade2 == "0"){
+                                $scope.tour.empgrade = $scope.tour.employee_grade1;
+                           }
+                           else {
+                                $scope.tour.empgrade = $scope.tour.employee_grade2;
+                           }
+                       }
+                       else {
+                           $scope.tour.transferon_promotion = 0;
+                           $scope.tour.empgrade = $scope.tour.employee_grade1;
+                       }
+                   }
                     var data = {
                         params: {
                             "Type": "TOUR_MAKER",
@@ -2140,6 +2195,7 @@ myApp.controller('eclaimctrl',function($scope,$sce, eclaimService, $window,$http
                                         "durationdays":$scope.tour.durationdays,
                                         "eligiblemodeoftravel":"II AC Sleeper",
                                         "ordernoremarks":$scope.tour.ordernoremarks,
+                                        "transferon_promotion":$scope.tour.transferon_promotion,
                                         "quantum_offunds":$scope.tour.quantum_offunds,
                                         "opening_balance":$scope.tour.opening_balance,
                                     },
@@ -2533,6 +2589,7 @@ myApp.service("eclaimService", function($http) {
         return response;
     }
 });
+
 </script>
 
 {% endblock %}
