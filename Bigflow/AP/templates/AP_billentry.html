@@ -819,13 +819,12 @@
                                             <td></td>
                                             <td></td>
                                             <td></td>
-                                            <td></td>
                                             <td>{{Amount_todb_sum | number:2}}</td>
                                             <td></td>
                                             <td></td>
                                             <td></td>
                                             <td>{{calculatePay | number:2}}</td>
-
+                                            <td></td>
                                         </tr>
                                         </tfoot>
 
@@ -5932,10 +5931,6 @@ myApp.controller('Ctrlsmry', ['$scope', 'invoiceService', '$window', '$filter', 
                 "IGST": value.IGST,
                 "CGST": value.CGST,
                 "SGST": value.SGST,
-                "PO_NO":value.PO_NO,
-                "GRN_NO":value.GRN_NO,
-                "DetailProduct_gid":value.detailProduct_gid,
-                "DetailProduct_name":value.detailProduct_name,
                 "Total_Amount": total_amt,
                 "PO_Header_Gid": value.PO_Header_Gid,
                 "PO_Detail_Gid": value.PO_Detail_Gid,
@@ -6847,7 +6842,6 @@ myApp.controller('Ctrlsmry', ['$scope', 'invoiceService', '$window', '$filter', 
             //alert(JSON.stringify($scope.invoicedetails))
             // $scope.podetail = !$scope.podetail;
             $scope.invoiceheader_gid = $scope.invoicedetails[0].Invoice_Header_gid;
-            $scope.prestatus = $scope.invoicedetails[0].status;
             $scope.suppli_gid = $scope.invoicedetails[0].supplier_gid;
             $scope.POno = $scope.invoicedetails[0].pono
             var json_fordatafetch = {

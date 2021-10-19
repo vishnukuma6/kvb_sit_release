@@ -21,7 +21,7 @@
                     </md-input-container>
                 </div>
                 <div class="col-md-1">
-                    <a href="" ng-click="poentry_with_ms(POno)"><i class="material-icons"
+                    <a href="" ng-click="poentry(POno)"><i class="material-icons"
                                                            style="material-icons.line-height:3px;line-height: 3;">send</i></a>
                 </div>
 <!--                <div class="col-md-3">-->
@@ -153,7 +153,6 @@
 
             </div>
         </div>
-<!--        <pre>{{GRNdetail | json}}</pre>-->
         <div class="row">
             <div class="row-header col-lg-12 col-sm-12">
                 <h4>POInvoice Creation</h4>
@@ -280,17 +279,15 @@ var myApp = angular.module('Appsmry', ['ngMaterial', 'ui.bootstrap', 'AppCommon'
         $httpProvider.defaults.xsrfCookieName = 'csrftoken';
         $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
     });
-myApp.controller('Ctrlsmry', ['$scope', 'poinvoiceService', '$window', '$mdDialog','$filter','$mdDateLocale','$http',
-   function($scope, poinvoiceService, $window, $mdDialog,$filter,$mdDateLocale,$http,) {
+myApp.controller('Ctrlsmry', ['$scope', 'poinvoiceService', '$window', '$mdDialog','$filter','$mdDateLocale',
+   function($scope, poinvoiceService, $window, $mdDialog,$filter,$mdDateLocale) {
       $scope.currentPage = 1;
       $scope.maxSize = 3;
       $scope.itemsPerPage = 10;
-      $scope.GRNdetail=[];
   //var detail = JSON.parse(sessionStorage.getItem('today'));
    $mdDateLocale.formatDate = function(date) {
       return $filter('date')($scope.invdate, "dd-MMM-yyyy");
    };
-
 
       $scope.ls_followup_date = new Date();
 
@@ -391,7 +388,7 @@ myApp.controller('Ctrlsmry', ['$scope', 'poinvoiceService', '$window', '$mdDialo
 
 
       $scope.qtyvalid = function(valid_dtl) {
-            debugger;
+
          if ((valid_dtl.balance_quantity - (valid_dtl.paid_quantity + (valid_dtl.ECF_quantity = valid_dtl.ECF_quantity || 0 ) ))  < valid_dtl.all_qty) {
             alert("Given Quantity Is Greater Than Balance Quantity");
             valid_dtl.all_qty = 0;
@@ -413,58 +410,61 @@ myApp.controller('Ctrlsmry', ['$scope', 'poinvoiceService', '$window', '$mdDialo
       $scope.PO_detail = []
          var count = 1;
       $scope.Add_po = function(value,inndex) {
-    debugger;
+
          if(value.all_qty > 0){
             angular.forEach($scope.PO_detail, function(povalue, key) {
-               if(povalue.PO_Detail_Gid == value.podetails_gid && povalue.GRN_Detail_Gid == value.grninwarddetails_gid ){
-                    if ((value.balance_quantity - (parseInt(povalue.qty) +(value.paid_quantity =value.paid_quantity || 0 ) + (value.ECF_quantity = value.ECF_quantity || 0 ) ))  >= parseInt( value.all_qty)) {
-                        var sumdata = 0;
-                        sumdata = parseInt(povalue.qty) +  parseInt( value.all_qty);
-                        povalue.qty = sumdata;
-                        povalue.Amount = parseFloat(value.podetails_unitprice) * sumdata;
-                        javascript_abort();
-                    }else{
-                        alert("Given Quantity Is Greater Than Balance Quantity");
-                        javascript_abort();
-                    }
-               }
+
+                       if(povalue.PO_Detail_Gid == value.podetails_gid && povalue.GRN_Detail_Gid == value.grninwarddetails_gid ){
+
+                            if ((value.balance_quantity - (parseInt(povalue.qty) +(value.paid_quantity =value.paid_quantity || 0 ) + (value.ECF_quantity = value.ECF_quantity || 0 ) ))  >= parseInt( value.all_qty)) {
+                                var sumdata = 0;
+                                sumdata = parseInt(povalue.qty) +  parseInt( value.all_qty);
+                                povalue.qty = sumdata;
+                                povalue.Amount = parseFloat(value.podetails_unitprice) * sumdata;
+                                javascript_abort();
+                            }else{
+                             alert("Given Quantity Is Greater Than Balance Quantity");
+
+                            javascript_abort();
+                            }
+                          }
             })
 
-            $scope.PO_detail.push({
-                "item": value.product_name,
-                "description": value.description,
-                "HSN_Code": value.hsn_code,
-                "Unit_price": value.podetails_unitprice,
-                "qty": value.all_qty,
-                "Amount": value.Amount,
-                "Amount_todb": value.Amount,
-                "Discount": 0,
-                "IGST": value.IGST,
-                "CGST": value.CGST,
-                "SGST": value.SGST,
-                "Total_amount": value.Amount,
-                "checked" : true,
-                "Debit_checked" : true,
-                "DEBIT_DETAILS":[],
-                "PO_Header_Gid": value.poheader_gid,
-                "PO_Detail_Gid": value.podetails_gid,
-                "GRN_Header_Gid": value.grninwardheader_gid,
-                "GRN_Detail_Gid": value.grninwarddetails_gid,
-                "Invoice_Header_gid": $scope.invoiceheader_gid,
-                "supplier_gid": $scope.suppl_gid,
-                "pono":$scope.POno,
-                "PO_NO":value.poheader_no,
-                "GRN_NO":value.grninwardheader_code,
-                "state": $scope.state_gid,
-                "Invoice_Sno":count,
-                "TYPE" : 'PO',
-                "status": status,
-                "bscc":value.bscc,
-                "prod_catsub":value.prod_catsub,
 
-             })
 
-           count++;
+                    $scope.PO_detail.push({
+                        "item": value.product_name,
+                        "description": value.description,
+                        "HSN_Code": value.hsn_code,
+                        "Unit_price": value.podetails_unitprice,
+                        "qty": value.all_qty,
+                        "Amount": value.Amount,
+                        "Amount_todb": value.Amount,
+                        "Discount": 0,
+                        "IGST": value.IGST,
+                        "CGST": value.CGST,
+                        "SGST": value.SGST,
+                        "Total_amount": value.Amount,
+                        "checked" : true,
+                        "Debit_checked" : true,
+                        "DEBIT_DETAILS":[],
+                        "PO_Header_Gid": value.poheader_gid,
+                        "PO_Detail_Gid": value.podetails_gid,
+                        "GRN_Header_Gid": value.grninwardheader_gid,
+                        "GRN_Detail_Gid": value.grninwarddetails_gid,
+                        "Invoice_Header_gid": $scope.invoiceheader_gid,
+                        "supplier_gid": $scope.suppl_gid,
+                        "pono":$scope.POno,
+                        "state": $scope.state_gid,
+                        "Invoice_Sno":count,
+                        "TYPE" : 'PO',
+                        "status": status,
+                        "bscc":value.bscc,
+                        "prod_catsub":value.prod_catsub,
+
+                     })
+
+                   count++;
           }else{
 
             alert("Given Quantity Should Be Greater Than Zero")
@@ -474,13 +474,11 @@ myApp.controller('Ctrlsmry', ['$scope', 'poinvoiceService', '$window', '$mdDialo
       }
 
       $scope.poentry = function(pono) {
-        $scope.GRNdetail=[];
 
           var GRNdetail = poinvoiceService.getgrn(pono, PO_toinvoice.supplier_gid);
           GRNdetail.then(function(GRNdetail) {
 
              $scope.GRNdetail = GRNdetail.data;
-             console.log($scope.GRNdetail);
 
 
              angular.forEach($scope.GRNdetail, function(value, key) {
@@ -495,65 +493,15 @@ myApp.controller('Ctrlsmry', ['$scope', 'poinvoiceService', '$window', '$mdDialo
 
       }
 
-      $scope.poentry_with_ms=function(poNumber){
-     debugger;
-     $scope.GRNdetail=[];
-        var token="";
-        var datas={params:{"Action":"TOKEN"}};
-         $scope.loading();
-            var summarys_branch = poinvoiceService.get_memo_details(datas);
-            summarys_branch.then(function(result) {
-                $scope.endloading();
-                token=result.data.token;
-                memo_ip=result.data.memo_ip;
-                var config = {headers: {'Authorization':'Token ' +token}};
-                if(token!=undefined){
-                     return $http.get(memo_ip+"/ecfserv/pono_details?query="+poNumber,config).then(function(data) {
-                    console.log(data.data);
-                    $scope.temp_data=data.data.data;
-                    for(var i=0;i<$scope.temp_data.length;i++){
-                        var json={"checked":false,"amount":0,
-                        "poheader_gid":$scope.temp_data[i].poheader.id,
-                        "podetails_gid":$scope.temp_data[i].podetails_id.id,
-                        "grninwarddetails_gid":$scope.temp_data[i].id,
-                        "grninwardheader_code":$scope.temp_data[i].inwardheader.code,
-                        "grninwardheader_gid":$scope.temp_data[i].inwardheader.id,
-                        "poheader_supplier_gid":$scope.temp_data[i].poheader.supplierbranch_id,
-                        "product_gid":$scope.temp_data[i].podetails_id.product_id,
-                        "poheader_no":$scope.temp_data[i].poheader.no,
-                        "product_name":$scope.temp_data[i].podetails_id.product_name,
-                        "uom_name": $scope.temp_data[i].podetails_id.uom,
-                        "podetails_product_gid":$scope.temp_data[i].podetails_id.product_id,
-                        "podetails_qty":$scope.temp_data[i].podetails_id.qty,
-                        "balance_quantity": $scope.temp_data[i].ecfpo_invoiceqty,
-                        "paid_quantity": $scope.temp_data[i].paidqty,
-                        "ECF_quantity": $scope.temp_data[i].ecfpo_invoicedqty,
-                        "podetails_unitprice": $scope.temp_data[i].podetails_id.unitprice,
-                        "hsn_code": 0,
-                        }
-                        $scope.GRNdetail.push(json);
-                    }
-<!--                    quantity-->
-<!--balance_quantity-->
-
-                    });
-                }
-                else{
-                    alert(JSON.stringify(result.data));
-                }
-            },
-            function(err) {
-                alert('No data!.');
-            }).finally($scope.endloading);
-     }
-
 
 
 
       $scope.PO_detail = []
          var count = 1;
       function POjson_set(value) {
-      debugger;
+
+
+
              $scope.PO_detail.push({
                         "item": value.product_name,
                         "description": value.description,
@@ -576,8 +524,6 @@ myApp.controller('Ctrlsmry', ['$scope', 'poinvoiceService', '$window', '$mdDialo
                         "Invoice_Header_gid": $scope.invoiceheader_gid,
                         "supplier_gid": $scope.suppl_gid,
                         "pono":$scope.POno,
-                        "PO_NO":$scope.poheader_no,
-                        "GRN_NO":$scope.grninwardheader_code,
                         "state": $scope.state_gid,
                         "Invoice_Sno":count,
                         "TYPE" : 'PO',
@@ -652,12 +598,6 @@ myApp.service("poinvoiceService", function ($http,$filter) {
        //  alert(header_gid)
         var response=$http.post(Appname+"/APInvoice_get/",{params:{"action":"INVOICE_MAKER_SUMMARY","ponumber":"","supplier_gid":0,"inwarddetail_gid":0,"inwardheader_gid":header_gid,"status":status}});
         return response;
-    }
-
-    this.get_memo_details = function (data) {
-            var response = $http.post(Appname + "/memo_details/", data,
-            );
-            return response;
     }
 
     });

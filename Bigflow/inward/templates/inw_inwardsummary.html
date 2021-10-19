@@ -356,8 +356,6 @@ app.controller('ctrlinwardsummary', ['$scope', '$filter', '$mdDateLocale', 'serv
     };
 
     $scope.channel_click = function(channel) {
-        $scope.airwayno="";
-        $scope.courier="";
         if (channel == "Hand Delivery") {
             $scope.hide = true;
             $scope.courier = "1";

@@ -537,34 +537,26 @@ app.controller('ctrlsummary', ['$scope', '$filter', '$mdDateLocale', 'servicesum
         }
 
         $scope.set_lock_detail=function(detail){
-        debugger;
-            $scope.loading();
-            var millisecondsToWait = 4000;
-            setTimeout(function() {
-                var datas={"action":'INSERT',"type":"AP_LOCK", "filter":{"invoice_header_gid":detail.invoiceheader_gid,
-                    "invoice_status":detail.invoiceheader_status}};
-
-                    var get_lock_data = servicesummary.get_lock_data_service(datas);
-                    get_lock_data.then(function(result) {
-                        $scope.lock_data =result.data;
-                        if($scope.lock_data[0]=="SUCCESS"){
-                            $scope.Add_AP(detail);
-                        }
-                        else{
-                            alert($scope.lock_data);
-                        }
-                    },
-                    function(err) {
-                        alert("Get Lock Details Is Issue");
-                    }).finally($scope.endloading);
-                 $scope.endloading();
-
-            }, millisecondsToWait);
+            var datas={"action":'INSERT',"type":"AP_LOCK", "filter":{"invoice_header_gid":detail.invoiceheader_gid,
+                "invoice_status":detail.invoiceheader_status}};
+                $scope.loading();
+                var get_lock_data = servicesummary.get_lock_data_service(datas);
+                get_lock_data.then(function(result) {
+                    $scope.lock_data =result.data;
+                    if($scope.lock_data[0]=="SUCCESS"){
+                        $scope.Add_AP(detail);
+                    }
+                    else{
+                        alert($scope.lock_data);
+                    }
+                },
+                function(err) {
+                    alert("Get Lock Details Is Issue");
+                }).finally($scope.endloading);
 
         }
 
         $scope.Add_AP = function(detail) {
-        debugger;
             //  alert(JSON.stringify(detail))
             var aray = ["rejecthead", "Viewap_dtl","rejecthead", "Approvdtl","checkerdtl", "POjson","CHECKLIST", "makerdtl","makerdtl_ecf", "POdtl","POdtledit","POjson"];
             aray.forEach(function(key) { sessionStorage.removeItem(key) });

@@ -11,27 +11,17 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 import os
 from environs import Env
-from Bigflow.Core import models as common
 env = Env()
 env.read_env()  # read .env file, if it exists
 #SECRET_KEY = env('SECRET_KEY')
 #Password_Key = env('Password_Key_for_encrypt')
-try:
-    Password_Key = env.str('Password_Key_for_encrypt')
-except:
-    common.logger.error([{"Password_Key_for_encrypt": "No name Password_Key_for_encrypt in env"}])
+Password_Key = env.str('Password_Key_for_encrypt')
 #DEBUG = env('DEBUG')
 #SECRET_KEY = '3-b^6=oc54w-went7pzjb197ri2iu*p-n(rum13i-gshg@57#g'
-try:
-    SECRET_KEY = env.str('SECRET_KEY')
-except:
-    common.logger.error([{"SECRET_KEY": "No name SECRET_KEY in env"}])
+SECRET_KEY = env.str('SECRET_KEY')
 # DEBUG = env.bool('DEBUG')
 DEBUG = False
-try:
-    S3_BUCKET_NAME = env.str('S3_BUCKET_NAME')
-except:
-    common.logger.error([{"S3_BUCKET_NAME": "No name S3_BUCKET_NAME in env"}])
+S3_BUCKET_NAME = env.str('S3_BUCKET_NAME')
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #DEBUG = True
@@ -51,10 +41,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #     'vysfin-sit.ap-south-1.elasticbeanstalk.com',
 #     'emc-vysfin-sit.kvbank.in'
 # ]
-try:
-    ALLOWED_HOSTS = env.list("ALLOWED_HOST")
-except:
-    common.logger.error([{"ALLOWED_HOST": "No name ALLOWED_HOST in env"}])
+ALLOWED_HOSTS = env.list("ALLOWED_HOST")
 
 # Application definition
 
@@ -138,34 +125,14 @@ EMAIL_PORT = 587
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-try:
-    DB_ENGINE = env.str('DB_ENGINE')
-except:
-    common.logger.error([{"DB_ENGINE": "No name DB_ENGINE in env"}])
-try:
-    DB_NAME = env.str('DB_NAME')
-except:
-    common.logger.error([{"DB_NAME": "No name DB_NAME in env"}])
-try:
-    DB_NAME_1 = env.str('DB_NAME_1')
-except:
-    common.logger.error([{"DB_NAME_1": "No name DB_NAME_1 in env"}])
-try:
-    DB_USER = env.str('DB_USER')
-except:
-    common.logger.error([{"DB_USER": "No name DB_USER in env"}])
-try:
-    DB_PASSWORD = env.str('DB_PASSWORD')
-except:
-    common.logger.error([{"DB_PASSWORD": "No name DB_PASSWORD in env"}])
-try:
-    DB_HOST = env.str('DB_HOST')
-except:
-    common.logger.error([{"DB_HOST": "No name DB_HOST in env"}])
-try:
-    DB_PORT = env.str('DB_PORT')
-except:
-    common.logger.error([{"DB_PORT": "No name DB_PORT in env"}])
+
+DB_ENGINE = env.str('DB_ENGINE')
+DB_NAME = env.str('DB_NAME')
+DB_NAME_1 = env.str('DB_NAME_1')
+DB_USER = env.str('DB_USER')
+DB_PASSWORD = env.str('DB_PASSWORD')
+DB_HOST = env.str('DB_HOST')
+DB_PORT = env.str('DB_PORT')
 DATABASES = {
    'default': {
        'ENGINE': DB_ENGINE,

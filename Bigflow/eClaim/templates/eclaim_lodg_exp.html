@@ -110,10 +110,8 @@ img {
                         <th class="text-center required" scope="col">Bill Available</th>
                         <th class="text-center required" scope="col">Total Bill Amount
                             (Excluding Tax)</th>
-                        <th class="text-center required" scope="col">Claim Amount 
-                            (Excluding Tax)</th>
-                        <th class="text-center" scope="col">Eligible Amount 
-                            (Excluding Tax)</th>
+                        <th class="text-center required" scope="col">Claim Amount</th>
+                        <th class="text-center" scope="col">Eligible Amount</th>
                         <th class="text-center required" scope="col">Tax only(Luxury & Service)</th>
                         <th class="text-center" scope="col">Vendor Name</th>
                         <th class="text-center" scope="col">HSN Code</th>
@@ -952,7 +950,6 @@ myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $fil
                                     "city": e.searchcity,
                                     "accbybank": accbybank,
                                     "claimedamount": claimedamount,
-                                    "taxonly":e.taxonly,
                                     "checkindate" :$filter('date')(new Date(e.checkindate),'yyyy-MM-dd')+ " " +$scope.fr_time,
                                     "checkoutdate" :$filter('date')(new Date(e.checkoutdate),'yyyy-MM-dd')+ " " +$scope.to_time
                                 }
@@ -972,7 +969,7 @@ myApp.controller('eclaimctrl',function($scope, eclaimService,$http,$window, $fil
             var len = $scope.eClaim_lodg.length;
             if( v != len && v < len){
                 for(j=v; j<len; j++){
-                    if($scope.eClaim_lodg[j].checkindate !=""  || $scope.eClaim_lodg[j].checkoutdate != ""){
+                    if($scope.eClaim_lodg[j].checkindate !=""  || $scope.eClaim_dailys[j].checkoutdate != ""){
                         $scope.eClaim_lodg[j].checkindate ="";
                         $scope.eClaim_lodg[j].checkoutdate ="";
                         error_toast(date_clubed,time_toast);

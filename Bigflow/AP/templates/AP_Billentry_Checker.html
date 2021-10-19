@@ -214,7 +214,6 @@
                                                             <th>Description</th>
                                                             <th>HSN Code</th>
                                                             <th>Product Name</th>
-                                                            <th>Product Code</th>
                                                             <th>Unit Price</th>
                                                             <th>Quantity</th>
                                                             <th>Amount</th>
@@ -247,7 +246,6 @@
                                                                 <p><span style="color:blue">IS-Blocked: </span>{{invoice.product_isblocked}}
                                                                 </p>
                                                             </td>
-                                                            <td>{{invoice.product_code}}</td>
                                                             <td>{{invoice.invoicedetails_unitprice}}</td>
                                                             <td>{{invoice.invoicedetails_qty}}</td>
                                                             <td>{{invoice.invoicedetails_amount
@@ -276,7 +274,7 @@
                                                         </tbody>
                                                         <tfoot>
                                                         <tr align="center">
-                                                            <td colspan="11">
+                                                            <td colspan="10">
                                                                 <ul uib-pagination
                                                                     total-items="invoice_summary.length"
                                                                     ng-model="invoice_currentPage"
@@ -2833,7 +2831,6 @@ app.controller('ctrlsummary', ['$scope', '$filter', '$mdDateLocale', 'invoice_se
         $scope.branch_gid=0;
         $scope.ref_no=$scope.checker_data[0].invoiceheader_crno;
         $scope.Invoice_Type=$scope.checker_data[0].invoiceheader_invoicetype;
-        $scope.pono=$scope.checker_data[0].invoiceheader_ponumber;
         $scope.captalise_flag=$scope.checker_data[0].invoiceheader_captalisedflag;
         $scope.branch_gid=$scope.checker_data[0].branch_gid;
         if(status!="REAUDIT"){
@@ -2903,17 +2900,17 @@ app.controller('ctrlsummary', ['$scope', '$filter', '$mdDateLocale', 'invoice_se
                         "file_data":$scope.file_stored_data,"ref_no":$scope.ref_no,"branch_gid":$scope.branch_gid};
                     }
                     else if(status=="REAUDIT"){
-                        var json = {"Invoice_Header_Gid":$scope.Header_gid,"Status":"REAUDIT","Invoice_Type":$scope.Invoice_Type,"pono":$scope.pono,
+                        var json = {"Invoice_Header_Gid":$scope.Header_gid,"Status":"REAUDIT",
                                     "Remark":$scope.remarks,"file_data":$scope.file_stored_data,
                                     "Ref_no":$scope.ref_no};
                     }
                     else if(status=="REPROCESS"){
-                        var json = {"Invoice_Header_Gid":$scope.Header_gid,"Status":"REPROCESS","Invoice_Type":$scope.Invoice_Type,"pono":$scope.pono,
+                        var json = {"Invoice_Header_Gid":$scope.Header_gid,"Status":"REPROCESS",
                                     "Remark":$scope.remarks,"file_data":$scope.file_stored_data,
                                     "Ref_no":$scope.ref_no,"bounce_gid":$scope.bounce_gid};
                     }
                     else if(status=="REJECT"){
-                        var json = {"Invoice_Header_Gid":$scope.Header_gid,"Status":"REJECT","Invoice_Type":$scope.Invoice_Type,"pono":$scope.pono,
+                        var json = {"Invoice_Header_Gid":$scope.Header_gid,"Status":"REJECT",
                                     "Remark":$scope.remarks,"file_data":$scope.file_stored_data,
                                     "Ref_no":$scope.ref_no};
                     }

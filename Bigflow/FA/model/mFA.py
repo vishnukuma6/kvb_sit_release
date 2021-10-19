@@ -157,8 +157,8 @@ class FaModel(mVariable.variable):
     def set_fa_depreciation(self):
         cursor = connection.cursor()
         parameters = (self.action,self.type,self.sub_type,self.jsondata,self.jsonData,self.json_classification,self.employee_gid,'')
-        cursor.callproc('sp_FADepreciationNEW_Set', parameters)
-        cursor.execute('select @_sp_FADepreciationNEW_Set_7')
+        cursor.callproc('sp_FADepreciation_Set', parameters)
+        cursor.execute('select @_sp_FADepreciation_Set_7')
         out_message = cursor.fetchone()
         return {"MESSAGE": out_message[0]}
 

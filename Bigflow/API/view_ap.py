@@ -19,7 +19,6 @@ from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
 import Bigflow.Core.class1 as core_calss1
 import re
-from datetime import datetime
 from Bigflow.settings import S3_BUCKET_NAME
 
 
@@ -189,73 +188,12 @@ class AP_Bank_DD_API(APIView):
             return Response({"MESSAGE": "ERROR_OCCURED_ON_LOCAL_DD_API", "DATA": str(e)})
 
 
-class Mono_to_Micro_Call_Back_API_Class:
-    def __init__(self, temp):
-        self.temp = temp
-    def memo_token_function(self):
-        try:
-            datas = json.dumps({"username": "apuser", "password": "dnNvbHYxMjM="})
-            # datas = json.dumps({"username": "ram","password": "MTIzNA=="})
-            param = {}
-            # token = jwt.token(request)
-            memo_ip = common.memoapi_url()
-            # memo_ip="http://143.110.244.51:8000"
-            # memo_ip = "https://emc-memo-be-uat.kvbank.in/"
-            headers = {"content-type": "application/json", "Authorization": ""}
-            login_data = requests.post("" + memo_ip + "/usrserv/auth_token", params=param, headers=headers, data=datas,
-                                       verify=False)
-            login_result = login_data.content.decode("utf-8")
-            user_data = (json.loads(login_result))
-            user_data['memo_ip'] = memo_ip
-            return user_data
-        except Exception as e:
-            common.logger.error(e)
-            return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON_MEMO_TOKEN_GET_FUNCTION", "DATA": str(e)})
-
-    def mono_to_micro_call_back_api(self,data, micro_api):
-        try:
-            token = ""
-            results_data = ""
-            memo_token_data = Mono_to_Micro_Call_Back_API_Class.memo_token_function(self)
-            token = memo_token_data.get('token')
-            if (token):
-                memo_ip = common.memoapi_url()
-                param = {}
-                try:
-                    common.logger.error([{"BEFORE_MICRO_CALL_BACK_API_DATA": data}])
-                    micro_send_data = json.dumps(data)
-                    headers = {"content-type": "application/json", "Authorization": "Token " + token}
-                    results = requests.post("" + memo_ip + micro_api, params=param, headers=headers,
-                                            data=micro_send_data, verify=False)
-                    results_data = results.content.decode("utf-8")
-                    results_data = json.loads(results_data)
-                    common.logger.error([{"AFTER_MICRO_CALL_BACK_API_DATA": results_data}])
-                    return results_data
-                except Exception as e:
-                    common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_CALL_BACK_API_", "SEND_DATA": data,
-                                          "RESPONSE_DATA": results_data, "DATA": str(e)}])
-                    return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON_MICRO_CALL_BACK_API_", "SEND_DATA": data,
-                                         "RESPONSE_DATA": results_data, "DATA": str(e)})
-            else:
-                common.logger.error(
-                    [{"MESSAGE": "ERROR_OCCURED_ON_MICRO_CALL_BACK_API_TOKEN_GEN", "TOKEN_DATA": memo_token_data}])
-                return JsonResponse(
-                    {"MESSAGE": "ERROR_OCCURED_ON_MICRO_CALL_BACK_API_TOKEN_GEN", "TOKEN_DATA": memo_token_data})
-
-        except Exception as e:
-            common.logger.error(
-                [{"MESSAGE": "ERROR_OCCURED_ON_TOKEN_", "TOKEN_DATA": memo_token_data}])
-            return JsonResponse(
-                {"MESSAGE": "ERROR_OCCURED_ON_TOKEN_", "TOKEN_DATA": memo_token_data})
-
-
 #@api_view(['POST'])
 @permission_classes((AllowAny,))
 @authentication_classes([])
 class AP_DD_Status_Update(APIView):
     def post(self, request):
         log_data = []
-        Rent_Work="Y"
         try:
             jsondata = json.loads(request.body.decode('utf-8'))
             log_data = [{"DD_STATUS_UPDATE_LOG": jsondata}]
@@ -281,11 +219,9 @@ class AP_DD_Status_Update(APIView):
                 result = obj_location.get_login()
                 if result[1][0] == 'SUCCESS':
                     serviceName=jsondata.get('serviceName')
-                    out_put_data=""
                     if serviceName == "DD_Payment_Api":
                         try:
                             return_message={}
-                            send_data=""
                             inward_dtl = mAP.ap_model()
                             inward_dtl.action = "Update"
                             inward_dtl.type = "CALLBACK"
@@ -295,33 +231,15 @@ class AP_DD_Status_Update(APIView):
                             inward_dtl.status_json = jsondata
                             inward_dtl.entity_gid = 1
                             inward_dtl.employee_gid = 6493
-                            # out = outputSplit(inward_dtl.set_payment(), 1)
-                            out_put_data = inward_dtl.set_payment()
-                            list = out_put_data[0].split(',')
-                            out=list[0]
-                            Invoice_Type=list[1]
-                            Invoice_Header_pono=list[2]
-                            if(out=="SUCCESS" and Invoice_Type=="RENT" and Rent_Work=="Y"):
-                                now_today_date = datetime.now()
-                                today_date = now_today_date.strftime("%Y-%m-%d")
-                                micro_api = "/pdserv/rcn_update"
-                                send_data = {"po_number": Invoice_Header_pono, "type": "AP", "status": "PAID",
-                                             "micro_api": "/pdserv/rcn_update", "date": today_date}
-                                call_api_call_response_data = Mono_to_Micro_Call_Back_API_Class.mono_to_micro_call_back_api(self,send_data,micro_api)
-                                if (call_api_call_response_data.get('status') == "success"):
-                                    return_message = {"MESSAGE": out}
-                                    return JsonResponse(return_message, safe=False)
-                                else:
-                                    common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API","SEND_DATA": send_data, "RESPONSE_DATA": call_api_call_response_data}])
-                                    return_message = {"MESSAGE": out,"MICRO_CALL_BACK_API_RESPONSE":call_api_call_response_data}
-                                    return JsonResponse(return_message, safe=False)
-                            else:
+                            out = outputSplit(inward_dtl.set_payment(), 1)
+                            if(out=="SUCCESS"):
                                 return_message={"MESSAGE":out}
                                 return JsonResponse(return_message, safe=False)
+                            return_message={"MESSAGE":out}
+                            return JsonResponse(return_message, safe=False)
                         except Exception as e:
                             common.logger.error(e)
-                            return Response({"MESSAGE": "ERROR_OCCURED","ERROR_MESSAGE":"ERROR_OCCURED_ON_DD_PAYMENT_SET_",
-                                             "UPDATE_RESULT":out_put_data,"DATA": str(e)})
+                            return Response({"MESSAGE": "ERROR_OCCURED","ERROR_MESSAGE":"ERROR_OCCURED_ON_DD_PAYMENT_SET","DATA": str(e)})
                     else:
                         return Response(
                             {"MESSAGE": "ERROR_OCCURED", "ERROR_MESSAGE": "INVALID SERVICE NAME"})
@@ -342,7 +260,6 @@ class AP_DD_Status_Update(APIView):
 class AP_NEFT_Status_Update(APIView):
     def post(self, request):
         log_data = []
-        Rent_Work="Y"
         try:
             jsondata = json.loads(request.body.decode('utf-8'))
             log_data = [{"NEFT_STATUS_UPDATE_LOG": jsondata}]
@@ -366,7 +283,6 @@ class AP_NEFT_Status_Update(APIView):
             try:
                 result = obj_location.get_login()
                 if result[1][0] == 'SUCCESS':
-                    out_put_data=""
                     serviceName=jsondata.get('serviceName')
                     if serviceName == "Electronic_Fund_Transfer":
                         try:
@@ -380,34 +296,15 @@ class AP_NEFT_Status_Update(APIView):
                             inward_dtl.status_json = jsondata
                             inward_dtl.entity_gid = 1
                             inward_dtl.employee_gid = 6493
-                            # out = outputSplit(inward_dtl.set_payment(), 1)
-                            out_put_data = inward_dtl.set_payment()
-                            list = out_put_data[0].split(',')
-                            out = list[0]
-                            Invoice_Type = list[1]
-                            Invoice_Header_pono = list[2]
-                            if (out=="SUCCESS" and Invoice_Type=="RENT" and Rent_Work=="Y"):
-                                now_today_date = datetime.now()
-                                today_date = now_today_date.strftime("%Y-%m-%d")
-                                micro_api = "/pdserv/rcn_update"
-                                send_data = {"po_number": Invoice_Header_pono, "type": "AP", "status": "PAID",
-                                             "micro_api": "/pdserv/rcn_update", "date": today_date}
-                                call_api_call_response_data = Mono_to_Micro_Call_Back_API_Class.mono_to_micro_call_back_api(self,send_data, micro_api)
-                                if (call_api_call_response_data.get('status') == "success"):
-                                    return_message = {"MESSAGE": out}
-                                    return JsonResponse(return_message, safe=False)
-                                else:
-                                    common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API",
-                                                          "SEND_DATA": send_data,"RESPONSE_DATA": call_api_call_response_data}])
-                                    return_message = {"MESSAGE": out,"MICRO_CALL_BACK_API_RESPONSE": call_api_call_response_data}
-                                    return JsonResponse(return_message, safe=False)
-                            else:
-                                return_message = {"MESSAGE": out}
+                            out = outputSplit(inward_dtl.set_payment(), 1)
+                            if(out=="SUCCESS"):
+                                return_message={"MESSAGE":out}
                                 return JsonResponse(return_message, safe=False)
+                            return_message={"MESSAGE":out}
+                            return JsonResponse(return_message, safe=False)
                         except Exception as e:
                             common.logger.error(e)
-                            return Response({"MESSAGE": "ERROR_OCCURED","ERROR_MESSAGE":"ERROR_OCCURED_ON_NEFT_PAYMENT_SET_",
-                                             "UPDATE_RESULT":out_put_data,"DATA": str(e)})
+                            return Response({"MESSAGE": "ERROR_OCCURED","ERROR_MESSAGE":"ERROR_OCCURED_ON_NEFT_PAYMENT_SET","DATA": str(e)})
                     else:
                         return Response(
                             {"MESSAGE": "ERROR_OCCURED", "ERROR_MESSAGE": "INVALID SERVICE NAME"})

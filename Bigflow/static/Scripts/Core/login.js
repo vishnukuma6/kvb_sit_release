@@ -294,11 +294,10 @@ startTimer(0);
         }).finally($scope.endloading);
     };
 
-//Chaned by Sabari Oct 06 2021
     $scope.Loginchk = function() {
      $scope.loading();
         var username = $scope.Username;
-        var password =btoa($scope.Password);
+        var password = $scope.Password;
         var pswd = loginService.getlogin(username, password);
         pswd.then(function(result) {
                 if (JSON.parse(result.data) == "No Branch") {

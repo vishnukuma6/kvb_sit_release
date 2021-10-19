@@ -708,7 +708,6 @@ app.controller('ctrlsummary', ['$scope', '$filter', '$mdDateLocale', 'servicesum
         $scope.maker_summary=[];
         $scope.Total_Row=0;
         $scope.save_button_show=1;
-        $scope.header_data=[];
 
         $scope.ls_followup_date = new Date();
         $scope.minDate = new Date(
@@ -1053,7 +1052,6 @@ app.controller('ctrlsummary', ['$scope', '$filter', '$mdDateLocale', 'servicesum
             $scope.clear_data();
             $scope.save_button_show=1;
             $scope.final_status="";
-            $scope.header_data=detail;
             $scope.type_of_status=detail.invoiceheader_status;
             $scope.Header_gid=detail.invoiceheader_gid;
             $scope.timediff=detail.timediff;
@@ -1167,8 +1165,7 @@ app.controller('ctrlsummary', ['$scope', '$filter', '$mdDateLocale', 'servicesum
             $scope.execute=1;
             if($scope.final_status_pay=="APPROVED"){
                 var json = {"Invoice_Header_Gid":$scope.Header_gid,"Status":$scope.final_status_pay,
-                            "neftstatus": "PASS","crno":$scope.cr_number,"invoiceheader_invoicetype":$scope.header_data.invoiceheader_invoicetype,
-                            "invoiceheader_ponumber":$scope.header_data.invoiceheader_ponumber}
+                            "neftstatus": "PASS","crno":$scope.cr_number}
             }
              if($scope.final_status_pay=="AMOUNT TRAN" || $scope.final_status_pay=="PAYMENT"){
                 if($scope.pay_cbsref=="" || $scope.pay_cbsref==undefined){
@@ -1182,8 +1179,7 @@ app.controller('ctrlsummary', ['$scope', '$filter', '$mdDateLocale', 'servicesum
                 if($scope.execute==1){
                     var json = {"Invoice_Header_Gid":$scope.Header_gid,"Status":$scope.final_status_pay,
                             "neftstatus": "PASS","crno":$scope.cr_number,"cbsno":$scope.pay_cbsref,
-                            "pvno":$scope.pay_pvno,"invoiceheader_invoicetype":$scope.header_data.invoiceheader_invoicetype,
-                            "invoiceheader_ponumber":$scope.header_data.invoiceheader_ponumber}
+                            "pvno":$scope.pay_pvno}
                 }
             }
             if($scope.execute==1){
@@ -1216,9 +1212,7 @@ app.controller('ctrlsummary', ['$scope', '$filter', '$mdDateLocale', 'servicesum
             $scope.execute=1;
             if($scope.final_status_NEFT_DD_TXNF=="AMOUNT TRAN" || $scope.final_status_NEFT_DD_TXNF=="PAYMENT"){
                     var json = {"Invoice_Header_Gid":$scope.Header_gid,"Status":$scope.final_status_NEFT_DD_TXNF,
-                               "neftstatus": "PASS","crno":$scope.cr_number,"cbsno":"N","pvno":"N",
-                               "invoiceheader_invoicetype":$scope.header_data.invoiceheader_invoicetype,
-                            "invoiceheader_ponumber":$scope.header_data.invoiceheader_ponumber}
+                               "neftstatus": "PASS","crno":$scope.cr_number,"cbsno":"N","pvno":"N"}
             }
             if($scope.execute==1){
                 var type="STATUS";
@@ -1249,9 +1243,7 @@ app.controller('ctrlsummary', ['$scope', '$filter', '$mdDateLocale', 'servicesum
             debugger;
             $scope.execute=1;
              if($scope.final_status_AMOUNT_TRAN=="PAYMENT"){
-                var json = {"Invoice_Header_Gid":$scope.Header_gid,"Status":$scope.final_status_AMOUNT_TRAN,
-                "invoiceheader_invoicetype":$scope.header_data.invoiceheader_invoicetype,"crno":$scope.cr_number,
-                "invoiceheader_ponumber":$scope.header_data.invoiceheader_ponumber}
+                var json = {"Invoice_Header_Gid":$scope.Header_gid,"Status":$scope.final_status_AMOUNT_TRAN}
             }
             if($scope.execute==1){
                 var type="STATUS";

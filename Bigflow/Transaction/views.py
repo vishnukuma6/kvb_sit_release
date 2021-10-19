@@ -2465,11 +2465,10 @@ def Productsmry(request):
                     if (json.loads(response)['MESSAGE'] == 'SUCCESS'):
                         temp_datas = json.loads(datas)
                         data = temp_datas['data']
-
+                        #print(data)
                         master_data=get_data_from_id('Product',data)
                         common.logger.error('product code data:'+str(master_data))
-
-                        data = {'product_details':data['product_details'],'code':master_data['code'],"name": data['product_name'], "weight": int(data['product_weight']) ,
+                        data = {'code':master_data['code'],"name": data['product_name'], "weight": int(data['product_weight']) ,
                                 "unitprice": int(data['product_unitprice']), "uom_code": master_data['uom_code'],
                                 "hsn_code": master_data['hsn_code'], "category_code": master_data['category_code'],
                                 "subcategory_code": master_data['subcategory_code'],
@@ -2806,7 +2805,6 @@ def check_memo_employee_num(data):
 def update_personal_info(request):
     # utl.check_authorization(request)
     utl.check_pointaccess(request)
-    aa=request.session['employee_code_new']
     if request.method == 'POST':
         two_fa = common.two_factor_authenticate()
         if two_fa == 'Enabled':
@@ -2836,8 +2834,6 @@ def update_personal_info(request):
             token = jwt.token(request)
             jsondata = json.loads(request.body.decode('utf-8'))
             obj_qty = mMasters.Masters()
-            jsondata.get('Params').get('Filter')['code']=request.session['employee_code_new']
-            jsondata.get('Params').get('Filter')['mobile_number']=base64.b64decode(jsondata.get('Params').get('Filter').get('mobile_number')).decode("utf-8")
             obj_qty.action = jsondata.get('Params').get('Action')
             obj_qty.GROUP = jsondata.get('Params').get('Group')
             datas = json.dumps(jsondata)

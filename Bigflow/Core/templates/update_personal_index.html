@@ -189,7 +189,7 @@ $scope.Login_chk_otp = function(){
 
     $scope.loading();
     var jsonData = {
-<!--                "mobileNumber": $scope.employee_mobileno,-->
+                "mobileNumber": $scope.employee_mobileno,
                 "otp": $scope.otp_number,
                 "auth_request":$scope.auth_request,
                 "OTP_MOBILENUMBER":$scope.OTP_MOBILENUMBER
@@ -220,8 +220,8 @@ function update_mlbe()
 <!--$scope.employee_mob_display=$scope.employee_mobileno.substr(-4)-->
 var data = {
                 "Params": {
-                    "Filter":{
-                    "mobile_number":btoa($scope.employee_mobileno)},
+                    "Filter":{"code":$scope.employee_code,
+                    "mobile_number":$scope.employee_mobileno},
                     "Group": "EMPLOYEE_MOBILENO",
                     "Action": "EMPLOYEE_MOBILENO",
                     "Endpoint": $scope.user_endpoint
