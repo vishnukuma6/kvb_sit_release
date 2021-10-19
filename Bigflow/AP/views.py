@@ -48,9 +48,6 @@ sched.start()
 
 ip = common.localip()
 token = common.token()
-Rent_Work = "Y"
-PO_Work = "Y"
-Mail_Work = "Y"
 
 def billentryIndex(request):
     utl.check_authorization(request)
@@ -99,9 +96,6 @@ def GL_Report(request):
     utl.check_authorization(request)
     return render(request, "GL_Report.html")
 
-def Expense_Claim_Report(request):
-    utl.check_authorization(request)
-    return render(request, "Expense_Claim_Report.html")
 
 def Inward_entry(request):
     utl.check_authorization(request)
@@ -401,39 +395,7 @@ def Invoice_set(request):
             inward_dtl.employee_gid = int(decry_data(request.session['Emp_gid']))
             common.main_fun1(request.read(), path)
             out = outputSplit(inward_dtl.set_Invoice(), 1)
-            if (jsondata.get('params').get('type') == 'INVOICE_DETAILS' and
-                    jsondata.get('params').get('status_json').get('Status') == 'BOUNCE' and out == "SUCCESS"):
-                try:
-                    header_gid = jsondata.get('params').get('status_json').get("Invoice_Header_Gid")
-                    inward_dtl.action = "GET"
-                    inward_dtl.type = "MAIL_TEMPLATE"
-                    inward_dtl.filter = json.dumps({"template_name": "BOUNCE_PROCESS",
-                                                    "header_gid": header_gid, "queryname": "BOUNCE"})
-                    inward_dtl.classification = json.dumps(
-                        {"Entity_Gid": inward_dtl.entity_gid, "Emp_gid": inward_dtl.employee_gid})
-                    templates_data = inward_dtl.get_multiple_email_templates_data()
-                    Mail_Data = templates_data.get("Mail_Data")[0].get("mailtemplate_body")
-                    Header_Data = templates_data.get("Header_Data")[0]
-                    for (k, v) in Header_Data.items():
-                        value = str(v)
-                        key = "{{" + k + "}}"
-                        Mail_Data = Mail_Data.replace(key, value);
-                    cleanr = re.compile('<.*?>')
-                    body_text = re.sub(cleanr, '', Mail_Data)
-                    to_email = "vsolvstab@gmail.com"
-                    # email = EmailMessage('Invoice Bounced', body_text, to=[to_email])
-                    # email.send()
-                    # return JsonResponse(out, safe=False)
-                    # to_email = "rvignesh@vsolv.co.in"
-                    mail_status = CoreViews.sending_mail(Mail_Data, to_email, body_text)
-                    if (mail_status == "SUCCESS"):
-                        return JsonResponse(mail_status, safe=False)
-                    else:
-                        return JsonResponse({"MESSAGE": "ERROR_OCCURED_BOUNCE_MAIL_SEND", "ERROR": mail_status,"INVOICE_DETAIL_STATUS":"SUCCESS"})
-                except Exception as e:
-                    return JsonResponse({"MESSAGE": "MAIL_TEMPLATE_GET","INVOICE_DETAIL_STATUS":"SUCCESS","DATA": str(e)})
-            else:
-                return JsonResponse(out, safe=False)
+            return JsonResponse(out, safe=False)
         except Exception as e:
             return JsonResponse({"MESSAGE": "ERROR_OCCURED", "DATA": str(e)})
 
@@ -1735,34 +1697,6 @@ def get_Accounting_Entry_Data(request):
                 final_df.to_excel(writer, sheet_name='Sheet1', startcol=-1,startrow=5)
                 writer.save()
                 return response
-            elif (action == "GET" and type == "AP_BASIC_REPORT"):
-                invoice_set.action = final_data.get('action')
-                invoice_set.type = final_data.get('type')
-                branch_gid = final_data.get("branch_gid")
-                from_date = final_data.get("from_date")
-                to_date = final_data.get("to_date")
-                InvoiceHeader_Status = final_data.get("InvoiceHeader_Status")
-                filter={"branch_gid":branch_gid,"InvoiceHeader_Status":InvoiceHeader_Status,"from_date":from_date,"to_date":to_date}
-                invoice_set.filter = json.dumps(filter)
-                invoice_set.classification = json.dumps({"Entity_Gid": entity_gid})
-                XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                response = HttpResponse(content_type=XLSX_MIME)
-                response['Content-Disposition'] = 'attachment; filename="Branch_Basic_Report.xlsx"'
-                writer = pd.ExcelWriter(response, engine='xlsxwriter')
-                df_view = invoice_set.get_gl_report()
-                df_view['null_values'] = ""
-                df_view['S_No'] = range(1, 1 + len(df_view))
-                final_df = df_view[['S_No','ECF_No','ECF_InvTyp','ECF_InvNo','ECF_InvDate','ECF_Debit_Brach',
-                                    'ECF_InvAmt','ECF_TaxableAmt','ECF_Purpose','ECF_Raiser','ECF_Raised_Date',
-                                    'Supplier_Code','Supplier_BranchName','ECF_Status','AP_Status','AP_Payment_PVNo',
-                                    'AP_Payment_Date','AP_Payment_Amount','AP_Paymode','AP_CBSRef_No','AP_UTR_RefNo']]
-                final_df.columns = ['S.No','ECF CR Number','ECF Invoice Type','ECF Invoice Number','ECF Invoice Date','ECF Debit Branch',
-                                    'ECF Invoice Amount','ECF Taxable Amount','ECF Purpose','ECF Raiser','ECF Raised Date',
-                                    'Supplier Code','Supplier Branch Name','ECF Status','AP Status','AP Payment PV Number',
-                                    'AP Payment Date','AP Payment Amount','AP Paymode','AP CBSRef No','AP UTR RefNo']
-                final_df.to_excel(writer, index=False)
-                writer.save()
-                return response
 
         except Exception as e:
             return JsonResponse({"MESSAGE": "ERROR_OCCURED", "DATA": str(e)})
@@ -1841,7 +1775,7 @@ def get_GL_Report(request):
             jsondata = json.loads(request.body.decode('utf-8'))
             action = jsondata.get('action')
             type = jsondata.get('type')
-            if (action == "GET" and (type == "AP_TRANSACTION_GL_REPORT" or type=="AP_DAILY_GL_REPORT" or type=="AP_BASIC_REPORT")):
+            if (action == "GET" and (type == "AP_TRANSACTION_GL_REPORT" or type=="AP_DAILY_GL_REPORT")):
                 dedube_get.action = action
                 dedube_get.type = type
                 dedube_get.filter = json.dumps(jsondata.get('filter'))
@@ -1896,59 +1830,7 @@ def AP_History_get(request):
         except Exception as e:
             return JsonResponse({"MESSAGE": "ERROR_OCCURED", "DATA": str(e)})
 
-def memo_token_function():
-    try:
-        datas = json.dumps({"username": "apuser", "password": "dnNvbHYxMjM="})
-        # datas = json.dumps({"username": "ram","password": "MTIzNA=="})
-        param = {}
-        # token = jwt.token(request)
-        memo_ip = common.memoapi_url()
-        # memo_ip="http://143.110.244.51:8000"
-        # memo_ip = "https://emc-memo-be-uat.kvbank.in/"
-        headers = {"content-type": "application/json", "Authorization": ""}
-        login_data = requests.post("" + memo_ip + "/usrserv/auth_token", params=param, headers=headers, data=datas,verify=False)
-        login_result = login_data.content.decode("utf-8")
-        user_data = (json.loads(login_result))
-        user_data['memo_ip'] = memo_ip
-        return user_data
-    except Exception as e:
-        common.logger.error(e)
-        return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON_MEMO_TOKEN_GET_FUNCTION", "DATA": str(e)})
-
-def mono_to_micro_call_back_api(data,micro_api):
-    try:
-        token = ""
-        results_data=""
-        memo_token_data = memo_token_function()
-        token = memo_token_data.get('token')
-        if (token):
-            memo_ip = common.memoapi_url()
-            param = {}
-            try:
-                common.logger.error([{"BEFORE_MICRO_CALL_BACK_API_DATA": data}])
-                micro_send_data = json.dumps(data)
-                headers = {"content-type": "application/json", "Authorization": "Token " + token}
-                results = requests.post("" + memo_ip + micro_api, params=param, headers=headers,data=micro_send_data, verify=False)
-                results_data = results.content.decode("utf-8")
-                results_data = json.loads(results_data)
-                common.logger.error([{"AFTER_MICRO_CALL_BACK_API_DATA": results_data}])
-                return results_data
-            except Exception as e:
-                common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_CALL_BACK_API_","SEND_DATA": data,"RESPONSE_DATA":results_data,"DATA":str(e)}])
-                return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON_MICRO_CALL_BACK_API_","SEND_DATA": data,"RESPONSE_DATA":results_data,"DATA":str(e)})
-        else:
-            common.logger.error(
-                [{"MESSAGE": "ERROR_OCCURED_ON_MICRO_CALL_BACK_API_TOKEN_GEN", "TOKEN_DATA": memo_token_data}])
-            return JsonResponse(
-                {"MESSAGE": "ERROR_OCCURED_ON_MICRO_CALL_BACK_API_TOKEN_GEN","TOKEN_DATA": memo_token_data})
-
-    except Exception as e:
-        common.logger.error(
-            [{"MESSAGE": "ERROR_OCCURED_ON_TOKEN_", "TOKEN_DATA": memo_token_data}])
-        return JsonResponse(
-            {"MESSAGE": "ERROR_OCCURED_ON_TOKEN_","TOKEN_DATA": memo_token_data})
-
-def AP_status_update(data,Payment_Mode):
+def AP_status_update(data):
     Status = data.get("Status")
     file_data = data.get("file_data")
     try:
@@ -1960,78 +1842,15 @@ def AP_status_update(data,Payment_Mode):
         inward_dtl.detail_json = '{}'
         inward_dtl.entity_gid = data.get("entity_gid")
         inward_dtl.employee_gid = data.get("employee_gid")
-        if (Status == "AP INITIATED" or Status == "PAY INITIATED" or Status == "NEFT INITIATED" or Status == "DD INITIATED" or Status == "TRANSACTION INITIATED"):
-            Invoice_Header_Gid = data.get("Invoice_Header_Gid")
-            Invoice_Header_crno = data.get("crno")
-            inward_dtl.status_json = {"Invoice_Header_Gid": Invoice_Header_Gid, "Status": Status,"file_data": file_data}
-            common.logger.error([{"UPDATE_STATUS_CR_NUMBER": Invoice_Header_crno,"UPDATE_STATUS": Status}])
+        if(Status=="AP INITIATED" or Status=="PAY INITIATED" or Status=="NEFT INITIATED" or Status=="DD INITIATED" or Status=="TRANSACTION INITIATED"):
+            Invoice_Header_Gid=data.get("Invoice_Header_Gid")
+            inward_dtl.status_json = {"Invoice_Header_Gid":Invoice_Header_Gid,"Status":Status,"file_data":file_data}
+            common.logger.error([{"UPDATE_STATUS_GID": Invoice_Header_Gid}])
             final_out = outputSplit(inward_dtl.set_Invoiceheader_status_update(), 1)
-            common.logger.error([{"Update_CR_Number":Invoice_Header_crno,"UPDATE_STATUS": Status, "UPDATE_STATUS_RESULT": final_out}])
+            common.logger.error([{"UPDATE_STATUS_RESULT": final_out}])
             return final_out
-        elif (Status == "PAYMENT"):
-            final_out=""
-            memo_token_data=""
-            po_send_data = ""
-            Paymode_Check="Y"
-            if(Payment_Mode=="NEFT" or Payment_Mode=="DD"):
-                Paymode_Check = "N"
-            Invoice_Header_crno = data.get("crno")
-            Invoice_Header_pono = data.get("pono")
-            Invoice_Type = data.get("invoice_type")
-            inward_dtl.status_json = data
-            common.logger.error([{"UPDATE_STATUS_CR_NUMBER": Invoice_Header_crno,"UPDATE_STATUS": Status}])
-            final_out = outputSplit(inward_dtl.set_Invoiceheader_status_update(), 1)
-            common.logger.error([{"Update_CR_Number":Invoice_Header_crno,"UPDATE_STATUS": Status, "UPDATE_STATUS_RESULT": final_out}])
-            if(final_out=="SUCCESS" and Invoice_Type=="RENT" and Rent_Work=="Y" and Paymode_Check=="Y"):
-                try:
-                    now_today_date = datetime.now()
-                    today_date = now_today_date.strftime("%Y-%m-%d")
-                    micro_api= "/pdserv/rcn_update"
-                    send_data={"po_number": Invoice_Header_pono, "type": "AP", "status": Status,"micro_api":"/pdserv/rcn_update", "date": today_date,"crno":Invoice_Header_crno}
-                    call_api_call_response_data=mono_to_micro_call_back_api(send_data,micro_api)
-                    if (call_api_call_response_data.get('status') == "success"):
-                        return final_out
-                    else:
-                        common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API","CR_NO": Invoice_Header_crno, "SEND_DATA": po_send_data,
-                                              "RESPONSE_DATA": call_api_call_response_data}])
-                        call_api_call_response_data['PAYMENT_STATUS']="SUCCESS"
-                        return call_api_call_response_data
-                except Exception as e:
-                    common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API_", "CR_NO": Invoice_Header_crno,"DATA":str(e)}])
-                    return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API_", "CR_NO": Invoice_Header_crno,"DATA":str(e)})
-            elif(final_out=="SUCCESS" and Invoice_Type=="PO" and PO_Work=="Y"):
-                try:
-                    inward_dtl.action = "GET"
-                    inward_dtl.type = "PO_PAYMENTGET"
-                    Invoice_Header_Gid = data.get("Invoice_Header_Gid")
-                    entity_gid = data.get("entity_gid")
-                    inward_dtl.filter = json.dumps({"InvoiceHeader_Gid": Invoice_Header_Gid})
-                    inward_dtl.classification = json.dumps({"Entity_Gid": entity_gid})
-                    po_details = inward_dtl.get_invoice_all()
-                    po_details_datas = json.loads(po_details.to_json(orient='records'))
-
-                    try:
-                        now_today_date = datetime.now()
-                        today_date = now_today_date.strftime("%Y-%m-%d")
-                        send_po_details_data={"data":po_details_datas}
-                        micro_api= "/prserv/popayment"
-                        call_api_call_response_data=mono_to_micro_call_back_api(send_po_details_data,micro_api)
-                        if (call_api_call_response_data.get('status') == "success"):
-                            return final_out
-                        else:
-                            common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_PO_CALL_BACK_API","CR_NO": Invoice_Header_crno, "SEND_DATA": po_send_data,
-                                                  "RESPONSE_DATA": call_api_call_response_data}])
-                            return call_api_call_response_data
-                    except Exception as e:
-                        common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_PO_PAYMENT_MICRO_API", "CR_NO": Invoice_Header_crno,"DATA": str(e)}])
-                        return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON_PO_PAYMENT_MICRO_API", "CR_NO": Invoice_Header_crno,"DATA": str(e)})
-                except Exception as e:
-                    common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_PO_PAYMENTGET_", "CR_NO": Invoice_Header_crno,"DATA":str(e)}])
-                    return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON_PO_PAYMENTGET_", "CR_NO": Invoice_Header_crno,"DATA": str(e)})
-            else:
-                return final_out
     except Exception as e:
-        common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON"+" "+Status+" "+"STATUS_UPDATE", "DATA": str(e)}])
+        common.logger.error(e)
         return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON"+" "+Status+" "+"STATUS_UPDATE", "DATA": str(e)})
 
 def AP_Header_Update(data):
@@ -2073,35 +1892,7 @@ def Dynamic_Status_Update(request):
                 inward_dtl.employee_gid = int(decry_data(request.session['Emp_gid']))
                 common.main_fun1(request.read(), path)
                 out = outputSplit(inward_dtl.set_Invoiceheader_status_update(), 1)
-                Invoice_Type = jsondata.get('params').get('status_json').get("invoiceheader_invoicetype")
-                Invoice_Header_crno = jsondata.get('params').get('status_json').get("crno")
-                Invoice_Header_pono = jsondata.get('params').get('status_json').get("invoiceheader_ponumber")
-                Status = jsondata.get('params').get('status_json').get("Status")
-                if (out == "SUCCESS" and Invoice_Type == "RENT" and Rent_Work == "Y" and Status=="PAYMENT"):
-                    try:
-                        now_today_date = datetime.now()
-                        today_date = now_today_date.strftime("%Y-%m-%d")
-                        micro_api = "/pdserv/rcn_update"
-                        send_data = {"po_number": Invoice_Header_pono, "type": "AP", "status": Status,
-                                     "micro_api": "/pdserv/rcn_update",
-                                     "date": today_date, "crno": Invoice_Header_crno}
-                        call_api_call_response_data = mono_to_micro_call_back_api(send_data, micro_api)
-                        if (call_api_call_response_data.get('status') == "success"):
-                            return JsonResponse(out, safe=False)
-                        else:
-                            common.logger.error(
-                                [{"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API", "CR_NO": Invoice_Header_crno,
-                                  "SEND_DATA": send_data, "RESPONSE_DATA": call_api_call_response_data}])
-                            return JsonResponse({"MESSAGE": "PAYMENT SUCCESS",
-                                                 "RENT_CALL_BACK_API_FAIL_DATA": call_api_call_response_data})
-                    except Exception as e:
-                        common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API_",
-                                              "CR_NO": Invoice_Header_crno, "DATA": str(e)}])
-                        return JsonResponse(
-                            {"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API_", "CR_NO": Invoice_Header_crno,
-                             "DATA": str(e)})
-                else:
-                    return JsonResponse(out, safe=False)
+                return JsonResponse(out, safe=False)
         except Exception as e:
             return JsonResponse({"MESSAGE": "ERROR_OCCURED", "DATA": str(e)})
 
@@ -2169,7 +1960,6 @@ def Invoiceheader_set1(request):
             path=request.path
             inward_dtl = mAP.ap_model()
             jsondata = json.loads(request.body.decode('utf-8'))
-            Invoice_Type=jsondata.get('params').get('status_json').get("Invoice_Type")
             if (jsondata.get('params').get('status_json').get('Status') != 'APPROVED'):
                 try:
                     inward_dtl.action = jsondata.get('params').get('action')
@@ -2196,7 +1986,7 @@ def Invoiceheader_set1(request):
                         out = outputSplit(inward_dtl.set_Invoiceheader_status_update(), 1)
 
                     if(jsondata.get('params').get('action') == 'INSERT' and
-                            jsondata.get('params').get('type') == 'INVOICE_HEADER' and out=="SUCCESS" and Mail_Work=="Y"):
+                            jsondata.get('params').get('type') == 'INVOICE_HEADER' and out=="SUCCESS"):
                         try:
                             inward_dtl.action = "GET"
                             inward_dtl.type = "MAIL_TEMPLATE"
@@ -2226,7 +2016,7 @@ def Invoiceheader_set1(request):
                             return JsonResponse("Email_Not_Send", safe=False)
                     if (jsondata.get('params').get('action') == 'UPDATE' and
                             jsondata.get('params').get('type') == 'STATUS' and
-                            jsondata.get('params').get('status_json').get('Status') == 'BOUNCE' and out == "SUCCESS" and Mail_Work=="Y"):
+                            jsondata.get('params').get('status_json').get('Status') == 'BOUNCE' and out == "SUCCESS"):
                         try:
                             header_gid=jsondata.get('params').get('status_json').get("Invoice_Header_Gid")
                             inward_dtl.action = "GET"
@@ -2257,31 +2047,6 @@ def Invoiceheader_set1(request):
                                 return JsonResponse({"MESSAGE": "ERROR_OCCURED", "ERROR": mail_error_message})
                         except Exception as e:
                             return JsonResponse("Email_Not_Send", safe=False)
-
-                    if (jsondata.get('params').get('action') == 'UPDATE' and
-                            jsondata.get('params').get('type') == 'STATUS' and
-                            jsondata.get('params').get('status_json').get('Status') == 'REJECT' and out == "SUCCESS" and Invoice_Type=="RENT" and Rent_Work=="Y"):
-                        try:
-                            Invoice_Header_crno = jsondata.get('params').get('status_json').get('Ref_no')
-                            now_today_date = datetime.now()
-                            pono=jsondata.get('params').get('status_json').get("pono")
-                            today_date = now_today_date.strftime("%Y-%m-%d")
-                            micro_api= "/pdserv/rcn_update"
-                            send_data = {"po_number":pono, "type": "AP", "status": "REJECT",
-                                         "micro_api": "/pdserv/rcn_update", "date": today_date,
-                                         "crno": Invoice_Header_crno}
-                            call_api_call_response_data = mono_to_micro_call_back_api(send_data,micro_api)
-                            call_api_call_response_data["Reject status"]="success"
-                            call_api_call_response_data["Message"]="rent call back api fail"
-                            if (call_api_call_response_data.get('status') == "success"):
-                                return JsonResponse(out, safe=False)
-                            else:
-                                common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API","RESPONSE_DATA": call_api_call_response_data}])
-                                return JsonResponse(call_api_call_response_data, safe=False)
-                        except Exception as e:
-                            common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API","DATA":str(e)}])
-                            return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API","DATA":str(e)})
-
                     else:
                         return JsonResponse(out, safe=False)
                 except Exception as e:
@@ -2306,9 +2071,9 @@ def Invoiceheader_set1(request):
                     employee_gid = int(decry_data(request.session['Emp_gid']))
                     ap_statu_update_result=""
                     try:
-                        status_update_data = {"Invoice_Header_Gid": invoice_header_gid, "entity_gid": entity_gid,"crno":cr_no,
+                        status_update_data = {"Invoice_Header_Gid": invoice_header_gid, "entity_gid": entity_gid,
                                               "employee_gid": employee_gid,"Status":"AP INITIATED","file_data":file_data}
-                        ap_statu_update_result=AP_status_update(status_update_data,"")
+                        ap_statu_update_result=AP_status_update(status_update_data)
                         if(ap_statu_update_result=="SUCCESS"):
                             pass
                         else:
@@ -2388,7 +2153,7 @@ def Invoiceheader_set1(request):
                                                     data = {"Src_Channel": "EMS", "ApplicationId": Single_Unique_Values, "TransactionBranch": branch_code, "Txn_Date": CBSDATE,
                                                             "productType": "DP", "Fund_Transfer_Dtls": send_data}
                                                     data = json.dumps(data)
-                                                    log_data = [{"BEFORE_AMOUNT_TRANSFER_API_DATA_1": data}]
+                                                    log_data = [{"BEFORE_AMOUNT_TRANSFER_API_DATA": data}]
                                                     common.logger.error(log_data)
 
                                                     client_api = common.clientapi()
@@ -2396,7 +2161,7 @@ def Invoiceheader_set1(request):
                                                     result = requests.post("" + client_api + "/nbfc/v1/mwr/amount-transfer",headers=headers, data=data, verify=False)
                                                     results = result.content.decode("utf-8")
                                                     results_data = json.loads(results)
-                                                    log_data = [{"AFTER_AMOUNT_TRANSFER_API_DATA_1": results_data}]
+                                                    log_data = [{"AFTER_AMOUNT_TRANSFER_API_DATA": results_data}]
                                                     common.logger.error(log_data)
 
                                                     ErrorStatus = results_data.get("CbsStatus")[0].get("ErrorMessage")
@@ -2552,9 +2317,9 @@ def approve_and_pay(request):
                     employee_gid = int(decry_data(request.session['Emp_gid']))
                     ap_statu_update_result=""
                     try:
-                        status_update_data = {"Invoice_Header_Gid": invoice_header_gid, "entity_gid": entity_gid,"crno":cr_no,
+                        status_update_data = {"Invoice_Header_Gid": invoice_header_gid, "entity_gid": entity_gid,
                                               "employee_gid": employee_gid,"Status":"AP INITIATED","file_data":file_data}
-                        ap_statu_update_result=AP_status_update(status_update_data,"")
+                        ap_statu_update_result=AP_status_update(status_update_data)
                         if(ap_statu_update_result=="SUCCESS"):
                             try:
                                 inward_dtl.action = "INSERT"
@@ -2653,7 +2418,7 @@ def approve_and_pay(request):
                                                                         "productType": "DP",
                                                                         "Fund_Transfer_Dtls": send_data}
                                                                 data = json.dumps(data)
-                                                                log_data = [{"BEFORE_AMOUNT_TRANSFER_API_DATA_1": data}]
+                                                                log_data = [{"BEFORE_AMOUNT_TRANSFER_API_DATA": data}]
                                                                 common.logger.error(log_data)
 
                                                                 client_api = common.clientapi()
@@ -2666,7 +2431,7 @@ def approve_and_pay(request):
                                                                 log_data.append({"API_RESULT":results})
                                                                 results_data = json.loads(results)
                                                                 log_data = [
-                                                                    {"AFTER_AMOUNT_TRANSFER_API_DATA_1": results_data}]
+                                                                    {"AFTER_AMOUNT_TRANSFER_API_DATA": results_data}]
                                                                 common.logger.error(log_data)
 
                                                                 ErrorStatus = results_data.get("CbsStatus")[0].get(
@@ -3213,9 +2978,7 @@ def APpayment_set(request):
                         invoiceheader_gid = details_data.get("DETAILS")[0].get("invoiceheader_gid")
                         invoiceheader_status = details_data.get("DETAILS")[0].get("invoiceheader_status")
                         invoiceheader_crno = details_data.get("DETAILS")[0].get("invoiceheader_crno")
-                        invoiceheader_ponumber = details_data.get("DETAILS")[0].get("invoiceheader_ponumber")
                         invoiceheader_invoiceno = details_data.get("DETAILS")[0].get("invoiceheader_invoiceno")
-                        invoiceheader_invoicetype = details_data.get("DETAILS")[0].get("invoiceheader_invoicetype")
                         invoiceheader_dedupeinvoiceno = details_data.get("DETAILS")[0].get("invoiceheader_dedupeinvoiceno")
                         invoiceheader_remarks = details_data.get("DETAILS")[0].get("invoiceheader_remarks")
                         Header_Amount = header_data.get("HEADER")[0].get("Paymentheader_Amount")
@@ -3233,9 +2996,9 @@ def APpayment_set(request):
 
                         ap_statu_update_result = ""
                         try:
-                            status_update_data = {"Invoice_Header_Gid": invoiceheader_gid, "entity_gid": entity_gid,"crno": invoiceheader_crno,
+                            status_update_data = {"Invoice_Header_Gid": invoiceheader_gid, "entity_gid": entity_gid,
                                                   "employee_gid": employee_gid, "Status": "PAY INITIATED"}
-                            ap_statu_update_result = AP_status_update(status_update_data,Payment_Mode)
+                            ap_statu_update_result = AP_status_update(status_update_data)
                             if (ap_statu_update_result == "SUCCESS"):
                                 pass
                             else:
@@ -3316,7 +3079,7 @@ def APpayment_set(request):
                                             amount_transfer_message=""
                                             if(invoiceheader_status!="TXN FAILED"):
                                                 if(invoiceheader_status!="AMOUNT TRAN"):
-                                                    log_data = [{"BEFORE_AMOUNT_TRANSFER_API_DATA_2": data}]
+                                                    log_data = [{"BEFORE_AMOUNT_TRANSFER_API_DATA": data}]
                                                     common.logger.error(log_data)
                                                     data = json.dumps(data)
                                                     token_status = 1
@@ -3336,7 +3099,7 @@ def APpayment_set(request):
                                                             result = requests.post("" + client_api + "/nbfc/v1/mwr/amount-transfer",headers=headers, data=data, verify=False)
                                                             results = result.content.decode("utf-8")
                                                             results_data = json.loads(results)
-                                                            log_data = [{"AFTER_AMOUNT_TRANSFER_API_DATA_2": results_data}]
+                                                            log_data = [{"AFTER_AMOUNT_TRANSFER_API_DATA": results_data}]
                                                             common.logger.error(log_data)
 
                                                             ErrorStatus = results_data.get("CbsStatus")[0].get("ErrorMessage")
@@ -3389,10 +3152,10 @@ def APpayment_set(request):
 
                                                     neft_statu_update_result = ""
                                                     try:
-                                                        neft_status_update_data = {"Invoice_Header_Gid": invoiceheader_gid,"crno": invoiceheader_crno,
+                                                        neft_status_update_data = {"Invoice_Header_Gid": invoiceheader_gid,
                                                                               "entity_gid": entity_gid,"employee_gid": employee_gid,"cbsno": cbsno_ref_number,
                                                                                    "pvno": pv_number,"Status": "NEFT INITIATED"}
-                                                        neft_statu_update_result = AP_status_update(neft_status_update_data,Payment_Mode)
+                                                        neft_statu_update_result = AP_status_update(neft_status_update_data)
                                                         if (neft_statu_update_result == "SUCCESS"):
                                                             pass
                                                         else:
@@ -3442,10 +3205,19 @@ def APpayment_set(request):
                                                                 common.logger.error(log_data)
                                                                 if(neft_results_data.get("ErrorMessage")=="Success" and neft_results_data.get("ErrorCode")=='0'):
                                                                     try:
-                                                                        neft_payment_data= {"Invoice_Header_Gid": invoiceheader_gid,"Status": "PAYMENT", "crno": invoiceheader_crno,
-                                                                            "cbsno": "N", "pvno": pv_number,"invoice_type":invoiceheader_invoicetype,"pono":invoiceheader_ponumber,
-                                                                            "neftstatus": "NEFT_PASS","entity_gid":entity_gid,"employee_gid":employee_gid}
-                                                                        final_out =AP_status_update(neft_payment_data,Payment_Mode) 
+                                                                        inward_dtl.action = "UPDATE"
+                                                                        inward_dtl.type = "STATUS"
+                                                                        inward_dtl.header_json = '{}'
+                                                                        inward_dtl.debit_json = '{}'
+                                                                        inward_dtl.detail_json = '{}'
+                                                                        inward_dtl.status_json = {
+                                                                            "Invoice_Header_Gid": invoiceheader_gid,
+                                                                            "Status": "PAYMENT", "crno": invoiceheader_crno,
+                                                                            "cbsno": "N", "pvno": pv_number,
+                                                                            "neftstatus": "NEFT_PASS"}
+                                                                        inward_dtl.entity_gid = entity_gid
+                                                                        inward_dtl.employee_gid = employee_gid
+                                                                        final_out = outputSplit(inward_dtl.set_Invoiceheader_status_update(), 1)
                                                                         return JsonResponse(final_out, safe=False)
                                                                     except Exception as e:
                                                                         return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON_NEFT_SUCCESS_STATUS_UPDATE","DATA": str(e)})
@@ -3497,7 +3269,7 @@ def APpayment_set(request):
                                                         dd_status_update_data = {"Invoice_Header_Gid": invoiceheader_gid,
                                                                               "entity_gid": entity_gid,"cbsno": cbsno_ref_number,
                                                                                    "pvno": pv_number,"employee_gid": employee_gid,"Status": "DD INITIATED"}
-                                                        dd_statu_update_result = AP_status_update(dd_status_update_data,Payment_Mode)
+                                                        dd_statu_update_result = AP_status_update(dd_status_update_data)
                                                         if (dd_statu_update_result == "SUCCESS"):
                                                             pass
                                                         else:
@@ -3558,12 +3330,19 @@ def APpayment_set(request):
                                                                 common.logger.error(log_data)
                                                                 if(dd_results_data.get("ErrorMessage")=="Success" and dd_results_data.get("ErrorCode")=='0'):
                                                                     try:
-                                                                        dd_payment_data= {
+                                                                        inward_dtl.action = "UPDATE"
+                                                                        inward_dtl.type = "STATUS"
+                                                                        inward_dtl.header_json = '{}'
+                                                                        inward_dtl.debit_json = '{}'
+                                                                        inward_dtl.detail_json = '{}'
+                                                                        inward_dtl.status_json = {
                                                                             "Invoice_Header_Gid": invoiceheader_gid,
-                                                                            "Status": "PAYMENT", "crno": invoiceheader_crno,"pono":invoiceheader_ponumber,
-                                                                            "cbsno": "N", "pvno": pv_number,"invoice_type":invoiceheader_invoicetype,"employee_gid":employee_gid,"entity_gid":entity_gid,
+                                                                            "Status": "PAYMENT", "crno": invoiceheader_crno,
+                                                                            "cbsno": "N", "pvno": pv_number,
                                                                             "neftstatus": "DD_PASS"}
-                                                                        final_out = AP_status_update(dd_payment_data,Payment_Mode)
+                                                                        inward_dtl.entity_gid = entity_gid
+                                                                        inward_dtl.employee_gid = employee_gid
+                                                                        final_out = outputSplit(inward_dtl.set_Invoiceheader_status_update(), 1)
                                                                         return JsonResponse(final_out, safe=False)
                                                                     except Exception as e:
                                                                         common.logger.error(e)
@@ -3613,11 +3392,17 @@ def APpayment_set(request):
 
                                                 else:
                                                     try:
-                                                        other_status_payment_data= {"Invoice_Header_Gid": invoiceheader_gid,"Status": "PAYMENT",
-                                                                                  "crno": invoiceheader_crno,"cbsno":cbsno_ref_number,"pono":invoiceheader_ponumber,
-                                                                                    "invoice_type":invoiceheader_invoicetype,"entity_gid":entity_gid,"employee_gid":employee_gid,
+                                                        inward_dtl.action = "UPDATE"
+                                                        inward_dtl.type = "STATUS"
+                                                        inward_dtl.header_json = '{}'
+                                                        inward_dtl.debit_json = '{}'
+                                                        inward_dtl.detail_json = '{}'
+                                                        inward_dtl.status_json = {"Invoice_Header_Gid": invoiceheader_gid,"Status": "PAYMENT",
+                                                                                  "crno": invoiceheader_crno,"cbsno":cbsno_ref_number,
                                                                                   "pvno":pv_number,"neftstatus":"NOT_NEFT"}
-                                                        final_out = AP_status_update(other_status_payment_data,Payment_Mode)
+                                                        inward_dtl.entity_gid = entity_gid
+                                                        inward_dtl.employee_gid = employee_gid
+                                                        final_out = outputSplit(inward_dtl.set_Invoiceheader_status_update(), 1)
                                                         return JsonResponse(final_out, safe=False)
                                                     except Exception as e:
                                                         common.logger.error(e)
@@ -3643,42 +3428,6 @@ def APpayment_set(request):
                     except Exception as e:
                         common.logger.error(e)
                         return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON_BANK_DETAILS_GET","DATA": str(e)})
-            elif(jsondata.get('params').get('action')=="Update" and jsondata.get('params').get('type')=="PAYEMENT_FILE"):
-                try:
-                    inward_dtl.action = jsondata.get('params').get('action')
-                    inward_dtl.type = jsondata.get('params').get('type')
-                    inward_dtl.header_json = jsondata.get('params').get('header_json')
-                    inward_dtl.detail_json = jsondata.get('params').get('detail_json')
-                    inward_dtl.other_json = jsondata.get('params').get('other_json')
-                    inward_dtl.status_json = jsondata.get('params').get('status_json')
-                    inward_dtl.entity_gid = int(decry_data(request.session['Entity_gid']))
-                    inward_dtl.employee_gid = int(decry_data(request.session['Emp_gid']))
-                    out = outputSplit(inward_dtl.set_payment(), 1)
-                    Invoice_Type=jsondata.get('params').get('status_json').get("STATUS")[0].get("invoiceheader_invoicetype")
-                    Invoice_Header_crno=jsondata.get('params').get('status_json').get("STATUS")[0].get("invoiceheader_crno")
-                    Invoice_Header_pono=jsondata.get('params').get('status_json').get("STATUS")[0].get("invoiceheader_ponumber")
-                    if (out == "SUCCESS" and Invoice_Type == "RENT" and Rent_Work == "Y"):
-                        try:
-                            now_today_date = datetime.now()
-                            today_date = now_today_date.strftime("%Y-%m-%d")
-                            micro_api = "/pdserv/rcn_update"
-                            send_data = {"po_number": Invoice_Header_pono, "type": "AP", "status": "PAID","micro_api": "/pdserv/rcn_update",
-                                         "date": today_date,"crno": Invoice_Header_crno}
-                            call_api_call_response_data = mono_to_micro_call_back_api(send_data, micro_api)
-                            if (call_api_call_response_data.get('status') == "success"):
-                                return JsonResponse(out, safe=False)
-                            else:
-                                common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API","CR_NO": Invoice_Header_crno,
-                                                      "SEND_DATA": send_data,"RESPONSE_DATA": call_api_call_response_data}])
-                                return JsonResponse({"MESSAGE":"PAID SUCCESS","RENT_CALL_BACK_API_FAIL_DATA":call_api_call_response_data})
-                        except Exception as e:
-                            common.logger.error([{"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API_","CR_NO": Invoice_Header_crno, "DATA": str(e)}])
-                            return JsonResponse({"MESSAGE": "ERROR_OCCURED_ON_MICRO_RENT_CALL_BACK_API_", "CR_NO": Invoice_Header_crno, "DATA": str(e)})
-                    else:
-                        return JsonResponse(out, safe=False)
-                except Exception as e:
-                    common.logger.error(e)
-                    return JsonResponse({"MESSAGE": "ERROR_OCCURED", "DATA": str(e)})
             else:
                 try:
                     inward_dtl.action = jsondata.get('params').get('action')
@@ -3720,7 +3469,6 @@ def APpayment_set_function(jsondata,employee_gid,entity_gid):
                         invoiceheader_gid = details_data.get("DETAILS")[0].get("invoiceheader_gid")
                         invoiceheader_status = details_data.get("DETAILS")[0].get("invoiceheader_status")
                         invoiceheader_crno = details_data.get("DETAILS")[0].get("invoiceheader_crno")
-                        invoiceheader_ponumber = details_data.get("DETAILS")[0].get("invoiceheader_ponumber")
                         invoiceheader_invoiceno = details_data.get("DETAILS")[0].get("invoiceheader_invoiceno")
                         invoiceheader_remarks = details_data.get("DETAILS")[0].get("invoiceheader_remarks")
                         Header_Amount = header_data.get("HEADER")[0].get("Paymentheader_Amount")
@@ -3740,7 +3488,7 @@ def APpayment_set_function(jsondata,employee_gid,entity_gid):
                         try:
                             status_update_data = {"Invoice_Header_Gid": invoiceheader_gid, "entity_gid": entity_gid,
                                                   "employee_gid": employee_gid, "Status": "PAY INITIATED"}
-                            ap_statu_update_result = AP_status_update(status_update_data,Payment_Mode)
+                            ap_statu_update_result = AP_status_update(status_update_data)
                             if (ap_statu_update_result == "SUCCESS"):
                                 pass
                             else:
@@ -3821,7 +3569,7 @@ def APpayment_set_function(jsondata,employee_gid,entity_gid):
                                             amount_transfer_message=""
                                             if(invoiceheader_status!="TXN FAILED"):
                                                 if(invoiceheader_status!="AMOUNT TRAN"):
-                                                    log_data = [{"BEFORE_AMOUNT_TRANSFER_API_DATA_2": data}]
+                                                    log_data = [{"BEFORE_AMOUNT_TRANSFER_API_DATA": data}]
                                                     common.logger.error(log_data)
                                                     data = json.dumps(data)
                                                     token_status = 1
@@ -3841,7 +3589,7 @@ def APpayment_set_function(jsondata,employee_gid,entity_gid):
                                                             result = requests.post("" + client_api + "/nbfc/v1/mwr/amount-transfer",headers=headers, data=data, verify=False)
                                                             results = result.content.decode("utf-8")
                                                             results_data = json.loads(results)
-                                                            log_data = [{"AFTER_AMOUNT_TRANSFER_API_DATA_2": results_data}]
+                                                            log_data = [{"AFTER_AMOUNT_TRANSFER_API_DATA": results_data}]
                                                             common.logger.error(log_data)
 
                                                             ErrorStatus = results_data.get("CbsStatus")[0].get("ErrorMessage")
@@ -3897,7 +3645,7 @@ def APpayment_set_function(jsondata,employee_gid,entity_gid):
                                                         neft_status_update_data = {"Invoice_Header_Gid": invoiceheader_gid,
                                                                               "entity_gid": entity_gid,"employee_gid": employee_gid,"cbsno": cbsno_ref_number,
                                                                                    "pvno": pv_number,"Status": "NEFT INITIATED"}
-                                                        neft_statu_update_result = AP_status_update(neft_status_update_data,Payment_Mode)
+                                                        neft_statu_update_result = AP_status_update(neft_status_update_data)
                                                         if (neft_statu_update_result == "SUCCESS"):
                                                             pass
                                                         else:
@@ -4011,7 +3759,7 @@ def APpayment_set_function(jsondata,employee_gid,entity_gid):
                                                         dd_status_update_data = {"Invoice_Header_Gid": invoiceheader_gid,
                                                                               "entity_gid": entity_gid,"cbsno": cbsno_ref_number,
                                                                                    "pvno": pv_number,"employee_gid": employee_gid,"Status": "DD INITIATED"}
-                                                        dd_statu_update_result = AP_status_update(dd_status_update_data,Payment_Mode)
+                                                        dd_statu_update_result = AP_status_update(dd_status_update_data)
                                                         if (dd_statu_update_result == "SUCCESS"):
                                                             pass
                                                         else:
@@ -4222,9 +3970,7 @@ def APpayment_set_function_approve_and_pay(jsondata, employee_gid, entity_gid):
                     invoiceheader_gid = details_data.get("DETAILS")[0].get("invoiceheader_gid")
                     invoiceheader_status = details_data.get("DETAILS")[0].get("invoiceheader_status")
                     invoiceheader_crno = details_data.get("DETAILS")[0].get("invoiceheader_crno")
-                    invoiceheader_ponumber = details_data.get("DETAILS")[0].get("invoiceheader_ponumber")
                     invoiceheader_invoiceno = details_data.get("DETAILS")[0].get("invoiceheader_invoiceno")
-                    invoiceheader_invoicetype = details_data.get("DETAILS")[0].get("invoiceheader_invoicetype")
                     invoiceheader_dedupeinvoiceno = details_data.get("DETAILS")[0].get("invoiceheader_dedupeinvoiceno")
                     invoiceheader_remarks = details_data.get("DETAILS")[0].get("invoiceheader_remarks")
                     Header_Amount = header_data.get("HEADER")[0].get("Paymentheader_Amount")
@@ -4242,9 +3988,9 @@ def APpayment_set_function_approve_and_pay(jsondata, employee_gid, entity_gid):
 
                     ap_statu_update_result = ""
                     try:
-                        status_update_data = {"Invoice_Header_Gid": invoiceheader_gid, "entity_gid": entity_gid,"crno": invoiceheader_crno,
+                        status_update_data = {"Invoice_Header_Gid": invoiceheader_gid, "entity_gid": entity_gid,
                                               "employee_gid": employee_gid, "Status": "PAY INITIATED"}
-                        ap_statu_update_result = AP_status_update(status_update_data,Payment_Mode)
+                        ap_statu_update_result = AP_status_update(status_update_data)
                         if (ap_statu_update_result == "SUCCESS"):
                             out_put_data = ""
                             if (Payment_Mode == "NEFT"):
@@ -4331,7 +4077,8 @@ def APpayment_set_function_approve_and_pay(jsondata, employee_gid, entity_gid):
                                                 amount_transfer_message = ""
                                                 if (invoiceheader_status != "TXN FAILED"):
                                                     if (invoiceheader_status != "AMOUNT TRAN"):
-                                                        log_data_a = [{"BEFORE_AMOUNT_TRANSFER_API_DATA_2": data,"AP_PAYMENT_WORKING_IP":socket.gethostbyname(socket.gethostname())}]
+                                                        log_data_a = [{"BEFORE_AMOUNT_TRANSFER_API_DATA": data,"AP_PAYMENT_WORKING_IP":socket.gethostbyname(socket.gethostname())}]
+                                                        print(log_data_a)
                                                         common.logger.error(log_data_a)
                                                         data = json.dumps(data)
                                                         token_status = 1
@@ -4374,8 +4121,9 @@ def APpayment_set_function_approve_and_pay(jsondata, employee_gid, entity_gid):
                                                                 common.logger.error(second_amount_trn_log_data)
                                                                 
                                                                 log_data_b = [
-                                                                    {"AFTER_AMOUNT_TRANSFER_API_DATA_2": results_data,"AP_PAYMENT_WORKING_IP":socket.gethostbyname(socket.gethostname())}]
+                                                                    {"AFTER_AMOUNT_TRANSFER_API_DATA": results_data,"AP_PAYMENT_WORKING_IP":socket.gethostbyname(socket.gethostname())}]
                                                                 common.logger.error(log_data_b)
+                                                                print(log_data_b)
                                                                 ErrorStatus = results_data.get("CbsStatus")[0].get(
                                                                     "ErrorMessage")
                                                                 ErrorCode = results_data.get("CbsStatus")[0].get(
@@ -4484,7 +4232,7 @@ def APpayment_set_function_approve_and_pay(jsondata, employee_gid, entity_gid):
                                                                 "pvno": pv_number,
                                                                 "Status": "NEFT INITIATED"}
                                                             neft_statu_update_result = AP_status_update(
-                                                                neft_status_update_data,Payment_Mode)
+                                                                neft_status_update_data)
                                                             if (neft_statu_update_result == "SUCCESS"):
                                                                 pass
                                                             else:
@@ -4569,13 +4317,21 @@ def APpayment_set_function_approve_and_pay(jsondata, employee_gid, entity_gid):
                                                                             "ErrorMessage") == "Success" and neft_results_data.get(
                                                                         "ErrorCode") == '0'):
                                                                         try:
-                                                                            ap_neft_payment_status_data = {
+                                                                            inward_dtl.action = "UPDATE"
+                                                                            inward_dtl.type = "STATUS"
+                                                                            inward_dtl.header_json = '{}'
+                                                                            inward_dtl.debit_json = '{}'
+                                                                            inward_dtl.detail_json = '{}'
+                                                                            inward_dtl.status_json = {
                                                                                 "Invoice_Header_Gid": invoiceheader_gid,
                                                                                 "Status": "PAYMENT",
-                                                                                "crno": invoiceheader_crno,"pono":invoiceheader_ponumber,
-                                                                                "cbsno": "N", "pvno": pv_number,"invoice_type":invoiceheader_invoicetype,
-                                                                                "neftstatus": "NEFT_PASS","entity_gid":entity_gid,"employee_gid":employee_gid}
-                                                                            final_out = AP_status_update(ap_neft_payment_status_data,Payment_Mode)
+                                                                                "crno": invoiceheader_crno,
+                                                                                "cbsno": "N", "pvno": pv_number,
+                                                                                "neftstatus": "NEFT_PASS"}
+                                                                            inward_dtl.entity_gid = entity_gid
+                                                                            inward_dtl.employee_gid = employee_gid
+                                                                            final_out = outputSplit(
+                                                                                inward_dtl.set_Invoiceheader_status_update(),1)
                                                                             return JsonResponse(final_out, safe=False)
                                                                         except Exception as e:
                                                                             common.logger.error([{"ERROR_OCCURED_ON_NEFT_SUCCESS_STATUS_UPDATE_TRY":str(e)}])
@@ -4713,11 +4469,10 @@ def APpayment_set_function_approve_and_pay(jsondata, employee_gid, entity_gid):
                                                                 "entity_gid": entity_gid,
                                                                 "cbsno": cbsno_ref_number,
                                                                 "pvno": pv_number,
-                                                                "crno": invoiceheader_crno,
                                                                 "employee_gid": employee_gid,
                                                                 "Status": "DD INITIATED"}
                                                             dd_statu_update_result = AP_status_update(
-                                                                dd_status_update_data,Payment_Mode)
+                                                                dd_status_update_data)
                                                             if (dd_statu_update_result == "SUCCESS"):
                                                                 pass
                                                             else:
@@ -4813,13 +4568,22 @@ def APpayment_set_function_approve_and_pay(jsondata, employee_gid, entity_gid):
                                                                             "ErrorMessage") == "Success" and dd_results_data.get(
                                                                         "ErrorCode") == '0'):
                                                                         try:
-                                                                            ap_dd_payment_staus_update_data = {
+                                                                            inward_dtl.action = "UPDATE"
+                                                                            inward_dtl.type = "STATUS"
+                                                                            inward_dtl.header_json = '{}'
+                                                                            inward_dtl.debit_json = '{}'
+                                                                            inward_dtl.detail_json = '{}'
+                                                                            inward_dtl.status_json = {
                                                                                 "Invoice_Header_Gid": invoiceheader_gid,
-                                                                                "Status": "PAYMENT","pono":invoiceheader_ponumber,
+                                                                                "Status": "PAYMENT",
                                                                                 "crno": invoiceheader_crno,
-                                                                                "cbsno": "N", "pvno": pv_number,"invoice_type":invoiceheader_invoicetype,
-                                                                                "neftstatus": "DD_PASS","entity_gid":entity_gid,"employee_gid":employee_gid}
-                                                                            final_out = AP_status_update(ap_dd_payment_staus_update_data,Payment_Mode)
+                                                                                "cbsno": "N", "pvno": pv_number,
+                                                                                "neftstatus": "DD_PASS"}
+                                                                            inward_dtl.entity_gid = entity_gid
+                                                                            inward_dtl.employee_gid = employee_gid
+                                                                            final_out = outputSplit(
+                                                                                inward_dtl.set_Invoiceheader_status_update(),
+                                                                                1)
                                                                             return JsonResponse(final_out, safe=False)
                                                                         except Exception as e:
                                                                             common.logger.error([{"ERROR_OCCURED_ON_DD_SUCCESS_STATUS_UPDATE_TRY":str(e)}])
@@ -4967,16 +4731,23 @@ def APpayment_set_function_approve_and_pay(jsondata, employee_gid, entity_gid):
                                                             # pass
 
                                                     else:
-                                                        final_out=""
                                                         try:
-                                                            ap_other_status_update_data = {
+                                                            inward_dtl.action = "UPDATE"
+                                                            inward_dtl.type = "STATUS"
+                                                            inward_dtl.header_json = '{}'
+                                                            inward_dtl.debit_json = '{}'
+                                                            inward_dtl.detail_json = '{}'
+                                                            inward_dtl.status_json = {
                                                                 "Invoice_Header_Gid": invoiceheader_gid,
                                                                 "Status": "PAYMENT",
-                                                                "crno": invoiceheader_crno,"pono":invoiceheader_ponumber,
+                                                                "crno": invoiceheader_crno,
                                                                 "cbsno": cbsno_ref_number,
-                                                                "pvno": pv_number,"invoice_type":invoiceheader_invoicetype,
-                                                                "neftstatus": "NOT_NEFT","entity_gid":entity_gid,"employee_gid":employee_gid}
-                                                            final_out =AP_status_update(ap_other_status_update_data,Payment_Mode)
+                                                                "pvno": pv_number,
+                                                                "neftstatus": "NOT_NEFT"}
+                                                            inward_dtl.entity_gid = entity_gid
+                                                            inward_dtl.employee_gid = employee_gid
+                                                            final_out = outputSplit(
+                                                                inward_dtl.set_Invoiceheader_status_update(), 1)
                                                             return JsonResponse(final_out, safe=False)
                                                         except Exception as e:
                                                             common.logger.error([{"ERROR_OCCURED_AMOUNT_TRANSFER_SUCCESS_FINAL_STATUS_UPDATE_FAILED_TRY":str(e)}])
@@ -4984,7 +4755,7 @@ def APpayment_set_function_approve_and_pay(jsondata, employee_gid, entity_gid):
                                                                 "Invoice_Header_Gid": invoiceheader_gid,
                                                                 "entity_gid": entity_gid,
                                                                 "type": "ERROR_UPDATE", "employee_gid": employee_gid,
-                                                                "Error_log": {"AP_STATUS_UPDATE_RESULT":final_out,
+                                                                "Error_log": {
                                                                     "MESSAGE": "ERROR_OCCURED_AMOUNT_TRANSFER_SUCCESS_FINAL_STATUS_UPDATE_FAILED",
                                                                     "DATA": str(e)}}
                                                             AP_Header_Update_result = AP_Header_Update(
@@ -5306,6 +5077,7 @@ class approve_and_pay_with_class:
                                                                                             data = json.dumps(data)
                                                                                             log_data4 = [{
                                                                                                             "BEFORE_AMOUNT_TRANSFER_API_DATA": data,"AP_APPROVE_WORKING_IP":socket.gethostbyname(socket.gethostname())}]
+                                                                                            print(log_data4)
                                                                                             common.logger.error(log_data4)
 
                                                                                             FIRST_AMOUNT_TRN_START_TIME_D = datetime.now()
@@ -5334,6 +5106,7 @@ class approve_and_pay_with_class:
                                                                                                 {
                                                                                                     "AFTER_AMOUNT_TRANSFER_API_DATA": results_data,"AP_APPROVE_WORKING_IP":socket.gethostbyname(socket.gethostname())}]
                                                                                             common.logger.error(log_data5)
+                                                                                            print(log_data5)
 
                                                                                             ErrorStatus = results_data.get("CbsStatus")[
                                                                                                 0].get(
@@ -7546,7 +7319,3 @@ def gl_day_entry_generate(request):
                 # return HttpResponse(output)
         except Exception as e:
             return JsonResponse({"MESSAGE": "ERROR_OCCURED", "DATA": str(e)})
-
-
-
-        ###

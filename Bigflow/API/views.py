@@ -1,4 +1,3 @@
-
 from tempfile import NamedTemporaryFile
 
 import boto3
@@ -1649,21 +1648,11 @@ class prod_spec(APIView):
             if self.request.query_params.get("Action") == "INSERT":
                 pro_exp = mMasters.Masters()
                 pro_exp.action = self.request.query_params.get('Action')
-                print(self.request.data.get('DATA'))
-                jsondata=self.request.data.get('DATA')
-                from Bigflow.Core.models import get_data_from_id as gdfi
-                codes=gdfi('PRODUCT_SPECS',jsondata)
-                params={"productcategory_code":codes['prodoctcatergory_code'],"templatename":jsondata['Productspecification_Templatename'],'Entity_Gid':self.request.data.get('Classification')['Entity_Gid'],'create_by':self.request.data.get('Classification')['Create_By']}
                 pro_exp.jsondata = json.dumps(self.request.data.get('DATA'))
                 entity = decry_data(self.request.data.get('Classification')['Entity_Gid'])
                 create_by = decry_data(self.request.data.get('Classification')['Create_By'])
                 pro_exp.classification = json.dumps({'Entity_Gid': entity,"Create_By":create_by})
                 pro_results = pro_exp.set_spec_template()
-                print(pro_results,type(pro_results))
-                print(pro_results[0])
-                if(pro_results[0]=='SUCCESS'):
-                    from Bigflow.Core.models import MasterRequestObject
-                    mrobject=MasterRequestObject('PRODUCT_SPECS',params,'POST')
                 return Response(pro_results)
             elif self.request.query_params.get("Action") == "productspecification_Get":
                 pro_exp = mMasters.Masters()
@@ -1676,7 +1665,6 @@ class prod_spec(APIView):
                            "MESSAGE": 'FOUND'}
                 return Response(ld_dict)
         except Exception as e:
-
             return Response({"MESSAGE": "ERROR_OCCURED", "DATA": str(e)})
 
 class Commondropdown(APIView):
@@ -1728,23 +1716,32 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 else :
                     return {"Error":"Fail In Login"}
             elif (self.context['request'].data['apitype']) == 'Direct':
+                environsname = common.server_environ_var();
+                common.logger.error([{"LG_APIJ_Environ": str(environsname)}])
                 datenow = str(datetime.datetime.now().strftime("%Y-%m-%d"))
                 password = (self.context['request'].data['username'])
+                common.logger.error([{"LG_APIJ_UserName": str(password)}])
                 password = datenow+password[::-1]
+                common.logger.error([{"LG_APIJ_DatePlusPass": str(password)}])
                 password = class1.converttoascii(password)
+                common.logger.error([{"LG_APIJ_AsciiPass": str(password)}])
                 auth_pwd = self.context['request'].data['auth_pwd']
+                common.logger.error([{"LG_APIJ_Pass": str(password)}])
+                common.logger.error([{"LG_APIJ_AuthPass": str(auth_pwd)}])
                 if password == auth_pwd:
                     data["refresh"] = str(refresh)
                     data["access"] = str(refresh.access_token)
+                    common.logger.error([{"LG_APIJ_Tokenassigned": str(refresh.access_token)}])
                     return data
                 else:
+                    common.logger.error([{"LG_APIJ_else_tokenfailed"}])
                     return {"Error": "Authentication Failed."}
             else:
+                common.logger.error([{"LG_APIJ_ValidtypeError": (self.context['request'].data['apitype'])}])
                 return {"Error": "Enter Valid Type"}
         except Exception as e:
+            common.logger.error([{"LG_APIJ_tokenException":str(e)}])
             return ({"MESSAGE": "ERROR_OCCURED", "DATA": str(e)})
-
-
 
 class CustomTokenverifySerializer(TokenVerifySerializer):
     def validate(self, attrs):

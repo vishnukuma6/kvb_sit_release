@@ -142,23 +142,6 @@
                             </form>
                         </md-input-container>
                     </div>
-                    <div class="col-lg-3 col-sm-3">
-                        <md-input-container class="md-block inputcontainer md-input-has-placeholder md-input-has-value">
-                            <form>
-                                <div class="process">
-                                    <label>Expense Group</label>
-                                    <md-select ng-model="searchText3_exp_gid" multiple="" ng-disabled="expenseBTN">
-                                        <md-optgroup label="Expense Group">
-                                            <md-option ng-value="item.expensegrp_gid"
-                                                ng-repeat="item in Expence_BUSGID">
-                                                {{item.expensegrp_name}}
-                                            </md-option>
-                                        </md-optgroup>
-                                    </md-select>
-                                </div>
-                            </form>
-                        </md-input-container>
-                    </div>
                     <!-- <div class="col-md-1 ">
                         <a>
                             <button class="md-fab md-mini md-primary custbutton md-button md-ink-ripple" type="button"
@@ -175,10 +158,7 @@
                             <md-icon class="ng-scope material-icons" role="img" aria-label="search">search</md-icon>
                         </button>
                     </div>
-
-                    <!-- <div class="col-lg-2 col-sm-2"></div> -->
-                </div>
-                <div class="row">
+                    <div class="col-lg-2 col-sm-2"></div>
                     <div class="col-md-3" style="margin-top:12px">
                         <button class="md-button md-ink-ripple" type="button" ng-click="Advance_filter_popup()"
                             aria-label="Filter">
@@ -346,7 +326,7 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <!-- <div class="col-lg-3 col-sm-3">
+                                        <div class="col-lg-3 col-sm-3">
                                             <md-input-container
                                                 class="md-block inputcontainer md-input-has-placeholder md-input-has-value">
                                                 <form>
@@ -364,7 +344,7 @@
                                                     </div>
                                                 </form>
                                             </md-input-container>
-                                        </div> -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2725,7 +2705,7 @@
                         }
                     } catch (err)
                     {
-                        alert("DATA NOT FOUND")
+                        alert(err)
                         $scope.endloading();
                     }
                 });

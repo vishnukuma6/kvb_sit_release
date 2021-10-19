@@ -755,8 +755,8 @@
                                     <div class="col-md-3">
                                         <md-input-container class="md-block inputcontainer">
                                             <label>Bank Name</label>
-                                            <input type="text" ng-model="bank_name" autocomplete="off" readonly
-                                                    required>
+                                            <input type="text" ng-model="bank_name" autocomplete="off"
+                                                   readonly required>
                                         </md-input-container>
                                     </div>
                                     <div class="col-md-3">
@@ -1714,12 +1714,9 @@ else if($scope.summarytype == "contacttype"){
         var pincd = commenservice.getpincodeall(pincode)
         pincd.then(function(result) {
         debugger;
-        $scope.pincodedatacheck=result.data
-        if (result.data!="[]"){
                 if (type == 'address') {
                     var apincde = [];
                     apincde = JSON.parse(result.data);
-                    $scope.pincodedatacheck1=apincde
                     $scope.add.addselectedstate = apincde[0].city_state_gid;
                     $scope.state_clk($scope.add.addselectedstate, 'address');
                     $scope.add.addselecteddistrict = apincde[0].pincode_district_gid;
@@ -1727,11 +1724,6 @@ else if($scope.summarytype == "contacttype"){
                     $scope.add.addselectedcity = apincde[0].pincode_City_gid;
                     $scope.add.pincode1 = apincde[0].pincode_no;
 
-                }}
-                else{
-                $scope.add.addselectedcity='';
-                $scope.add.addselecteddistrict='';
-                $scope.add.addselectedstate='';
                 }
             }),
             function() {
@@ -1820,10 +1812,6 @@ else if($scope.summarytype == "contacttype"){
         }
         else{
             $scope.execute=1;
-        }
-        if($scope.pincodedatacheck1[0].pincode_no!=$scope.add.pincode1){
-        alert("Pincode and City Mismatched");
-        return false;
         }
         if($scope.execute==1){
             var datas={"action":"INSERT","type":"bankbranch","filter":{"bankbranch_name":$scope.bankbranch_name.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, ' '),

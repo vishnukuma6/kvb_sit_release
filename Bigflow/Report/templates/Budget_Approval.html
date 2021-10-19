@@ -920,232 +920,224 @@
                     {
                         $scope.loading();
                         table_api = response.data
-                        if (table_api.DATA.length > 0)
+                        var _convertfuture_Fin_year = table_api.DATA[0].pprdata_finyear
+                        var start_year = _convertfuture_Fin_year.replace('FY', "").split("-")[0];
+                        var end_year = _convertfuture_Fin_year.replace('FY', "").split("-")[1];
+                        $scope.start_year = start_year
+                        $scope.end_year = end_year
+                        var from_year = Number(_convertfuture_Fin_year.replace('FY', "").split("-")[0]) + 1
+                        var to_year = Number(_convertfuture_Fin_year.replace('FY', "").split("-")[1]) + 1
+                        $rootScope.future_Fin_year = 'FY' + from_year + "-" + to_year
+                        $scope.futur_start_endYear = from_year + "-" + to_year
+                        $scope.future_fromYear = from_year
+                        $scope.future_toYear = to_year
+
+                        var month = new Array();
+                        month[0] = "Jan-";
+                        month[1] = "Feb-";
+                        month[2] = "Mar-";
+                        month[3] = "Apr-";
+                        month[4] = "May-";
+                        month[5] = "Jun-";
+                        month[6] = "Jul-";
+                        month[7] = "Aug-";
+                        month[8] = "Sep-";
+                        month[9] = "Oct-";
+                        month[10] = "Nov-";
+                        month[11] = "Dec-";
+                        var unique_month_Year = ["Apr-".concat(start_year), "May-".concat(
+                            start_year), "Jun-"
+                                .concat(start_year), "Jul-".concat(start_year), "Aug-"
+                                    .concat(start_year),
+                        "Sep-".concat(start_year), "Oct-".concat(start_year), "Nov-"
+                            .concat(start_year), "Dec-"
+                                .concat(start_year), "Jan-".concat(end_year), "Feb-".concat(
+                                    end_year), "Mar-".concat(end_year)
+                        ]
+
+                        var out_expGRPname_arr = table_api.DATA.map(myFunctionEXP_grp_name);
+                        function myFunctionEXP_grp_name(value, index, array)
                         {
-                            var _convertfuture_Fin_year = table_api.DATA[0].pprdata_finyear
-                            var start_year = _convertfuture_Fin_year.replace('FY', "").split("-")[0];
-                            var end_year = _convertfuture_Fin_year.replace('FY', "").split("-")[1];
-                            $scope.start_year = start_year
-                            $scope.end_year = end_year
-                            var from_year = Number(_convertfuture_Fin_year.replace('FY', "").split("-")[0]) + 1
-                            var to_year = Number(_convertfuture_Fin_year.replace('FY', "").split("-")[1]) + 1
-                            $rootScope.future_Fin_year = 'FY' + from_year + "-" + to_year
-                            $scope.futur_start_endYear = from_year + "-" + to_year
-                            $scope.future_fromYear = from_year
-                            $scope.future_toYear = to_year
+                            return value.expensegrp_name;
+                        }
+                        function removeDuplicateExpname(data)
+                        {
+                            return data.filter((value, index) => data.indexOf(value) ===
+                                index);
+                        }
+                        var Expense_Grp_name = removeDuplicateExpname(out_expGRPname_arr);
 
-                            var month = new Array();
-                            month[0] = "Jan-";
-                            month[1] = "Feb-";
-                            month[2] = "Mar-";
-                            month[3] = "Apr-";
-                            month[4] = "May-";
-                            month[5] = "Jun-";
-                            month[6] = "Jul-";
-                            month[7] = "Aug-";
-                            month[8] = "Sep-";
-                            month[9] = "Oct-";
-                            month[10] = "Nov-";
-                            month[11] = "Dec-";
-                            var unique_month_Year = ["Apr-".concat(start_year), "May-".concat(
-                                start_year), "Jun-"
-                                    .concat(start_year), "Jul-".concat(start_year), "Aug-"
-                                        .concat(start_year),
-                            "Sep-".concat(start_year), "Oct-".concat(start_year), "Nov-"
-                                .concat(start_year), "Dec-"
-                                    .concat(start_year), "Jan-".concat(end_year), "Feb-".concat(
-                                        end_year), "Mar-".concat(end_year)
-                            ]
-
-                            var out_expGRPname_arr = table_api.DATA.map(myFunctionEXP_grp_name);
-                            function myFunctionEXP_grp_name(value, index, array)
+                        output_data = []
+                        for (exp_grp = 0; exp_grp < Expense_Grp_name.length; exp_grp++)
+                        {
+                            let temp_EXP_GRP = {}
+                            temp_EXP_GRP["Direct Cost"] = Expense_Grp_name[exp_grp]
+                            for (m_y = 0; m_y < unique_month_Year.length; m_y++)
                             {
-                                return value.expensegrp_name;
+                                temp_EXP_GRP[unique_month_Year[m_y]] = ["", "", ""];
                             }
-                            function removeDuplicateExpname(data)
+                            temp_EXP_GRP["YTD"] = ["", "", ""]
+                            temp_EXP_GRP["Padding"] = 10
+                            output_data.push(temp_EXP_GRP)
+                            Exp_name_arr = []
+                            for (nafi = 0; nafi < table_api.DATA.length; nafi++)
+                            {
+                                if (table_api.DATA[nafi].expensegrp_name ==
+                                    Expense_Grp_name[exp_grp])
+                                    Exp_name_arr.push(table_api.DATA[nafi].expense_name)
+                            }
+                            function removeDuplicateEXPname_arr(data)
                             {
                                 return data.filter((value, index) => data.indexOf(value) ===
                                     index);
                             }
-                            var Expense_Grp_name = removeDuplicateExpname(out_expGRPname_arr);
-
-                            output_data = []
-                            for (exp_grp = 0; exp_grp < Expense_Grp_name.length; exp_grp++)
+                            let Expence_name = removeDuplicateEXPname_arr(Exp_name_arr)
+                            for (exp = 0; exp < Expence_name.length; exp++)
                             {
-                                let temp_EXP_GRP = {}
-                                temp_EXP_GRP["Direct Cost"] = Expense_Grp_name[exp_grp]
+                                let temp_data = {};
+                                temp_data["Direct Cost"] = Expence_name[exp];
                                 for (m_y = 0; m_y < unique_month_Year.length; m_y++)
                                 {
-                                    temp_EXP_GRP[unique_month_Year[m_y]] = ["", "", ""];
+                                    temp_data[unique_month_Year[m_y]] = ["", "", ""];
                                 }
-                                temp_EXP_GRP["YTD"] = ["", "", ""]
-                                temp_EXP_GRP["Padding"] = 10
-                                output_data.push(temp_EXP_GRP)
-                                Exp_name_arr = []
+                                temp_data["YTD"] = ["", "", ""]
+                                temp_data["Padding"] = 20
+                                output_data.push(temp_data)
+                                name_arr = [];
                                 for (nafi = 0; nafi < table_api.DATA.length; nafi++)
                                 {
-                                    if (table_api.DATA[nafi].expensegrp_name ==
-                                        Expense_Grp_name[exp_grp])
-                                        Exp_name_arr.push(table_api.DATA[nafi].expense_name)
+                                    if (table_api.DATA[nafi].expense_name == Expence_name[
+                                        exp])
+                                        name_arr.push(table_api.DATA[nafi].subcategory_name)
                                 }
-                                function removeDuplicateEXPname_arr(data)
+                                function removeDuplicatename_arr(data)
                                 {
-                                    return data.filter((value, index) => data.indexOf(value) ===
+                                    return data.filter((value, index) => data.indexOf(
+                                        value) ===
                                         index);
                                 }
-                                let Expence_name = removeDuplicateEXPname_arr(Exp_name_arr)
-                                for (exp = 0; exp < Expence_name.length; exp++)
+                                for (n = 0; n < removeDuplicatename_arr(name_arr)
+                                    .length; n++)
                                 {
-                                    let temp_data = {};
-                                    temp_data["Direct Cost"] = Expence_name[exp];
+                                    let temp_row = {};
+                                    temp_row["Direct Cost"] = removeDuplicatename_arr(
+                                        name_arr)[n];
+                                    Total_of_amount = [];
                                     for (m_y = 0; m_y < unique_month_Year.length; m_y++)
                                     {
-                                        temp_data[unique_month_Year[m_y]] = ["", "", ""];
+                                        temp_row[unique_month_Year[m_y]] = ["0.00", "0.00", 0];
                                     }
-                                    temp_data["YTD"] = ["", "", ""]
-                                    temp_data["Padding"] = 20
-                                    output_data.push(temp_data)
-                                    name_arr = [];
-                                    for (nafi = 0; nafi < table_api.DATA.length; nafi++)
+                                    for (api = 0; api < table_api.DATA.length; api++)
                                     {
-                                        if (table_api.DATA[nafi].expense_name == Expence_name[
-                                            exp])
-                                            name_arr.push(table_api.DATA[nafi].subcategory_name)
-                                    }
-                                    function removeDuplicatename_arr(data)
-                                    {
-                                        return data.filter((value, index) => data.indexOf(
-                                            value) ===
-                                            index);
-                                    }
-                                    for (n = 0; n < removeDuplicatename_arr(name_arr)
-                                        .length; n++)
-                                    {
-                                        let temp_row = {};
-                                        temp_row["Direct Cost"] = removeDuplicatename_arr(
-                                            name_arr)[n];
-                                        Total_of_amount = [];
-                                        for (m_y = 0; m_y < unique_month_Year.length; m_y++)
+                                        var d = new Date(table_api.DATA[api]
+                                            .pprdata_transactiondate)
+                                        if (Expence_name[exp] == table_api.DATA[api]
+                                            .expense_name)
                                         {
-                                            temp_row[unique_month_Year[m_y]] = ["0.00", "0.00", 0];
-                                        }
-                                        for (api = 0; api < table_api.DATA.length; api++)
-                                        {
-                                            var d = new Date(table_api.DATA[api]
-                                                .pprdata_transactiondate)
-                                            if (Expence_name[exp] == table_api.DATA[api]
-                                                .expense_name)
+                                            if (removeDuplicatename_arr(name_arr)[n] ==
+                                                table_api
+                                                    .DATA[
+                                                    api]
+                                                    .subcategory_name)
                                             {
-                                                if (removeDuplicatename_arr(name_arr)[n] ==
-                                                    table_api
-                                                        .DATA[
-                                                        api]
-                                                        .subcategory_name)
+                                                if (unique_month_Year.includes(month[d
+                                                    .getMonth()].concat(d
+                                                        .getFullYear().toString()
+                                                        .substr(-2))))
                                                 {
-                                                    if (unique_month_Year.includes(month[d
-                                                        .getMonth()].concat(d
-                                                            .getFullYear().toString()
-                                                            .substr(-2))))
-                                                    {
-                                                        Total_of_amount.push([parseFloat(
-                                                            parseFloat(
-                                                                table_api
-                                                                    .DATA[api]
-                                                                    .pprdatatotamount).toFixed(2)
-                                                        ), parseFloat(
-                                                            parseFloat(
-                                                                table_api
-                                                                    .DATA[api]
-                                                                    .pprdatatotamount).toFixed(2)
-                                                        ), parseFloat(
-                                                            parseFloat(
-                                                                table_api
-                                                                    .DATA[api]
-                                                                    .pprbudgetreviewerrequestamount).toFixed(2)
-                                                        )]);
-
-                                                        temp_row[month[d.getMonth()].concat(d
-                                                            .getFullYear().toString()
-                                                            .substr(-2))] = [parseFloat(
-                                                                parseFloat(
-                                                                    table_api
-                                                                        .DATA[api]
-                                                                        .pprdatatotamount).toFixed(2)
-                                                            ), parseFloat(
-                                                                parseFloat(
-                                                                    table_api
-                                                                        .DATA[api]
-                                                                        .pprdatatotamount).toFixed(2)
-                                                            ), table_api
+                                                    Total_of_amount.push([parseFloat(
+                                                        parseFloat(
+                                                            table_api
                                                                 .DATA[api]
-                                                                .pprbudgetreviewerrequestamount];
-                                                        temp_row["TranYear"] = ""
-                                                        temp_row["TranDate"] = ""
-                                                        temp_row["Prev_finYear"] = table_api.DATA[api].pprdata_finyear
-                                                        temp_row["Sector"] = table_api.DATA[api].pprdata_sectorname
-                                                        temp_row["Bizz"] = table_api.DATA[api].pprdata_bizname
-                                                        temp_row["BS"] = table_api.DATA[api].pprdata_bsname
-                                                        temp_row["CC"] = table_api.DATA[api].pprdata_ccname
-                                                        temp_row["subcat"] = table_api.DATA[api].pprdata_apsubcatgid
-                                                        temp_row["reviewerIN"] = true;
-                                                    }
+                                                                .pprdatatotamount).toFixed(2)
+                                                    ), parseFloat(
+                                                        parseFloat(
+                                                            table_api
+                                                                .DATA[api]
+                                                                .pprdatatotamount).toFixed(2)
+                                                    ), parseFloat(
+                                                        parseFloat(
+                                                            table_api
+                                                                .DATA[api]
+                                                                .pprbudgetrequestamount).toFixed(2)
+                                                    )]);
+
+                                                    temp_row[month[d.getMonth()].concat(d
+                                                        .getFullYear().toString()
+                                                        .substr(-2))] = [parseFloat(
+                                                            parseFloat(
+                                                                table_api
+                                                                    .DATA[api]
+                                                                    .pprdatatotamount).toFixed(2)
+                                                        ), parseFloat(
+                                                            parseFloat(
+                                                                table_api
+                                                                    .DATA[api]
+                                                                    .pprdatatotamount).toFixed(2)
+                                                        ), table_api
+                                                            .DATA[api]
+                                                            .pprbudgetrequestamount];
+                                                    temp_row["TranYear"] = ""
+                                                    temp_row["TranDate"] = ""
+                                                    temp_row["Prev_finYear"] = table_api.DATA[api].pprdata_finyear
+                                                    temp_row["Sector"] = table_api.DATA[api].pprdata_sectorname
+                                                    temp_row["Bizz"] = table_api.DATA[api].pprdata_bizname
+                                                    temp_row["BS"] = table_api.DATA[api].pprdata_bsname
+                                                    temp_row["CC"] = table_api.DATA[api].pprdata_ccname
+                                                    temp_row["subcat"] = table_api.DATA[api].pprdata_apsubcatgid
+                                                    temp_row["reviewerIN"] = true;
                                                 }
                                             }
                                         }
-                                        ytd_totalARR = []
-                                        for (index of [0, 1, 2])
+                                    }
+                                    ytd_totalARR = []
+                                    for (index of [0, 1, 2])
+                                    {
+                                        total_Amount = 0
+                                        for (total = 0; total < Total_of_amount
+                                            .length; total++)
                                         {
-                                            total_Amount = 0
-                                            for (total = 0; total < Total_of_amount
-                                                .length; total++)
-                                            {
-                                                total_Amount = total_Amount + Total_of_amount[total][index]
-                                            }
-                                            ytd_totalARR[index] = total_Amount;
+                                            total_Amount = total_Amount + Total_of_amount[total][index]
                                         }
-
-                                        temp_row["YTD"] = [Number(ytd_totalARR[0]), Number(ytd_totalARR[1]), Number(ytd_totalARR[2])]
-                                        if (total_Amount == 0)
-                                        {
-                                            temp_row["YTD"] = ["0.00", "0.00", 0]
-                                        }
-                                        temp_row["Padding"] = 30
-                                        temp_row["FinYear"] = $rootScope.future_Fin_year
-                                        output_data.push(temp_row)
-                                        Total_of_amount = []
-
+                                        ytd_totalARR[index] = total_Amount;
                                     }
 
-                                }
-                            }
-                            //final overall total row code start
-                            var sum_Total_dict_keys = Object.keys(output_data[0]).splice(1)
-                            sum_Total_dict_keys.splice(13)
-                            var over_all_row_all = {}
-                            over_all_row_all["Direct Cost"] = 'Total : ';
-                            for (row_keys = 0; row_keys < sum_Total_dict_keys
-                                .length; row_keys++)
-                            {
-                                over_all_row_all[sum_Total_dict_keys[row_keys]] = [column_total(0, output_data, sum_Total_dict_keys[row_keys]), column_total(1, output_data, sum_Total_dict_keys[row_keys]), column_total(2, output_data, sum_Total_dict_keys[row_keys])]
-                            }
+                                    temp_row["YTD"] = [Number(ytd_totalARR[0]), Number(ytd_totalARR[1]), Number(ytd_totalARR[2])]
+                                    if (total_Amount == 0)
+                                    {
+                                        temp_row["YTD"] = ["0.00", "0.00", 0]
+                                    }
+                                    temp_row["Padding"] = 30
+                                    temp_row["FinYear"] = $rootScope.future_Fin_year
+                                    output_data.push(temp_row)
+                                    Total_of_amount = []
 
-                            over_all_row_all["Padding"] = 30
-                            output_data.push(over_all_row_all)
-                            // final overall total row code end
-                            $scope.endloading();
-                            $scope.Monthly_table_body = output_data;
-                            $scope.Monthly_table = false;
-                            $scope.submitBtn = false;
+                                }
+
+                            }
                         }
-                        else
+                        //final overall total row code start
+                        var sum_Total_dict_keys = Object.keys(output_data[0]).splice(1)
+                        sum_Total_dict_keys.splice(13)
+                        var over_all_row_all = {}
+                        over_all_row_all["Direct Cost"] = 'Total : ';
+                        for (row_keys = 0; row_keys < sum_Total_dict_keys
+                            .length; row_keys++)
                         {
-                            alert("DATA NOT FOUND")
-                            $scope.endloading();
+                            over_all_row_all[sum_Total_dict_keys[row_keys]] = [column_total(0, output_data, sum_Total_dict_keys[row_keys]), column_total(1, output_data, sum_Total_dict_keys[row_keys]), column_total(2, output_data, sum_Total_dict_keys[row_keys])]
                         }
+
+                        over_all_row_all["Padding"] = 30
+                        output_data.push(over_all_row_all)
+                        // final overall total row code end
+                        $scope.endloading();
+                        $scope.Monthly_table_body = output_data;
+                        $scope.Monthly_table = false;
+                        $scope.submitBtn = false;
                     }
                     catch (err)
                     {
-                        alert("DATA NOT FOUND")
+                        alert(err)
                         $scope.endloading();
                     }
 

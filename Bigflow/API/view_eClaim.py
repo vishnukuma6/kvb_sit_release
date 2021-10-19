@@ -8,7 +8,7 @@ from Bigflow.eClaim.model import meClaim
 import Bigflow.Core.jwt_file as jwt
 from Bigflow.eClaim import eClaim_verify as verify
 from Bigflow.eClaim import android_interface as android
-from Bigflow.settings import BASE_DIR, S3_BUCKET_NAME
+from Bigflow.settings import BASE_DIR,S3_BUCKET_NAME
 import Bigflow.Core.models as common
 ip = common.localip()
 import requests
@@ -125,8 +125,6 @@ class eClaim_Summary(APIView):
                     for d in data:
                         d["employee_name"] = employee_data[0].get('employee_name')
                         d["employee_code"] = employee_data[0].get('employee_code')
-                        d["branch_name"] = employee_data[0].get('branch_name')
-                        d["branch_code"] = employee_data[0].get('branch_code')
                         d["designation"] = employee_data[0].get('designation_name')
                         d["gstno"] = employee_data[0].get('gstno')
                     for d in data:
@@ -1688,8 +1686,6 @@ class Tour_Request(APIView):
                     d["employee_name"] = employee_data[0].get('employee_name')
                     d["employee_code"] = employee_data[0].get('employee_code')
                     d["employee_designation"] = employee_data[0].get('designation_name')
-                    d["branch_name"] = employee_data[0].get('branch_name')
-                    d["branch_code"] = employee_data[0].get('branch_code')
                 for d in data:
                     for i in range(0, len(permit_data)):
                         if permit_data[i].get('employee_gid') == int(d.get('approvedby')):
@@ -1710,7 +1706,6 @@ class Tour_Request(APIView):
             e = "Erro Line no :" + str(format(sys.exc_info()[-1].tb_lineno)) + " " + "Error :" + str(e)
             return Response({"MESSAGE": "ERROR_OCCURED", "DATA": str(e), "STATUS": 1})
 class Approval(APIView):
-
     def post(self,request):
         try:
             path = self.request.stream.path
@@ -1754,8 +1749,6 @@ class Approval(APIView):
                             d["employee_name"] = i.get('employee_name')
                             d["employee_code"] = i.get('employee_code')
                             d["employee_designation"] = i.get('designation_name')
-                            d["employee_branchname"] = employee_data[0].get('branch_name')
-                            d["employee_branchcode"] = employee_data[0].get('branch_code')
                             d["gstno"] = i.get('gstno')
                             break
 
@@ -1940,11 +1933,8 @@ class Tour_Details(APIView):
                     tmp['ordernoremarks'] = d.get('ordernoremarks')
                     tmp['tourdetails'] = json.loads(d.get('tourdetails'))
                     tmp['approvedby'] = d.get('approvedby')
-                    tmp['transferon_promotion'] = str(d.get('transferon_promotion'))
                     tmp['quantum_offunds'] = d.get('quantum_offunds')
                     tmp['opening_balance'] = d.get('opening_balance')
-
-
                     out_data.append(tmp)
                 emp_gid = []
                 emp_data = {
@@ -1959,8 +1949,6 @@ class Tour_Details(APIView):
                     d["employee_code"] = employee_data[0].get('employee_code')
                     d["employee_branch"] = employee_data[0].get('branch_name')
                     d["employee_designation"] = employee_data[0].get('designation_name')
-                    d["employee_grade1"] = employee_data[0].get('employee_grade1')
-                    d["employee_grade2"] = employee_data[0].get('employee_grade2')
 
                 if out_data[0].get('permittedby') != None or out_data[0].get('permittedby') != 0 or out_data[0].get('permittedby') != '0':
                     permit_data = {
@@ -2019,7 +2007,7 @@ class Tour_Details(APIView):
             common.logger.error(e)
             return Response({"MESSAGE": "ERROR_OCCURED", "DATA": str(e),"STATUS":1})
 class Branch(APIView):
-    def get(self, request):
+    def get(self,request):
         try:
             ld_out_message = ""
             obj_claim = meClaim.eClaim_Model()
@@ -2867,46 +2855,10 @@ class Approver_List(APIView):
             if apptype == 'TOURADV':
                 obj_claim.filter_json = json.dumps({"App_Type": apptype, "Entity_Gid": entity, "Branch_Gid": br})
                 ld_out_message = obj_claim.eClaim_approverlist_get_galley()
-                lo_out_message = obj_claim.eClaim_approverlist_get()
-                if ld_out_message.get("MESSAGE") == 'FOUND' or lo_out_message.get('MESSAGE') == 'FOUND':
+                if ld_out_message.get("MESSAGE") == 'FOUND':
                     data = json.loads(ld_out_message.get("DATA").to_json(orient='records'))
-                    eclaim_data = json.loads(lo_out_message.get("DATA").to_json(orient='records'))
-                    emp_gid = []
-                    maker_empgid = 0
-                    if "Tour_Gid" in request.query_params:
-                        tourgid = request.query_params.get("Tour_Gid")
-                        obj_claim.employee_gid = tourgid
-                        ld_out_emp = obj_claim.eClaim_tourtoemp_get()
-                        ld_dict = json.loads(ld_out_emp.get("DATA").to_json(orient='records'))
-                        common.logger.error([{"tourtoemp_get": str(ld_dict)}])
-                        maker_empgid = int(ld_dict[0].get('empgid'))
-                        empgrade = ld_dict[0].get('empgrade')                    
-                    for i in eclaim_data:
-                        if maker_empgid != 0:
-                            if i.get('employeegid') not in emp_gid and i.get('employeegid') != employeegid and \
-                                    i.get('employeegid') != maker_empgid:
-                                emp_gid.append(i.get('employeegid'))
-                        else:
-                            if i.get('employeegid') not in emp_gid and i.get('employeegid') != employeegid:
-                                emp_gid.append(i.get('employeegid'))
-                    galley_data = [item for item in data if item['employee_gid'] != employeegid]
-                    emp_data = {
-                        "empids": emp_gid
-                    }
-                    obj_claim.filter_json = json.dumps(emp_data)
-                    obj_claim.json_classification = json.dumps({})
-                    emp_out_message = obj_claim.eClaim_employee_get()
-                    if emp_out_message.get("MESSAGE") == 'FOUND':
-                        employee_data = json.loads(emp_out_message.get("DATA").to_json(orient='records'))
-                        common.logger.error([{"employee_data": str(employee_data)}])
-
-                    else:
-                        ld_dict = {"MESSAGE": "Employee Data Missing" + str(ld_out_message.get("DATA"))}
-                        return Response(ld_dict)
                     common.logger.error([{"Employee_data": str(data)}])
-                    ecgy_data = employee_data + galley_data
-                    approvar_data = list({ecgy['employee_code']: ecgy for ecgy in ecgy_data}.values())
-                    ld_dict = {"DATA": approvar_data,
+                    ld_dict = {"DATA": data,
                                "MESSAGE": 'FOUND', "STATUS": 0}
                 elif ld_out_message.get("MESSAGE") == 'NOT_FOUND':
                     ld_dict = {"MESSAGE": 'NOT_FOUND'}
@@ -2916,12 +2868,9 @@ class Approver_List(APIView):
 
             else:
                 obj_claim.filter_json = json.dumps({"App_Type": apptype, "Entity_Gid": entity, "Branch_Gid": br})
-                lo_out_message = obj_claim.eClaim_approverlist_get_galley()
                 ld_out_message = obj_claim.eClaim_approverlist_get()
-
-                if ld_out_message.get("MESSAGE") == 'FOUND' or lo_out_message.get("MESSAGE") == 'FOUND':
+                if ld_out_message.get("MESSAGE") == 'FOUND':
                     data = json.loads(ld_out_message.get("DATA").to_json(orient='records'))
-                    galley_data = json.loads(lo_out_message.get("DATA").to_json(orient='records'))
                     emp_gid = []
                     maker_empgid = 0
                     if "Tour_Gid" in request.query_params:
@@ -2941,7 +2890,7 @@ class Approver_List(APIView):
                         else:
                             if i.get('employeegid') not in emp_gid and i.get('employeegid') != employeegid:
                                 emp_gid.append(i.get('employeegid'))
-                    galley_data = [item for item in galley_data if item['employee_gid'] != employeegid]
+
                     emp_data = {
                         "empids": emp_gid
                     }
@@ -3004,10 +2953,7 @@ class Approver_List(APIView):
                     #
                     #                 break
                     common.logger.error([{"app_data": str(employee_data)}])
-                    ecgy_data = employee_data+galley_data
-                    approvar_data = list({ecgy['employee_code']:ecgy for ecgy in ecgy_data}.values())
-
-                    ld_dict = {"DATA": approvar_data,
+                    ld_dict = {"DATA": employee_data,
                                "MESSAGE": 'FOUND',"STATUS":0}
                 elif ld_out_message.get("MESSAGE") == 'NOT_FOUND':
                     ld_dict = {"MESSAGE": 'NOT_FOUND'}
@@ -3087,8 +3033,7 @@ class Claim_Summary(APIView):
                         permit_data = json.loads(permit_out_message.get("DATA").to_json(orient='records'))
                     for d in data:
                         d["employee_name"] = employee_data[0].get('employee_name')
-                        d["branch_code"] = employee_data[0].get('branch_code')
-                        d["branch_name"] = employee_data[0].get('branch_name')
+                        d["employee_code"] = employee_data[0].get('employee_code')
                     if permit_gid != []:
                         for d in data:
                             for i in range(0, len(permit_data)):
@@ -3173,8 +3118,6 @@ class Advance_Summary(APIView):
                     for d in data:
                         d["employee_name"] = employee_data[0].get('employee_name')
                         d["employee_code"] = employee_data[0].get('employee_code')
-                        d["branch_code"] = employee_data[0].get('branch_code')
-                        d["branch_name"] = employee_data[0].get('branch_name')
                     for d in data:
                         for i in range(0, len(permit_data)):
                             if permit_data[i].get('employee_gid') == int(d.get('approvedby')):
@@ -4334,18 +4277,6 @@ def emp_grade(tourgid):
     common.logger.error([{"tourtoemp_get": str(ld_dict)}])
     empgrade = ld_dict[0].get('empgrade')
     return empgrade
-
-def tourreason(tourgid):
-    obj_claim = meClaim.eClaim_Model()
-    obj_claim.employee_gid = tourgid
-    ld_out_emp = obj_claim.eClaim_tourtoemp_get()
-    ld_dict = json.loads(ld_out_emp.get("DATA").to_json(orient='records'))
-    common.logger.error([{"tourtoemp_get": str(ld_dict)}])
-    dtls = {}
-    dtls['empgrade'] = ld_dict[0].get('empgrade')
-    dtls['name'] = ld_dict[0].get('name')
-    return dtls
-
 class BS_Data_Get(APIView):
     def get(self, request):
         try:
@@ -4496,14 +4427,12 @@ class Dailydiem_Logic(APIView):
             obj_claim = meClaim.eClaim_Model()
             obj_claim.employee_gid = empid
             emp_bnk = obj_claim.eClaim_entity_get()
-
             bank_data = json.loads(emp_bnk.get("DATA").to_json(orient='records'))
             entity_gid = bank_data[0].get('entity_gid')
             tourgid = jsondata.get('tourgid')
-            tour_dtl = tourreason(tourgid)
-            grade = tour_dtl.get('empgrade')
-            json_param = android.Android.param_conversion(self, jsondata, entity_gid)
-            ld_dict = verify.dailydiem.eligible_amount(self, json_param,grade,empid, tour_dtl)
+            grade = emp_grade(tourgid)
+            json_param = android.Android.param_conversion(self, jsondata,entity_gid)
+            ld_dict = verify.dailydiem.eligible_amount(self, json_param,grade,empid)
             return Response(ld_dict)
         except Exception as e:
             common.logger.error(e)
@@ -4519,10 +4448,7 @@ class Dailydiem(APIView):
                 CHANGE = jsondata.get('Params').get('CHANGE').get('DATA')
                 common.main_fun1(request.read(), path)
                 empid = exp_onbehalf_emp(self,request)
-
-                tour_dtl = tourreason(DETAILS.get('tourgid'))
-                grade = tour_dtl.get('empgrade')
-
+                grade = emp_grade(DETAILS.get('tourgid'))
                 obj_claim.employee_gid = empid
                 emp_bnk = obj_claim.eClaim_entity_get()
                 bank_data = json.loads(emp_bnk.get("DATA").to_json(orient='records'))
@@ -4532,7 +4458,7 @@ class Dailydiem(APIView):
                     json_param['Params']['FILTER']['expensegid'] = DETAILS.get('expensegid')
                     json_param['Params']['FILTER']['from_date'] = json_param.get('Params').get('FILTER').get('fromdate')
                     json_param['Params']['FILTER']['to_date'] = json_param.get('Params').get('FILTER').get('todate')
-                    ld_dict = verify.dailydiem.eligible_amount(self, json_param, grade,empid, tour_dtl)
+                    ld_dict = verify.dailydiem.eligible_amount(self, json_param, grade,empid)
                     i['eligibleamount'] = ld_dict.get('DATA').get('Eligible_amount')
                     i['syshours'] = ld_dict.get('DATA').get('sys_hours')
                 logic = verify.dailydiem.submit_data(self, CHANGE, DETAILS)
@@ -4565,16 +4491,13 @@ class Dailydiem(APIView):
                 DETAILS['processedby'] =  empid
                 DETAILS['createby'] =  empid
                 CHANGE = CHANGE.get('DATA')
-
-                tour_dtl = tourreason(DETAILS.get('tourgid'))
-                grade = tour_dtl.get('empgrade')
-
+                grade = emp_grade(DETAILS.get('tourgid'))
                 for i in CHANGE:
                     json_param = android.Android.param_conversion(self, i, entity)
                     json_param['Params']['FILTER']['expensegid'] = DETAILS.get('expensegid')
                     json_param['Params']['FILTER']['from_date'] = json_param.get('Params').get('FILTER').get('fromdate')
                     json_param['Params']['FILTER']['to_date'] = json_param.get('Params').get('FILTER').get('todate')
-                    ld_dict = verify.dailydiem.eligible_amount(self, json_param, grade, empid, tour_dtl)
+                    ld_dict = verify.dailydiem.eligible_amount(self, json_param, grade,empid)
                     i['eligibleamount'] = ld_dict.get('DATA').get('Eligible_amount')
                     i['syshours'] = ld_dict.get('DATA').get('sys_hours')
                 logic = verify.dailydiem.submit_data(self, CHANGE, DETAILS)

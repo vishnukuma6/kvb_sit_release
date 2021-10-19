@@ -78,7 +78,6 @@
                     <th class="text-center" scope="col">From Date</th>
                     <th class="text-center" scope="col">To Date</th>
                     <th class="text-center" scope="col">Employee Name</th>
-                    <th class="text-center" scope="col">Branch</th>
                     <th class="text-center" scope="col">Raisedby</th>
                     <th class="text-center" scope="col">Employee Grade</th>
                     <th class="text-center" scope="col">Advance Amount</th>
@@ -96,7 +95,6 @@
                         <td class="text-right">{{eClaim.startdate}}</td>
                         <td class="text-right">{{eClaim.enddate}}</td>
                         <td class="text-left">{{eClaim.employee_name}}</td>
-                       <td class="text-left">{{eClaim.employee_branchname}} - {{eClaim.employee_branchcode}}</td>
                         <td class="text-left" ng-show="eClaim.onbehalof == 0">{{eClaim.employee_name}}</td>
                         <td class="text-left" ng-show="eClaim.onbehalof != 0">{{eClaim.onbehalof_employeename}}</td>
                         <td class="text-left">{{eClaim.empgrade}}</td>
@@ -120,7 +118,7 @@
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td colspan="8">
+                        <td colspan="7">
                             <ul boundary-links="true" class="pagination-sm cust_pagination"
                                 items-per-page="itemsPerPage"
                                 max-size="maxSize"

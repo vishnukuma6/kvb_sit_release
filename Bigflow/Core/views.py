@@ -146,7 +146,7 @@ def loginpswd(request):
         common.logger.error([{"LG_loginpwd_MSG": 'Point Access Ok'}])
         if request.method == 'POST':
             jsondata = json.loads(request.body.decode('utf-8'))
-            jsondata.get('parms')['password'] = base64.b64decode(jsondata.get('parms').get('password')).decode("utf-8")
+
             #Type = jsondata.get('parms').get('TYPE')
             if srv_env  in ('SIT',):
                 Type = 'LOGIN_LOCAL'
@@ -209,21 +209,15 @@ def loginpswd(request):
                             else:
                                 return JsonResponse(json.dumps('FAIL'), safe=False)
                             out_msg = token_jwt(request, "LOGIN", user_name)
-                            try:
-                                two_fa = common.two_factor_authenticate()
-                            except:
-                                common.logger.error([{"AD_2FA_STATUS": str(two_fa)}])
+                            two_fa = common.two_factor_authenticate()
                             if two_fa == 'Enabled':
                                 x_forwarded_ip = request.META.get('HTTP_X_FORWARDED_FOR')
                                 if x_forwarded_ip is None:
                                     user_ip_ = ['0']
                                 else:
                                     user_ip_ = [x_forwarded_ip]
-                                try:
-                                    ip_fr_validate = common.ip_address_validate()
-                                    envIP_list = ip_fr_validate.split(",")
-                                except:
-                                    common.logger.error([{"AD_2FA_IP_LIST": str(envIP_list)}])
+                                ip_fr_validate = common.ip_address_validate()
+                                envIP_list = ip_fr_validate.split(",")
                                 for i in envIP_list:
                                     i = i.replace(" ", "")
                                     for j in user_ip_:
@@ -247,7 +241,6 @@ def loginpswd(request):
                             request.session['OTP_Validate'] = condition_
                             request.session['username'] = jsondata.get('parms').get('username')
                             request.session['password'] = jsondata.get('parms').get('password')
-                            request.session['employee_code_new'] =ld_dict.get('DATA').get('employee_code')
                             request.session['type'] = Type
                             request.session['auth_requestsession'] = value
                             if condition_ == '0':
@@ -266,7 +259,7 @@ def loginpswd(request):
                             output.update({"employee_mobileno": ld_dict.get('DATA').get('employee_mobileno')})
                             output.update({"OTP_Validate_ip": common.server_environ_var()})
                             output.update({"OTP_Validate_ip_": common.two_factor_authenticate()})
-                            # output.update({"OTP_Validate_ip_1": common.ip_address_validate()})
+                            output.update({"OTP_Validate_ip_1": common.ip_address_validate()})
                             output.update({"auth_request":value})
                             request.session['Login_Data'] = jsondata.get('parms')
                             request.session['employee_mobileno'] = ld_dict.get('DATA').get('employee_mobileno')
@@ -287,7 +280,6 @@ def loginpswd(request):
                 # token_jwt(request,"CHECK")
                 obj_location = class1.login()
                 obj_location.type = Type
-
                 common.logger.error([{"LG_Local_LoginStart": "Started"}])
                 obj_location.jsondata = json.dumps(
                     {"Employee_Gid": '0', "EmployeeCode": jsondata.get('parms').get('username'),
@@ -320,10 +312,8 @@ def loginpswd(request):
                     out_msg = token_jwt(request, "LOGIN", jsondata.get('parms').get('username'))
                     if out_msg != 'SUCCESS':
                         return JsonResponse(json.dumps('FAIL'), safe=False)
-                    try:
-                        two_fa = common.two_factor_authenticate()
-                    except:
-                        common.logger.error([{"LG_2FA_STATUS": str(two_fa)}])
+
+                    two_fa = common.two_factor_authenticate()
                     if two_fa == 'Enabled':
                         x_forwarded_ip = request.META.get('HTTP_X_FORWARDED_FOR')
                         if x_forwarded_ip == 'null' or 'None':
@@ -331,11 +321,8 @@ def loginpswd(request):
                             user_ip_ = [x_forwarded_ip]
                         else:
                             user_ip_ = [x_forwarded_ip]
-                        try:
-                            ip_fr_validate = common.ip_address_validate()
-                            envIP_list = ip_fr_validate.split(",")
-                        except:
-                            common.logger.error([{"LG_2FA_IPLIST": str(envIP_list)}])
+                        ip_fr_validate = common.ip_address_validate()
+                        envIP_list = ip_fr_validate.split(",")
                         for i in envIP_list:
                             i = i.replace(" ", "")
                             for j in user_ip_:
@@ -358,7 +345,6 @@ def loginpswd(request):
                     request.session['OTP_Validate'] = condition_
                     request.session['username'] = jsondata.get('parms').get('username')
                     request.session['password'] = jsondata.get('parms').get('password')
-                    request.session['employee_code_new'] = result[0][0].get('employee_code')
                     request.session['type']=Type
                     request.session['auth_requestsession'] = value
                     if condition_=='0':
@@ -509,7 +495,6 @@ def validate_otp(request):
                 # Api Call starts
                 # datas = json.dumps({'mobileNumber': ''})
                 datas =  json.dumps({'mobileNumber':jsondata.get('parms').get('jsonData').get('mobileNumber')})
-                request.session['employee_personalmobileno_update']=jsondata.get('parms').get('jsonData').get('mobileNumber')
                 # del jsondata['TYPE']
                 ADip = common.clientapi()
 

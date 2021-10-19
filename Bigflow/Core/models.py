@@ -368,7 +368,6 @@ class MasterRequestObject():
                 'PRODUCT CATEGORY': 'mstserv/pdtcatmtom',
                 'PRODUCT': 'mstserv/productmtom',
                 'PRODUCT TYPE': 'mstserv/pdttypemtom',
-                'PRODUCT_SPECS':'mstserv/productspecificationmtom'
 
             },
             'COMMON MASTER': {
@@ -539,7 +538,7 @@ class MasterRequestObject():
                     cursor.callproc('sp_APIBigflowOrmSync_Get',parameter)
                     date=cursor.fetchone()
                     # print(qry)
-                    if (type == 'DELMAT_APPROVE') or (type == 'DELMAT_REJECT') or (type == 'PRODUCT_SPECS'):
+                    if (type == 'DELMAT_APPROVE') or (type == 'DELMAT_REJECT'):
                         date=[]
                         date.append(str(datetime.datetime.now()))
                     parameter_json['create_date']=str(date[0])
@@ -586,7 +585,7 @@ fields = {"STATE": ("code","name", "country_id"), "DISTRICT": ("code","name", "s
           "BANKBRANCH":("code","bank_gid","address_gid","ifsccode",'microcode',"name"),
           "HSN":("code","description","cgstrate_id","sgstrate_id","igstrate_id"),
           "TAXRATEEDIT":("tax_code",'isactive'),
-        "COMMODITY_MAP":("commodity_code",'product_code')
+        "COMMODITY_MAP":("commodity_id",'product_id')
           };
 
 def schedule_apiRun():
@@ -756,8 +755,7 @@ def get_data_from_id(master_name,data):
                  'HSN':['cgstrate_code','cgstrate','sgstrate_code','sgstrate','igstrate_code','igstrate'],
                  'DELMAT':['commodity_code','employee_code'],
                  'COMMODITY_PROD_MAP':['commodity_code','product_code'],
-                 'DELMAT_APPROVE':['tran','commodity_code','employee_code'],
-                 'PRODUCT_SPECS':['prodoctcatergory_code']
+                 'DELMAT_APPROVE':['tran','commodity_code','employee_code']
                  }
     out_data={}
     for master,master_fields in data_fields.items():

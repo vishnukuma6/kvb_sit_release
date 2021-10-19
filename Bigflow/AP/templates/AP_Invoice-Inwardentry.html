@@ -1117,7 +1117,7 @@ myApp.controller('Ctrlsmry', ['$scope', 'invoiceService', '$filter', '$mdDateLoc
 
             var get_CR = invoiceService.invoiceget($scope.inwarddetails_gid);
             get_CR.then(function(result) {
-<!--                $scope.loading();-->
+                $scope.loading()
                 var CR_data = result.data;
                 $scope.CR_data = CR_data;
                 if(result.data.MESSAGE=="ERROR_OCCURED"){

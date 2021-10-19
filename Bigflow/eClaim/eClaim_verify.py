@@ -120,7 +120,7 @@ class dailydiem():
 
         return "True"
 
-    def eligible_amount(self, jsondata, grade, empid, tour_dtl):
+    def eligible_amount(self, jsondata, grade, empid):
         expensegid = jsondata.get('Params').get('FILTER').get('expensegid')
         city = jsondata.get('Params').get('FILTER').get('visitcity')
         boardingbybank = int(jsondata.get('Params').get('FILTER').get('boardingbybank'))
@@ -132,36 +132,24 @@ class dailydiem():
         Entity_Gid = int(jsondata.get('Params').get('FILTER').get('Entity_Gid'))
         eligible_amount = 0
         datetimeFormat = '%Y-%m-%d %H:%M'
-        ddlimit = ['Transfer-Reporting','Transfer without Family','Transfer with family']
-        req_date = jsondata.get('Params').get('FILTER').get('req_date')
-        treason = tour_dtl.get("name")
-        
-        if treason in ddlimit:
-            days = 7
-            hours = (7*24)
-            from_date = req_date
-            to_date = req_date
+        diff = datetime.datetime.strptime(to_date, datetimeFormat) - datetime.datetime.strptime(from_date,
+                                                                                                datetimeFormat)
+        day = str(diff).split()
+        days = diff.days
+        sec = diff.total_seconds()
+        min = sec / 60
+        hours = min // 60
+        if days > 0:
+            hour = day[2].split(':')
+            tmp_hours = float(str(hour[0])+'.'+str(hour[1]))
+            hour = round(tmp_hours)
         else:
-            diff = datetime.datetime.strptime(to_date, datetimeFormat) - datetime.datetime.strptime(from_date,
-                                                                                                    datetimeFormat)
-            day = str(diff).split()
-            days = diff.days
-            sec = diff.total_seconds()
-            min = sec / 60
-            hours = min // 60
-            if days > 0:
-                hour = day[2].split(':')
-                tmp_hours = float(str(hour[0]) + '.' + str(hour[1]))
-                hour = round(tmp_hours)
-
-            else:
-                hour = int(hours)
-                hour = day[0].split(':')
-                tmp_hours = float(str(hour[0]) + '.' + str(hour[1]))
-                hour = round(tmp_hours)
-            if hour > 0:
-                days = days + 1
-
+            hour = int(hours)
+            hour = day[0].split(':')
+            tmp_hours = float(str(hour[0]) + '.' + str(hour[1]))
+            hour = round(tmp_hours)
+        if hour > 0:
+            days = days + 1
         tourcheck = tour_check(self, jsondata)
         common.logger.error([{"tourcheck": str(tourcheck)}])
         obj_claim = meClaim.eClaim_Model()
@@ -173,10 +161,6 @@ class dailydiem():
         if city != "":
             amount_data = elig_citytoamount_effectivedate(self, grade, city, from_date, to_date, expensegid, Entity_Gid,
                                                           "Dailydeim")
-
-            if treason in ddlimit:
-                amount_data[0]['days'] = 7
-
             if isleave == "" and isleave == None:
                 amount_data[0]['isleave'] = 0
             else:
@@ -230,29 +214,28 @@ class dailydiem():
                     if tourreason.upper() == 'INSPECTION':
                         inspection_amount = days * 100
 
-                if treason not in ddlimit:
-                    if tourcheck == True:
-                        if designation in ["EXECUTIVE", "OFFICER"]:
-                            if int(hour) < 4:
+                if tourcheck == True:
+                    if designation in ["EXECUTIVE", "OFFICER"]:
+                        if int(hour) < 4:
+                            days = 0.5
+                        elif 8 > int(hour) >= 4:
+                            days = 0.5
+                        else:
+                            print("Fullday deim")
+                    else:
+                        spl_a = to_date.split(" ")
+                        spl_b = from_date.split(" ")
+                        totime = spl_a[1].split(":")
+                        fromtime = spl_b[1].split(":")
+                        if 10 <= int(fromtime[0]) and 17 >= int(totime[0]):
+                            if int(hour) < 3:
                                 days = 0.5
-                            elif 8 > int(hour) >= 4:
-                                days = 0.5
-                            else:
+                            elif int(hour) >= 4:
                                 print("Fullday deim")
                         else:
-                            spl_a = to_date.split(" ")
-                            spl_b = from_date.split(" ")
-                            totime = spl_a[1].split(":")
-                            fromtime = spl_b[1].split(":")
-                            if 10 <= int(fromtime[0]) and 17 >= int(totime[0]):
-                                if int(hour) < 3:
-                                    days = 0.5
-                                elif int(hour) >= 4:
-                                    print("Fullday deim")
-                            else:
-                                print("OutofOffice Hours")
-                    else:
-                        print("Longterm tour")
+                            print("OutofOffice Hours")
+                else:
+                    print("Longterm tour")
                 common.logger.error([{"days": str(days)}])
                 if holiday != 0:
                     obj_claim = meClaim.eClaim_Model()
@@ -380,18 +363,17 @@ class lodging():
         #     i['approvedamount'] = app_amount
         #     tot = tot + float(app_amount)
         # outer_data['approvedamount'] = tot
-
         tot = 0
         for i in valid_data:
             if float(i.get('eligibleamount')) > float(i.get('claimedamount')):
                 i['approvedamount'] = i.get('claimedamount')
-                tot = tot + float(i.get('claimedamount'))+float(i.get('taxonly'))
+                tot = tot + float(i.get('claimedamount'))
             elif float(i.get('eligibleamount')) < float(i.get('claimedamount')):
                 i['approvedamount'] = i.get('eligibleamount')
-                tot = tot + float(i.get('eligibleamount'))+float(i.get('taxonly'))
+                tot = tot + float(i.get('eligibleamount'))
             elif float(i.get('eligibleamount')) == float(i.get('claimedamount')):
                 i['approvedamount'] = i.get('eligibleamount')
-                tot = tot + float(i.get('eligibleamount'))+float(i.get('taxonly'))
+                tot = tot + float(i.get('eligibleamount'))
         outer_data['approvedamount'] = tot
 
         return "True"
@@ -706,23 +688,21 @@ class local_deputation():
         amount_data = elig_citytoamount_effectivedate(self, designation, city, from_date, to_date, expensegid, 1,
                                                       "Dailydeim")
         common.logger.error([{"amount_data": str(amount_data)}])
-        holidays = 0
-        tot_days = 0
         tot_amount = 0
         for i in amount_data:
-            tot_days = tot_days + i.get('days')
-            tot_amount = tot_amount + float(i.get('amount'))
-            holidays = holidays + int(i.get('holiday'))
-        final_days = tot_days - holidays
+            amount = i.get('amount')
+            days = i.get('days')
+            tot_amount = tot_amount + amount
+            days = int(i.get('days')) - int(i.get('holiday')) + 1
         final_amount = 0
         if int(data.get('Params').get('FILTER').get('noofdays')) != 0:
             final_amount = (int(data.get('Params').get('FILTER').get('noofdays')) - int(isleave)) * tot_amount
         else:
-            final_amount = (final_days - int(isleave)) * tot_amount
+            final_amount = (days - int(isleave)) * tot_amount
         common.logger.error([{"tot_amount": str(tot_amount)}])
         eligible_value = {
             "Eligible_amount": final_amount,
-            "noofdays": final_days
+            "noofdays": days
         }
         return eligible_value
 
@@ -1105,33 +1085,10 @@ class ecf_entry():
         }
         obj_claim.filter_json = json.dumps(emp_data)
         obj_claim.json_classification = json.dumps(jsondata.get('Params').get('CLASSIFICATION'))
-        emp_out_message = obj_claim.eClaim_employee_dept_get()
-        if emp_out_message.get("MESSAGE") == 'FOUND':
-            employee_dept_data = json.loads(emp_out_message.get("DATA").to_json(orient='records'))
-            dept_name  = employee_dept_data[0].get('dept_name')
-            if dept_name in ['2135','NEO','Neo','neo']:
-                obj_claim.filter_json = json.dumps({
-                    "Employee_gid": emp_gid,
-                    "Entity_Gid": entity_gid,
-                    "Limit_Start": 0,
-                    "Limit_End": 30,
-                    "branch_name": "",
-                    "branch_code": "",
-                    "branch_detail": "2135"
-                })
-                ld_out_message = obj_claim.eClaim_branch_get()
-                if ld_out_message.get("MESSAGE") == 'FOUND':
-                    data = json.loads(ld_out_message.get("DATA").to_json(orient='records'))
-                    branch_gid = data[0].get('branch_gid')
-                elif ld_out_message.get("MESSAGE") == 'NOT_FOUND':
-                    ld_dict = {"MESSAGE": 'Neo Branch Missing',"STATUS":1}
-                    return ld_dict
-            else:
-                branch_gid = employee_dept_data[0].get('branch_gid')
-            employee_gender = employee_dept_data[0].get('employee_gender')
-        else:
-            ld_dict = {"MESSAGE": 'Employee Dept Missing', "STATUS": 1}
-            return ld_dict
+        emp_out_message = obj_claim.eClaim_employee_get()
+        employee_data = json.loads(emp_out_message.get("DATA").to_json(orient='records'))
+        branch_gid = employee_data[0].get('branch_gid')
+        employee_gender = employee_data[0].get('employee_gender')
         params = {"action": "INSERT",
                   "type": "INVOICE_HEADER",
                   "entity_gid": jsondata.get('Params').get('DETAILS').get('Entity_Gid'),
@@ -1252,40 +1209,7 @@ class ecf_entry():
             # requestdate = ld_dict[0].get('requestdate')
             # req_date = datetime.fromtimestamp(requestdate // 1000)
             # requestdate = str(str(req_date.year) + '-' + str(req_date.month) + '-' + str(req_date.day))
-            #branchgid = ld_dict[0].get('empbranchgid')
-
-            emp_data = {
-                "empids": emp_gid
-            }
-            obj_claim.filter_json = json.dumps(emp_data)
-            obj_claim.json_classification = json.dumps(jsondata.get('Params').get('CLASSIFICATION'))
-            emp_out_message = obj_claim.eClaim_employee_dept_get()
-            if emp_out_message.get("MESSAGE") == 'FOUND':
-                employee_dept_data = json.loads(emp_out_message.get("DATA").to_json(orient='records'))
-                dept_name = employee_dept_data[0].get('dept_name')
-                if dept_name in ['2135', 'NEO', 'Neo', 'neo']:
-                    obj_claim.filter_json = json.dumps({
-                        "Employee_gid": emp_gid,
-                        "Entity_Gid": entity_gid,
-                        "Limit_Start": 0,
-                        "Limit_End": 30,
-                        "branch_name": "",
-                        "branch_code": "",
-                        "branch_detail": "2135"
-                    })
-                    ld_out_message = obj_claim.eClaim_branch_get()
-                    if ld_out_message.get("MESSAGE") == 'FOUND':
-                        data = json.loads(ld_out_message.get("DATA").to_json(orient='records'))
-                        branchgid = data[0].get('branch_gid')
-                    elif ld_out_message.get("MESSAGE") == 'NOT_FOUND':
-                        ld_dict = {"MESSAGE": 'Neo Branch Missing', "STATUS": 1}
-                        return ld_dict
-                else:
-                    branchgid = employee_dept_data[0].get('branch_gid')
-            else:
-                ld_dict = {"MESSAGE": 'Employee Dept Missing', "STATUS": 1}
-                return ld_dict
-
+            branchgid = ld_dict[0].get('empbranchgid')
             obj_claim.date = 'DATE'
             date = obj_claim.get_server_date()
             requestdate = date

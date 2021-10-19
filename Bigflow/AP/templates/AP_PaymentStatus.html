@@ -38,19 +38,11 @@
                                        numbers-only maxlength="15"/>
                             </md-input-container>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-md-2">
                             <md-button class="md-fab md-mini md-primary custbutton"
                                        ng-click="find_maker_summary()">
                                 <md-icon>search</md-icon>
                                 <md-tooltip>Search</md-tooltip>
-                            </md-button>
-                        </div>
-
-                        <div class="col-md-1">
-                            <md-button class="md-fab md-mini md-warn"
-                                       ng-click="clear_seach()">
-                                <md-icon>search_off</md-icon>
-                                <md-tooltip>Clear Search</md-tooltip>
                             </md-button>
                         </div>
                     </div>
@@ -132,7 +124,8 @@
                                 class="pagination-sm" boundary-links="true" items-per-page="itemsPerPage"></ul>
                         </td>
                         <td colspan="2" align="center">
-                            <strong ng-hide="!total_row_execute">Total Count:{{Total_Row}}</strong>
+                            <strong>Total Count:{{Total_Row}}</strong>
+
                         </td>
                     </tr>
                     </tfoot>
@@ -237,73 +230,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="modal fade" id="model_paid" tabindex="-1" role="dialog" data-backdrop="static"
-             data-keyboard="false"
-             aria-labelledby="exampleModalLabel" aria-hidden="true" enctype="multipart/form-data">
-            <div class="modal-dialog modal-lg" role="document">
-                <form name="paid_form" novalidate>
-                    <div class="modal-content">
-                        <div class="modal-header popup-header">
-                            <h5 class="modal-title">
-                                Details
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </h5>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row">
-                                <div class="col-xs-12">
-                                    <div class="col-lg-6 col-sm-6 col-md-6">
-                                        <md-input-container class="md-block inputcontainer">
-                                            <label>CR Number</label>
-                                            <input type="text" ng-model="paid_all_data.invoiceheader_crno"
-                                                   ng-disabled="true" required/>
-                                        </md-input-container>
-                                    </div>
-                                    <div class="col-lg-6 col-sm-6 col-md-6">
-                                        <md-input-container class="md-block inputcontainer">
-                                            <label>PV No</label>
-                                            <input type="text" ng-model="paid_all_data.paymentheader_pvno"
-                                                   ng-disabled="true" required/>
-                                        </md-input-container>
-                                    </div>
-                                </div>
-                                <div class="col-xs-12">
-                                    <div class="col-lg-6 col-sm-6 col-md-6">
-                                        <md-input-container class="md-block inputcontainer">
-                                            <label>PV Amount</label>
-                                            <input type="text" ng-model="paid_all_data.paymentheader_amount"
-                                                   ng-disabled="true" required/>
-                                        </md-input-container>
-                                    </div>
-                                    <div class="col-lg-6 col-sm-6 col-md-6">
-                                        <md-input-container class="md-block inputcontainer">
-                                            <label>UTR No</label>
-                                            <input type="text" ng-model="utr_number"/>
-                                        </md-input-container>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <md-button ng-click="Close()" data-dismiss="modal" class="md-raised">
-                                Close
-                            </md-button>
-                            <button type="button" class="btn btn-info custbutton"
-                                    ng-click="paid_staus_update(paid_all_data)"
-                                    ng-disabled="paid_form.$invalid">
-                                Submit
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-            </div>
-        </div>
-
     </div>
 </div>
 {% endverbatim %}
@@ -318,11 +244,6 @@
     .md-dialog-container{
     z-index:100000 !important;
     }
-
-
-
-
-
 
 
 
@@ -385,10 +306,6 @@ app.controller('ctrlpaymentprepare', ['$scope', '$filter', '$mdDateLocale', 'pay
         $scope.cr_number="";
         $scope.pv_number="";
         $scope.pv_amount="";
-        $scope.Invoice_Header_Gid=0;
-        $scope.Invoice_Header_Crno=0;
-        $scope.utf_number="";
-        $scope.total_row_execute=0;
 
         $element.find('input').on('keydown', function(ev) {
             ev.stopPropagation();
@@ -398,14 +315,6 @@ app.controller('ctrlpaymentprepare', ['$scope', '$filter', '$mdDateLocale', 'pay
             $mdDialog.show({
                 templateUrl: 'loaderSpinner',
                 parent: angular.element(document.body),
-                clickOutsideToClose: false
-            });
-        };
-
-        $scope.loading_popup = function() {
-            $mdDialog.show({
-                templateUrl: 'loaderSpinner',
-                parent: angular.element(document.getElementById('model_paid')),
                 clickOutsideToClose: false
             });
         };
@@ -441,21 +350,16 @@ app.controller('ctrlpaymentprepare', ['$scope', '$filter', '$mdDateLocale', 'pay
 
 <!--        });-->
 
+        summary();
         $scope.pageChanged = function(){
-             if($scope.payment_summary.length==0){
+             if($scope.maintable.length==0){
                 $scope.currentPage=1;
              }
-              if($scope.total_row_execute==0){
-                $scope.total_row_execute=1;
-                $scope.get_total_row_maker_summary();
-              }
              summary();
-         }
-<!--        summary();-->
+        }
         $scope.find_maker_summary=function(){
-            $scope.Total_Row=0;
             $scope.currentPage=1;
-            $scope.total_row_execute=0;
+            $scope.Total_Row=0;
             summary();
         }
 
@@ -464,42 +368,18 @@ app.controller('ctrlpaymentprepare', ['$scope', '$filter', '$mdDateLocale', 'pay
                       "pv_amount":$scope.pv_amount,"cr_number":$scope.cr_number,
                       "Page_Index":$scope.currentPage-1,"Page_Size":$scope.itemsPerPage}
              $scope.loading();
-            var paymentdtl = paymentprepare.getpaymentdtl(json,"PAYMENT_FILE");
+            var paymentdtl = paymentprepare.getpaymentdtl(json);
             paymentdtl.then(function(result) {
                     $scope.payment_summary = JSON.parse(result.data);
                     $scope.maintable = JSON.parse(result.data);
-                    if($scope.total_row_execute==0){
-                        $scope.Total_Row=($scope.payment_summary.length)+($scope.currentPage*10);
+                    if($scope.currentPage==1){
+                        $scope.Total_Row=$scope.maintable[0].Total_Row;
                     }
+
                 },
                 function(err) {
                     alert('No data!.');
                 }).finally($scope.endloading);
-        }
-        $scope.clear_seach=function(){
-            $scope.pv_number="";
-            $scope.cr_number="";
-            $scope.pv_amount="";
-        }
-
-        $scope.get_total_row_maker_summary=function(){
-        debugger;
-            var json={"Payment_Status":"PAYMENT INITIATE","pv_number":$scope.pv_number,
-                      "pv_amount":$scope.pv_amount,"cr_number":$scope.cr_number,
-                      "Page_Index":0,"Page_Size":$scope.itemsPerPage}
-             $scope.loading();
-            var paymentdtl = paymentprepare.getpaymentdtl(json,"PAYMENT_FILE_COUNT");
-            paymentdtl.then(function(result) {
-                    $scope.maker_summary_count = JSON.parse(result.data);
-                    if(result.data.MESSAGE=="ERROR_OCCURED"){
-                        alert(JSON.stringify(result.data.DATA));
-                    }
-                    $scope.Total_Row=$scope.maker_summary_count[0].count;
-                },
-                function(err) {
-                    alert('No data!.');
-                }).finally($scope.endloading);
-
         }
 
 
@@ -522,7 +402,6 @@ app.controller('ctrlpaymentprepare', ['$scope', '$filter', '$mdDateLocale', 'pay
         }]
 
         $scope.Payment_Assign = function(data, status) {
-        debugger;
             // alert(JSON.stringify(data.dispatch_to));
             if (data.paymentheader_paymode == "CHEQUE") {
 
@@ -592,33 +471,28 @@ app.controller('ctrlpaymentprepare', ['$scope', '$filter', '$mdDateLocale', 'pay
             } else {
 
                 if (status == "PAID") {
-                    $scope.Invoice_Header_Gid=data.paymentheader_gid;
-                    $scope.Invoice_Header_Crno=data.paymentheader_gid;
-                    $scope.paid_all_data=data;
-                    $scope.utf_number="";
-                    modalshow('model_paid');
-<!--                    var txt;-->
-<!--                    var r = confirm("Are You Sure Amount Settled");-->
-<!--                    if (r == true) {-->
-<!--                        $scope.paymentdetail = [{-->
-<!--                            "Payment_Header_Gid": data.paymentheader_gid,-->
+                    var txt;
+                    var r = confirm("Are You Sure Amount Settled");
+                    if (r == true) {
+                        $scope.paymentdetail = [{
+                            "Payment_Header_Gid": data.paymentheader_gid,
 
-<!--                        }];-->
-<!--                        var status_json = {-->
-<!--                            "STATUS": $scope.paymentdetail-->
-<!--                        }-->
-<!--                        var setpayment = paymentprepare.setpayment(status_json);-->
-<!--                        setpayment.then(function(result) {-->
-<!--                            alert(result.data);-->
-<!--                            $scope.totalamount = 0;-->
+                        }];
+                        var status_json = {
+                            "STATUS": $scope.paymentdetail
+                        }
+                        var setpayment = paymentprepare.setpayment(status_json);
+                        setpayment.then(function(result) {
+                            alert(result.data);
+                            $scope.totalamount = 0;
 
-<!--                            $scope.verify = [];-->
-<!--                            summary();-->
-<!--                        })-->
+                            $scope.verify = [];
+                            summary();
+                        })
 
-<!--                    } else {-->
+                    } else {
 
-<!--                    }-->
+                    }
                 }
             }
 
@@ -631,45 +505,6 @@ app.controller('ctrlpaymentprepare', ['$scope', '$filter', '$mdDateLocale', 'pay
             $scope.pod_name = "POD" + new Date().getTime() + fileExtension;
 
         };
-
-        $scope.paid_staus_update=function(data){
-        debugger;
-            var txt;
-            var r = confirm("Are You Sure Amount Settled");
-            if (r == true) {
-                $scope.paymentdetail = [{
-                    "Payment_Header_Gid": data.paymentheader_gid,"utr_number":$scope.utr_number,
-                    "invoiceheader_crno":data.invoiceheader_crno,"invoiceheader_invoicetype":data.invoiceheader_invoicetype,
-                    "invoiceheader_ponumber":data.invoiceheader_ponumber,
-
-                }];
-                var status_json = {
-                    "STATUS": $scope.paymentdetail
-                }
-                $scope.loading_popup();
-                var setpayment = paymentprepare.setpayment(status_json);
-                setpayment.then(function(result) {
-                    if(result.data=="SUCCESS"){
-                        alert("SUCCESS");
-                        modalhide('model_paid')
-                    }
-                    else if(result.data.MESSAGE=="ERROR_OCCURED"){
-                        alert(JSON.stringify(result.data.DATA));
-                    }
-                    else{
-                        alert(JSON.stringify(result.data));
-                    }
-                    $scope.totalamount = 0;
-                    $scope.verify = [];
-                    summary();
-                 },
-                 function(err) {
-                   alert(JSON.stringify(result.data));
-                 }).finally($scope.endloading);
-
-            }
-
-        }
 
         $scope.staus_update = function() {
 
@@ -761,8 +596,8 @@ app.service("paymentprepare", function ($http) {
         var responsee = $http.post(Appname+"/Dropdown_details/",{params:{"tablename":tablename,"gid":0,"name":''}});
         return responsee;
     }
-    this.getpaymentdtl = function (json,type) {
-        var response=$http.post(Appname+"/Paymmentdtl_get/",{params:{"group":"PAYMENT","type":type,"pay_json":json}});
+    this.getpaymentdtl = function (json) {
+        var response=$http.post(Appname+"/Paymmentdtl_get/",{params:{"group":"PAYMENT","type":"PAYMENT_FILE","pay_json":json}});
         return response;
     }
         this.setpayment = function (status) {
@@ -798,11 +633,6 @@ app.service("paymentprepare", function ($http) {
             return response;
         }
 });
-
-
-
-
-
 
 
 
